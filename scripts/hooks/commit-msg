@@ -1,0 +1,8 @@
+#!/bin/sh
+# Impide que se cuele atribucion a asistentes de IA en los commits.
+# La autoria de este repo es exclusivamente humana por decision del autor.
+if grep -qiE 'co-authored-by:.*(claude|anthropic|copilot|gpt)|generated with \[?claude|🤖' "$1"; then
+  echo "commit-msg: se detecto atribucion a IA en el mensaje." >&2
+  echo "Este repo no lleva trailers de asistentes. Quitalo y reintenta." >&2
+  exit 1
+fi
