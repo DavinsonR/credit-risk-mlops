@@ -1,0 +1,5 @@
+escenario,auc
+valor + ausencia,0.8834926033501163
+solo valor (imputado),0.8825206399821401
+ni valor ni ausencia,0.8645351026602272
+solo ausencia,0.8708052975793662

@@ -464,3 +464,85 @@ CFPB empieza aquí, no termina aquí.
 - Modelo B sobre HMDA y el gate de fairness, que ya está declarado pero sin datos
   que lo activen.
 - Medir cuánta disparidad **agrega** el modelo sobre la que ya existe.
+
+---
+
+## Semana 6 — El gate de equidad se enciende y bloquea
+
+### El modelo
+LightGBM sobre HMDA, test FY2024 (1.94M solicitudes): **AUC 0.8847**, Gini 0.7694,
+KS 0.6078, ECE 0.0045.
+
+Predecir denegación es genuinamente más fácil que predecir default —la decisión
+del banco es bastante mecánica sobre DTI, LTV e ingreso— pero 0.88 merecía
+escrutinio. Quitar `property_value` y `ltv` cuesta solo 2 puntos (0.8847 →
+0.8648), nada parecido al colapso de `TermInMonths`. El AUC es real.
+
+### El gate bloqueó
+
+```
+hmda:disparate_impact  0.7639 >= 0.8  -> NO promovido, gate cumpliendo su funcion
+```
+
+| Dimensión | DIR | |
+|---|---|---|
+| Raza | **0.764** | no pasa |
+| Etnia | 0.903 | pasa |
+| Sexo | 0.940 | pasa |
+
+### Semántica que me importó definir bien
+**Un gate bloquea promoción; no rompe el build.** El modelo se midió, se
+documentó, falló el umbral y por eso no se despliega — eso *es* el sistema
+funcionando. Lo que sí hace fallar CI es marcar `promoted: true` algo que no
+cumple. Cuatro tests cubren ambos lados.
+
+Si hubiera cableado el gate para reventar CI, el repo quedaría en rojo permanente
+y la única salida sería bajar el umbral. Un control que empuja a relajarse a sí
+mismo no es un control.
+
+### La pregunta correcta da otra respuesta
+
+| Dimensión | Observado | Modelo | Delta |
+|---|---|---|---|
+| Raza | 0.766 | 0.764 | **−0.002** |
+| Etnia | 0.894 | 0.903 | +0.008 |
+| Sexo | 0.909 | 0.940 | +0.031 |
+
+**El modelo no crea la disparidad racial: la hereda casi exactamente.** Añade
+−0.002 sobre decisiones humanas que ya daban 0.766, y la *reduce* en sexo y etnia.
+
+Un análisis ingenuo habría titulado "el modelo es discriminatorio, DIR 0.764".
+La lectura correcta es más incómoda: el modelo falla el test de los 4/5, y también
+lo fallan las decisiones de las que aprendió. Eso no lo exculpa —automatizar una
+disparidad la escala y le da apariencia de objetividad— pero cambia dónde hay que
+intervenir.
+
+Solo puedo afirmar eso **porque medí la línea base antes del modelo**. Si hubiera
+empezado por el modelo, el titular habría sido cierto en la letra y equivocado en
+la causa.
+
+_(escribir: por qué el orden de medición determina qué se puede afirmar)_
+
+### La descomposición del PSI se ganó su lugar
+```
+PSI total 0.1165 | de forma 0.2099 -> cambio de FORMA
+```
+El PSI de forma **supera** al total: nivel y forma se movieron compensándose.
+Diagnóstico: recalibrar no basta, hay que reentrenar. Tiene sentido económico —
+la población de 2020-22 (refinanciación) es estructuralmente distinta de la de
+2024 (compra). Esa métrica salió de la auditoría, no del plan original.
+
+### Reporte de validación
+`reports/VALIDATION_REPORT.md`, generado desde los artefactos: estructura SR 11-7
+más mapeo de los 11 requisitos del Anexo IV del Reglamento de IA de la UE.
+Marqué uno como **parcial** en vez de inflar el cumplimiento, y le puse una
+declaración de alcance explícita: esto documenta un ejercicio técnico y **no es
+una evaluación de conformidad**.
+
+En un proyecto que se vende como "ML que sobrevive una auditoría", reclamar
+cumplimiento del AI Act sin organismo notificado sería exactamente el tipo de
+afirmación que un revisor busca para desmontarlo.
+
+### Pendiente Semana 7
+- Export ONNX y serving por tres vías.
+- Decidir el tratamiento de la nulidad diferencial de `ltv` según la auditoría.

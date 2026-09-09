@@ -1,0 +1,11 @@
+column,null_rate_negative,null_rate_positive,gap_pp,verdict
+ltv,0.05969716884868819,0.15543884264613866,9.574167379745047,revisar
+property_value,0.03449438785216444,0.09183241374515715,5.733802589299271,revisar
+dti,0.04446913751059304,0.0825859704341341,3.8116832923541057,ok
+loan_to_income,0.009477525466526002,0.028023738647352154,1.8546213180826152,ok
+income,0.0,0.0,0.0,ok
+loan_amount,0.0,0.0,0.0,ok
+log_loan_amount,0.0,0.0,0.0,ok
+tract_to_msa_income_percentage,0.0,0.0,0.0,ok
+tract_owner_occupied_units,0.0,0.0,0.0,ok
+msa_median_income,0.0,0.0,0.0,ok
