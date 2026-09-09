@@ -543,6 +543,29 @@ En un proyecto que se vende como "ML que sobrevive una auditoría", reclamar
 cumplimiento del AI Act sin organismo notificado sería exactamente el tipo de
 afirmación que un revisor busca para desmontarlo.
 
+### Auditoría de fuga por nulidad
+Convertí el chequeo en herramienta permanente. `ltv` está nulo en 6.0% de las
+aprobadas y 15.6% de las denegadas, con causa operativa clara: **si una solicitud
+se rechaza temprano por DTI, nunca se ordena la tasación**.
+
+| Escenario | AUC |
+|---|---|
+| valor + ausencia | 0.8835 |
+| solo valor (imputado) | 0.8825 |
+| ni valor ni ausencia | 0.8645 |
+| solo ausencia | 0.8708 |
+
+**Ausencia: +0.0010. Valor: +0.0180.** Decisión: conservar sin imputar
+([ADR 0008](docs/adr/0008-nulidad-diferencial-en-ltv.md)). El paso de imputación
+cuesta más de lo que arregla.
+
+El matiz que los cuatro escenarios revelan y que dos no habrían mostrado: aislada,
+la ausencia **sí** discrimina (+0.0063). La fuga es real pero **redundante** — con
+los valores presentes, esa información ya viene contenida en ellos. En un modelo
+con menos variables podría aportar los 0.0063 completos y sí justificar imputar.
+La conclusión es contextual, no universal.
+
+_(escribir: cuándo una fuga pequeña se tolera y cuándo no)_
+
 ### Pendiente Semana 7
 - Export ONNX y serving por tres vías.
-- Decidir el tratamiento de la nulidad diferencial de `ltv` según la auditoría.
