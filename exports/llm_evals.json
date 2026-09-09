@@ -1,6 +1,7 @@
 {
   "providers": [
-    "template"
+    "template",
+    "ollama"
   ],
   "n_cases": 6,
   "summary": [
@@ -14,6 +15,17 @@
       "consistente": 1.0,
       "segundos": 0.0,
       "pasa": 1.0
+    },
+    {
+      "provider": "ollama",
+      "casos": 6,
+      "fidelidad": 0.5,
+      "cumple": 1.0,
+      "legibilidad": 73.2333,
+      "palabras": 67.5,
+      "consistente": 0.5,
+      "segundos": 8.9867,
+      "pasa": 0.0
     }
   ]
 }

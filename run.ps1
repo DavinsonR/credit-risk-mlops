@@ -30,6 +30,7 @@ $Tasks = [ordered]@{
     "disparity"    = @{ desc = "Disparidad observada, antes de cualquier modelo"; cmd = { uv run python -m crmlops.fairness.observed } }
     "benchmark"    = @{ desc = "DuckDB vs PySpark sobre el mismo trabajo"; cmd = { uv run python -m crmlops.features.benchmark } }
     "onnx"         = @{ desc = "Exporta a ONNX y verifica paridad numerica"; cmd = { uv run python -m crmlops.export.onnx } }
+    "llm-evals"    = @{ desc = "Avisos de adverse action: plantilla vs LLM"; cmd = { uv run python -m crmlops.llm.harness } }
     "serve"        = @{ desc = "Levanta la API de scoring en :8000"; cmd = { uv run uvicorn app:app --app-dir serving/api --port 8000 } }
     "web"          = @{ desc = "Demo en el navegador (modelo en WASM) en :8899"; cmd = { uv run python serving/web/build.py; uv run python -m http.server 8899 --directory serving/web } }
     "reproduce"    = @{ desc = "Reentrena y ASSERTA metricas identicas a las commiteadas"; cmd = { uv run python -m crmlops.governance.reproduce } }

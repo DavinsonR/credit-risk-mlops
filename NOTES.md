@@ -569,3 +569,68 @@ _(escribir: cuándo una fuga pequeña se tolera y cuándo no)_
 
 ### Pendiente Semana 7
 - Export ONNX y serving por tres vías.
+
+
+---
+
+## Semana 8 — La plantilla le gana al LLM
+
+### El resultado
+Seis avisos por proveedor (3 casos × 2 idiomas):
+
+| Proveedor | Fidelidad | Cumple | Legibilidad | Consistencia | Pasa |
+|---|---|---|---|---|---|
+| **plantilla** | **1.00** | 1.00 | 44.8 | **1.00** | **100%** |
+| llama3.2:3b | 0.50 | 1.00 | **73.2** | 0.50 | **0%** |
+
+### El hallazgo está en el detalle, no en el promedio
+El fallo no está repartido: **está entero en español.**
+
+| Idioma | Fidelidad | Palabras |
+|---|---|---|
+| Inglés | 1.00 | 86–149 |
+| Español | **0.00** | **18** |
+
+Y las 18 palabras son siempre las mismas:
+
+> No puedo redactar un aviso de acción adversa de crédito. ¿Hay algo más en lo que
+> pueda ayudarte?
+
+**No es un fallo de capacidad: es un rechazo de seguridad.** Mismo modelo, mismo
+prompt traducido, misma temperatura, misma semilla — redacta en inglés y rechaza
+en español. El alineamiento del modelo es **asimétrico entre idiomas**.
+
+Una evaluación monolingüe habría reportado fidelidad 1.00 y recomendado desplegar.
+
+_(escribir: por qué evaluar en un solo idioma es evaluar a medias)_
+
+### Lo que el LLM sí aporta, y por qué no alcanza
+Legibilidad **73.2 contra 44.8**: la plantilla queda en "difícil", el modelo en
+"bastante fácil". Para un documento que lee alguien sin formación financiera, esa
+diferencia es real.
+
+El precio: fidelidad a la mitad, y **texto distinto entre ejecuciones idénticas**
+con temperatura 0. Un aviso legal que cambia entre corridas es indefendible ante
+un regulador.
+
+Decisión: la plantilla va a producción
+([ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md)).
+
+### Tres bugs que el harness encontró en mi propio código
+1. **La plantilla fallaba el chequeo de cumplimiento.** "La ANTIGÜEDAD del
+   negocio" contiene "edad" y yo comparaba subcadenas.
+2. **Más de fondo: confundí antigüedad del negocio con edad del solicitante.** La
+   primera es un factor de suscripción legítimo; la segunda, una base protegida.
+3. **`""` en una cadena normal de Python es un BACKSPACE**, no un límite de
+   palabra. El chequeo dejó de detectar nada **en silencio**, que es lo peligroso.
+
+### Una limitación de mi propia métrica, declarada
+La fidelidad mide **qué** factores se citan, no si lo que se dice **sobre** ellos
+es correcto. El aviso en inglés sacó 1.00 y aun así afirma que el solicitante
+"pidió" la tasa de interés, que es falso. Cerrarlo exigiría verificar afirmaciones
+causales, no solo presencia. No está implementado, y decir 1.00 sin esta nota
+vendería una garantía que la métrica no da.
+
+### Pendiente Semana 9
+- Monitoreo de drift con datos trimestrales reales de SBA.
+- Reentrenamiento automático con gate de promoción.

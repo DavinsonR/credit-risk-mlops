@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark onnx serve web lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -48,6 +48,9 @@ benchmark:  ## DuckDB vs PySpark sobre el mismo trabajo de features
 
 onnx:  ## Exporta a ONNX; falla si el grafo no reproduce al modelo
 	$(UV) run python -m crmlops.export.onnx
+
+llm-evals:  ## Avisos de adverse action: plantilla determinista vs LLM
+	$(UV) run python -m crmlops.llm.harness
 
 serve:  ## Levanta la API de scoring en :8000
 	$(UV) run uvicorn app:app --app-dir serving/api --port 8000

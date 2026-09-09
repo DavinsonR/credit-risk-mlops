@@ -5,3 +5,9 @@ monto_alto_una_razon,template,es,1.0,1.0,1.0,[],True,[],55.4,69,True,True,0.0,,T
 monto_alto_una_razon,template,en,1.0,1.0,1.0,[],True,[],31.6,63,True,True,0.0,,True
 sin_colateral,template,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,0.0,,True
 sin_colateral,template,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,0.0,,True
+startup_alto_riesgo,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,8.61,,False
+startup_alto_riesgo,ollama,en,1.0,1.0,1.0,[],True,[],61.6,149,True,False,13.76,,False
+monto_alto_una_razon,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.47,,False
+monto_alto_una_razon,ollama,en,1.0,1.0,1.0,[],True,[],59.5,86,True,False,8.89,,False
+sin_colateral,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.2,,False
+sin_colateral,ollama,en,1.0,1.0,1.0,[],True,[],55.2,116,True,False,11.99,,False
