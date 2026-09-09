@@ -60,9 +60,31 @@ _(escribir: por qué 0.67 sin tuning es una base sana, qué falta para 0.72-0.75
    vs panel `term_months` → "termmonths") y no coincidía. Reemplazado por una lista
    explícita de nombres de panel: un guard que falla en silencio es peor que ninguno.
 
+### Auditoría de contaminación — generalización del hallazgo
+Convertí el método CANCLD-vs-CHGOFF en `crmlops.evaluation.contamination_audit`.
+Resultado sobre los 5 candidatos numéricos:
+
+| Campo | ratio mediana | gap de redondez | veredicto |
+|---|---|---|---|
+| TermInMonths | 0.62 | **+78.1 pp** | CONTAMINADO |
+| GrossApproval | 0.50 | −2.8 pp | predictivo legítimo |
+| SBAGuaranteedApproval | 0.49 | +0.7 pp | predictivo legítimo |
+| InitialInterestRate | 1.12 | +0.2 pp | ok |
+| JobsSupported | 1.00 | 0.0 pp | ok |
+
+La primera versión de la herramienta marcaba `GrossApproval` como sospechoso solo
+por la divergencia de mediana. Estaba mal: que los préstamos chicos fallen más es
+economía real. Ahora exige **dos señales** y solo su combinación condena:
+
+1. **Divergencia de mediana** — el campo separa CHGOFF del control. Por sí sola no
+   prueba nada.
+2. **Divergencia de redondez** — los CHGOFF tienen valores no pactados que el control
+   no tiene. Eso sí evidencia edición posterior: un valor contractual no deja de ser
+   redondo solo.
+
+_(escribir: por qué este test conjunto es defendible y dónde puede fallar)_
+
 ### Pendiente para Semana 2
-- Auditar `InitialInterestRate`, `SBAGuaranteedApproval` y `JobsSupported` con el mismo
-  método CANCLD-vs-CHGOFF: cualquier campo que se actualice durante la vida del
-  préstamo es sospechoso.
 - Baseline scorecard WoE + logística.
 - NAICS a 4 dígitos, identidad del banco, overlay macro de FRED.
+- Extender la auditoría a campos categóricos (hoy solo cubre numéricos).
