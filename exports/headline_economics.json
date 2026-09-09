@@ -1,0 +1,22 @@
+{
+  "test_window": [
+    2017,
+    2018
+  ],
+  "n_loans": 89313,
+  "total_lent": 32950580400.0,
+  "realized_loss": 1287976751.27,
+  "sba_absorbed_loss": 942141987.6676269,
+  "lender_absorbed_loss": 345834763.60237324,
+  "mean_guarantee_pct": 0.6291670152161499,
+  "breakeven_margin_gross": 0.03908813549366189,
+  "breakeven_margin_lender": 0.010495559088918908,
+  "at_10pct_decline": {
+    "loss_avoided": 276313829.40999997,
+    "loss_avoided_random": 128797675.12699999,
+    "lift_vs_random": 2.1453324303994057,
+    "share_of_all_losses": 0.21453324303994056,
+    "good_volume_foregone": 1992446200.0
+  },
+  "assumption": "Contrafactual sobre prestamos que SI fueron aprobados. Supone que rechazar no altera el comportamiento del resto del mercado."
+}
