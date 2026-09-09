@@ -55,6 +55,22 @@ class Provider(ABC):
     @abstractmethod
     def generate(self, prompt: str, *, temperature: float = 0.0, seed: int = 42) -> str: ...
 
+    def warm_up(self) -> None:
+        """Descarta una generacion antes de medir.
+
+        LA PRIMERA LLAMADA TRAS CARGAR EL MODELO NO ES DETERMINISTA. Verificado
+        sobre llama3.2:3b y qwen2.5:7b con temperatura 0 y semilla fija: la
+        primera salida difiere y las siguientes coinciden entre si. Con una
+        llamada de calentamiento descartada, tres corridas dan un unico hash.
+
+        Sin esto, el harness mide un artefacto de arranque en frio y lo atribuye
+        al modelo -- que es exactamente lo que hizo en su primera version.
+        """
+        try:
+            self.generate("Responde solo: ok", temperature=0.0, seed=42)
+        except Exception:
+            pass
+
     def run(self, prompt: str, **kw) -> Generation:
         import time
 

@@ -1,12 +1,13 @@
 {
   "providers": [
     "template",
+    "ollama",
     "ollama"
   ],
   "n_cases": 6,
   "summary": [
     {
-      "provider": "template",
+      "arm": "template / deterministic",
       "casos": 6,
       "fidelidad": 1.0,
       "cumple": 1.0,
@@ -17,14 +18,47 @@
       "pasa": 1.0
     },
     {
-      "provider": "ollama",
+      "arm": "ollama / qwen2.5:7b",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 57.7833,
+      "palabras": 64.6667,
+      "consistente": 0.8333,
+      "segundos": 13.75,
+      "pasa": 0.8333
+    },
+    {
+      "arm": "ollama / qwen2.5:7b (hibrido)",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 53.4167,
+      "palabras": 54.1667,
+      "consistente": 0.5,
+      "segundos": 14.0917,
+      "pasa": 0.5
+    },
+    {
+      "arm": "ollama / llama3.2:3b (hibrido)",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 53.1667,
+      "palabras": 75.1667,
+      "consistente": 0.3333,
+      "segundos": 9.6883,
+      "pasa": 0.3333
+    },
+    {
+      "arm": "ollama / llama3.2:3b",
       "casos": 6,
       "fidelidad": 0.5,
       "cumple": 1.0,
-      "legibilidad": 73.2333,
-      "palabras": 67.5,
+      "legibilidad": 74.5833,
+      "palabras": 67.3333,
       "consistente": 0.5,
-      "segundos": 8.9867,
+      "segundos": 8.3033,
       "pasa": 0.0
     }
   ]

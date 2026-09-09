@@ -1,3 +1,6 @@
-provider,casos,fidelidad,cumple,legibilidad,palabras,consistente,segundos,pasa
-template,6,1.0,1.0,44.7667,73.0,1.0,0.0,1.0
-ollama,6,0.5,1.0,73.2333,67.5,0.5,8.9867,0.0
+arm,casos,fidelidad,cumple,legibilidad,palabras,consistente,segundos,pasa
+template / deterministic,6,1.0,1.0,44.7667,73.0,1.0,0.0,1.0
+ollama / qwen2.5:7b,6,1.0,1.0,57.7833,64.6667,0.8333,13.75,0.8333
+ollama / qwen2.5:7b (hibrido),6,1.0,1.0,53.4167,54.1667,0.5,14.0917,0.5
+ollama / llama3.2:3b (hibrido),6,1.0,1.0,53.1667,75.1667,0.3333,9.6883,0.3333
+ollama / llama3.2:3b,6,0.5,1.0,74.5833,67.3333,0.5,8.3033,0.0

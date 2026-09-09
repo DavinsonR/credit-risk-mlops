@@ -631,6 +631,47 @@ es correcto. El aviso en inglés sacó 1.00 y aun así afirma que el solicitante
 causales, no solo presencia. No está implementado, y decir 1.00 sin esta nota
 vendería una garantía que la métrica no da.
 
+### Ampliación: cinco brazos, y dos conclusiones mías caídas
+
+**1. El rechazo en español era del modelo de 3B, no de la tarea.** qwen2.5:7b no
+se niega: fidelidad 1.00 en ambos idiomas.
+
+**2. La inconsistencia era un bug de medición mío.** Verifiqué antes de publicar:
+
+| Condición | Corridas | Únicas |
+|---|---|---|
+| Prompt corto | 4 | **1** |
+| Prompt real, sin calentar | 3 | 2 — *la primera difiere* |
+| Prompt real, con calentamiento | 3 | **1** |
+
+La primera generación tras cargar el modelo no es determinista; las siguientes sí.
+El harness medía el arranque en frío. Con `warm_up()`, qwen2.5:7b pasó de 0% a 83%.
+
+| Brazo | Fidelidad | Legibilidad | Consistencia | Pasa |
+|---|---|---|---|---|
+| **plantilla** | 1.00 | 44.8 | **1.00** | **100%** |
+| qwen2.5:7b | 1.00 | 57.8 | 0.83 | 83% |
+| qwen2.5:7b (híbrido) | 1.00 | 53.4 | 0.50 | 50% |
+| llama3.2:3b (híbrido) | 1.00 | 53.2 | 0.33 | 33% |
+| llama3.2:3b | 0.50 | 74.6 | 0.50 | 0% |
+
+La decisión no cambia —la plantilla va a producción— pero el margen ya no es
+abismal y la razón es una sola: consistencia.
+
+### Una pregunta que dejo abierta, sin inventarle respuesta
+Los híbridos resuelven la fidelidad y salen **menos consistentes que el modelo
+solo**. Mi hipótesis es que validar-y-caer introduce varianza en el borde: si una
+corrida acepta la reescritura y la otra la rechaza, se emiten dos documentos
+distintos, ambos válidos. Sería un defecto de mi diseño, no del modelo.
+
+Confirmarlo exige registrar por caso si se usó LLM o fallback y comparar esa
+decisión entre corridas. **No está implementado, y afirmar la causa sin medirla
+sería repetir el error que esta misma revisión corrige.**
+
+_(escribir: por qué un eval de un solo modelo produce conclusiones que se leen
+razonables y son falsas)_
+
 ### Pendiente Semana 9
 - Monitoreo de drift con datos trimestrales reales de SBA.
 - Reentrenamiento automático con gate de promoción.
+- Cerrar la pregunta abierta del híbrido (instrumentar la decisión de fallback).

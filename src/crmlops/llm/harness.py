@@ -161,6 +161,11 @@ def run(providers: list[Provider] | None = None) -> pd.DataFrame:
     providers = providers if providers is not None else available_providers()
     filas = []
     for p in providers:
+        # Calentar antes de medir: la primera generacion tras cargar el modelo
+        # no es determinista, y sin descartarla la metrica de consistencia mide
+        # el arranque en frio en vez del modelo.
+        if p.name != "template":
+            p.warm_up()
         # Cada LLM se evalua de dos formas: solo, y como reescritor dentro del
         # hibrido. Comparar ambos aisla cuanto del fallo viene del modelo y
         # cuanto de dejarlo elegir los hechos.
