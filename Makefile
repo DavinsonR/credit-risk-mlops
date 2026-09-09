@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card reproduce lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -30,6 +30,21 @@ gates:  ## Gates de promocion. Falla (exit 1) si el modelo no cumple
 
 card:  ## Regenera reports/MODEL_CARD.md desde la ultima corrida
 	$(UV) run python -m crmlops.governance.model_card
+
+validation:  ## Regenera el reporte de validacion (SR 11-7 + EU AI Act Anexo IV)
+	$(UV) run python -m crmlops.governance.validation_report
+
+hmda:  ## Descarga HMDA por estado-anio y verifica contra conteos oficiales
+	$(UV) run python -m crmlops.sources.hmda
+
+hmda-train:  ## Modelo de denegacion + auditoria de equidad
+	$(UV) run python -m crmlops.models.train_hmda
+
+disparity:  ## Disparidad observada en HMDA, antes de cualquier modelo
+	$(UV) run python -m crmlops.fairness.observed
+
+benchmark:  ## DuckDB vs PySpark sobre el mismo trabajo de features
+	$(UV) run python -m crmlops.features.benchmark
 
 reproduce:  ## Reentrena y ASSERTA que las metricas son identicas a las commiteadas
 	$(UV) run python -m crmlops.governance.reproduce

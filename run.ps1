@@ -24,6 +24,11 @@ $Tasks = [ordered]@{
     "stress"       = @{ desc = "Aplica el modelo a cohortes fuera de su regimen"; cmd = { uv run python -m crmlops.evaluation.stress } }
     "gates"        = @{ desc = "Gates de promocion. Falla si el modelo no cumple"; cmd = { uv run python -m crmlops.governance.gates } }
     "card"         = @{ desc = "Regenera reports/MODEL_CARD.md"; cmd = { uv run python -m crmlops.governance.model_card } }
+    "validation"   = @{ desc = "Regenera reports/VALIDATION_REPORT.md (SR 11-7 + Anexo IV)"; cmd = { uv run python -m crmlops.governance.validation_report } }
+    "hmda"         = @{ desc = "Descarga HMDA por estado-anio (62.4M filas)"; cmd = { uv run python -m crmlops.sources.hmda } }
+    "hmda-train"   = @{ desc = "Modelo de denegacion + auditoria de equidad"; cmd = { uv run python -m crmlops.models.train_hmda } }
+    "disparity"    = @{ desc = "Disparidad observada, antes de cualquier modelo"; cmd = { uv run python -m crmlops.fairness.observed } }
+    "benchmark"    = @{ desc = "DuckDB vs PySpark sobre el mismo trabajo"; cmd = { uv run python -m crmlops.features.benchmark } }
     "reproduce"    = @{ desc = "Reentrena y ASSERTA metricas identicas a las commiteadas"; cmd = { uv run python -m crmlops.governance.reproduce } }
     "lint"         = @{ desc = "ruff check + format check"; cmd = { uv run ruff check .; uv run ruff format --check . } }
     "test"         = @{ desc = "pytest"; cmd = { uv run pytest -m "not data" -q } }
