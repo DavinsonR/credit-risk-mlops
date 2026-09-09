@@ -1,0 +1,115 @@
+# Superficie declarativa del proyecto.
+# Todo lo que cambia sin tocar código vive aquí.
+
+project:
+  name: credit-risk-mlops
+  random_seed: 42
+
+paths:
+  raw: data/raw
+  interim: data/interim
+  parquet: data/parquet
+  manifests: data/manifests
+  exports: exports
+
+sources:
+  sba_7a:
+    # El sufijo de vintage (asof_YYMMDD) cambia trimestralmente, por eso las URLs
+    # se DESCUBREN scrapeando la página del dataset en vez de hardcodearse.
+    # Ver docs/adr/0001-descubrimiento-de-urls-sba.md
+    dataset_page: https://data.sba.gov/dataset/7a-504-foia
+    file_pattern: 'FOIA_7a_FY.*\.csv$'
+    license: US Government Work / FOIA (dominio público)
+    encoding: latin-1
+
+# Reglas de exclusión — quirks conocidos del dataset SBA.
+# Cada regla existe por una razón documentada; no borrar sin leer el ADR.
+exclusions:
+  # PPP se otorgó bajo criterios de emergencia, no de suscripción crediticia.
+  # Incluirlo contaminaría el modelo con un régimen que no se repite.
+  drop_ppp: true
+  ppp_program_values: ["PPP"]
+
+  # Solo resultados resueltos: un préstamo vigente no es "no incumplió",
+  # es censura a la derecha. Mezclarlos sesga la tasa base hacia abajo.
+  resolved_statuses: ["P I F", "CHGOFF"]   # ojo: "P I F" viene con espacios
+
+  # Monto y plazo deben ser positivos para que las features tengan sentido.
+  require_positive_amount: true
+  require_positive_term: true
+
+target:
+  # PD: probabilidad de charge-off
+  pd_column: LoanStatus
+  pd_positive_value: CHGOFF
+  # LGD: severidad, derivada del monto cargado a pérdida
+  lgd_numerator: GrossChargeOffAmount
+  lgd_denominator: GrossApproval
+
+# Validación OUT-OF-TIME. Nunca split aleatorio: el riesgo de crédito
+# tiene deriva temporal y un split aleatorio la esconde.
+splits:
+  date_column: ApprovalFY
+  train: { start: 2000, end: 2013 }
+  valid: { start: 2014, end: 2016 }   # incluye maduración post-crisis
+  test:  { start: 2017, end: 2019 }   # out-of-time puro
+
+# Gate de viabilidad de la Semana 1.
+# Criterio fijado ANTES de ver resultados finales: eso lo hace de-risking, no p-hacking.
+signal_gate:
+  min_auc: 0.65
+  method: lightgbm_quick
+  note: "Si el baseline rápido no supera este AUC, se pivotea el target."
+
+# Gates de CI que bloquean promoción de modelos.
+gates:
+  min_auc_test: 0.68
+  max_auc_drop_oot: 0.08        # degradación train→test tolerada
+  max_brier: 0.20               # calibración
+  min_disparate_impact_ratio: 0.80   # regla de los 4/5 (EEOC)
+
+# Features disponibles EN EL MOMENTO DE LA DECISIÓN de aprobación.
+# Cualquier campo posterior a la decisión es fuga, aunque sea anterior al resultado.
+features:
+  numeric:
+    - GrossApproval
+    - SBAGuaranteedApproval
+    - InitialInterestRate
+    - JobsSupported
+  categorical:
+    - BusinessType
+    - BusinessAge
+    - RevolverStatus
+    - CollateralInd
+    - FixedorVariableInterestInd
+    - ProcessingMethod
+    - BorrState
+  derived:
+    - guarantee_pct      # SBAGuaranteedApproval / GrossApproval
+    - naics_sector       # 2 primeros dígitos del NaicsCode
+    - has_franchise      # FranchiseCode no vacío
+    - log_gross_approval
+
+  # NUNCA usar como feature. El test tests/test_no_leakage.py lo verifica.
+  forbidden:
+    - LoanStatus            # el target
+    - PaidInFullDate        # resultado
+    - ChargeOffDate         # resultado
+    - GrossChargeOffAmount  # resultado (severidad)
+    - FirstDisbursementDate # posterior a la decisión de aprobación
+    - SoldSecMrktInd        # venta en mercado secundario, posterior a la originación
+    - AsOfDate              # fecha del corte, constante
+    - TermInMonths          # CONTAMINADO: se sobrescribe al liquidar. Ver ADR 0002.
+                            # 84.8% de los CHGOFF tienen plazo no-redondo vs 9.4%
+                            # de los cancelados. No usar, ni bucketizado.
+    - ApprovalFY            # define el split; usarla impediría puntuar préstamos nuevos
+
+  # Nombres a nivel PANEL (ya renombrados) que jamás pueden ser features.
+  # Se declaran explícitamente en vez de derivarlos por string-matching del
+  # nombre fuente: TermInMonths -> term_months no coincide por normalización,
+  # y un guard que falla en silencio es peor que no tenerlo.
+  forbidden_panel:
+    - term_months      # ADR 0002
+    - is_chargeoff     # target PD
+    - chargeoff_amount # target LGD
+    - approval_fy      # eje del split out-of-time

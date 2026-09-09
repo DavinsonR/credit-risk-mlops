@@ -1,0 +1,29 @@
+# Datos crudos y derivados: NUNCA se commitean
+data/raw/*
+data/interim/*
+data/parquet/*
+!data/**/.gitkeep
+
+# Fixtures muestreados SI se commitean (CI corre sobre ellos)
+!tests/fixtures/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Secretos
+.env
+.env.*
+!.env.example
+
+# Artefactos locales
+*.duckdb
+*.duckdb.wal
+mlruns/
+.DS_Store
