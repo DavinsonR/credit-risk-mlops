@@ -362,3 +362,105 @@ PSI total 0.1746 | PSI de forma 0.0168 | nivel 1.238x
 ```
 
 _(escribir: por qué un control que no se ha intentado romper no es un control)_
+
+---
+
+## Semana 5 — HMDA a escala y benchmark de backends
+
+### 62,375,170 solicitudes en 0.87 GB
+Descargué HMDA FY2020-2024 por API de estado-año en vez de los snapshots
+nacionales de 5.8 GB. La ventaja que importa no es la velocidad: el endpoint
+`/aggregations` devuelve los conteos oficiales del CFPB, así que puedo verificar
+que la descarga está **completa y no truncada**. Las 12 muestras verificadas
+coinciden exacto (CA 2020: 2,325,977 local = 2,325,977 oficial).
+
+La poda de columnas —de 99 a 32— más zstd metió 62M filas en 870 MB. Los CSV
+crudos habrían sido ~18 GB.
+
+### La misma fuga que en SBA, con otra cara
+`interest_rate` está nulo en **99.4% de las denegadas y 0.0% de las originadas**.
+Una solicitud rechazada no tiene tasa porque nunca hubo préstamo. Un modelo con
+esa columna aprende "tiene tasa → aprobado".
+
+Eso me obligó a distinguir **tres** clases de exclusión, no una
+([ADR 0006](docs/adr/0006-exclusiones-en-hmda.md)):
+
+1. **Solo existe si se originó** — `interest_rate`, `denial_reason-*`.
+2. **La decisión del propio banco** — `aus-1..5` son los resultados de su motor de
+   suscripción. Sí están disponibles al decidir, pero usarlos convierte esto en
+   "predecir una decisión desde la decisión": el modelo imitaría sus sesgos con
+   apariencia de objetividad.
+3. **Proxy de clase protegida** — `tract_minority_population_percent` es la
+   composición racial del barrio. Que el modelo no vea `derived_race` no cambia
+   nada si recibe una variable que la aproxima. Es redlining.
+
+### Benchmark: 29.1x, con resultados idénticos
+
+| Motor | Tiempo | Filas | Grupos |
+|---|---|---|---|
+| **DuckDB** | **1.03s** | 62,375,170 | 6,801 |
+| PySpark | 30.13s | 62,375,170 | 6,801 |
+
+Los 6,801 grupos coinciden en las 5 métricas. Spark paga arranque de JVM,
+serialización y planificación distribuida; DuckDB no. La ventaja de Spark aparece
+cuando el dato no cabe en una máquina, no antes.
+
+### La verificación de equivalencia se justificó antes de correr
+El primer intento reventó, y el motivo es exactamente lo que esa verificación
+existe para atrapar: **`try_cast` de DuckDB devuelve NULL con entrada inválida;
+`cast` de Spark 4 LANZA** (modo ANSI por defecto desde Spark 4). HMDA codifica los
+faltantes como el texto `'NA'`.
+
+Mis dos implementaciones no eran equivalentes: DuckDB descartaba esas filas en
+silencio, Spark moría. Lo arreglé usando `try_cast` explícito en ambos, para que
+sean equivalentes **por construcción** y no por un flag de sesión que alguien
+pueda cambiar sin notar que rompe la comparación.
+
+Y mi manejador de error mentía: decía "requiere un JDK" ante cualquier fallo, y la
+primera vez que se activó el JDK estaba perfecto. Un mensaje que adivina la causa
+manda a depurar en la dirección equivocada. Corregido.
+
+### Disparidad observada — antes de cualquier modelo
+
+| Grupo | n | Denegación | Ingreso mediano |
+|---|---|---|---|
+| White | 41,238,165 | 17.66% | $95,000 |
+| Asian | 3,805,069 | 17.98% | $130,000 |
+| Native Hawaiian / Pacific Islander | 145,090 | 31.11% | $87,000 |
+| Black or African American | 4,534,385 | **32.84%** | $77,000 |
+| American Indian / Alaska Native | 353,399 | 34.13% | $73,000 |
+| 2 or more minority races | 122,157 | **34.93%** | $85,000 |
+
+**Razón de 4/5: 0.790 — no pasa el umbral del EEOC.**
+
+Etnia: hispanos 26.83% vs no hispanos 18.38% (ratio 0.896, pasa).
+Sexo: mujeres 23.91% vs hombres 22.14% (ratio 0.974, pasa).
+
+### El hallazgo que no esperaba: la disparidad sigue al ciclo de tasas
+
+| Año | Razón 4/5 | Brecha |
+|---|---|---|
+| 2020 | 0.827 | 14.8 pp |
+| 2021 | 0.834 | 14.2 pp |
+| 2022 | 0.771 | 18.2 pp |
+| 2023 | **0.729** | **20.7 pp** |
+| 2024 | 0.768 | 18.1 pp |
+
+**La brecha se amplió justo cuando subieron las tasas.** 2020-21 fue el auge de
+refinanciación con crédito fácil; 2022-24 es el shock de tasas. El endurecimiento
+del crédito **no se distribuye de forma pareja**: pasa de 14.8 a 20.7 puntos
+porcentuales.
+
+_(escribir: por qué medir la disparidad observada ANTES del modelo cambia lo que
+se puede afirmar después)_
+
+### Advertencia que va en el reporte
+HMDA no incluye puntaje de crédito, el determinante más fuerte de una decisión de
+suscripción. Una diferencia en tasas de denegación **no prueba discriminación**:
+prueba que hay una diferencia que exige explicación. Un examen de fair lending del
+CFPB empieza aquí, no termina aquí.
+
+### Pendiente Semana 6
+- Modelo B sobre HMDA y el gate de fairness, que ya está declarado pero sin datos
+  que lo activen.
+- Medir cuánta disparidad **agrega** el modelo sobre la que ya existe.

@@ -1,13 +1,17 @@
 {
   "source": "hmda",
-  "acquired_at": "2026-09-09T19:37:58+00:00",
+  "acquired_at": "2026-09-09T20:11:52+00:00",
   "years": [
-    2023
+    2020,
+    2021,
+    2022,
+    2023,
+    2024
   ],
-  "n_states": 2,
-  "total_rows": 25580,
-  "total_bytes": 345657,
-  "seconds": 3.8,
+  "n_states": 52,
+  "total_rows": 62375170,
+  "total_bytes": 867769941,
+  "seconds": 1999.9,
   "columns_kept": 32,
   "excluded": {
     "outcome_only": [
@@ -37,18 +41,1820 @@
   },
   "shards": [
     {
-      "shard": "hmda_2023_DC.parquet",
-      "rows": 11610,
+      "shard": "hmda_2020_AL.parquet",
+      "rows": 226837,
       "columns": 32,
       "cached": false,
-      "bytes": 159301
+      "bytes": 2988292
+    },
+    {
+      "shard": "hmda_2020_AK.parquet",
+      "rows": 30584,
+      "columns": 32,
+      "cached": false,
+      "bytes": 348622
+    },
+    {
+      "shard": "hmda_2020_AZ.parquet",
+      "rows": 567263,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7413856
+    },
+    {
+      "shard": "hmda_2020_AR.parquet",
+      "rows": 125672,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1604623
+    },
+    {
+      "shard": "hmda_2020_CA.parquet",
+      "rows": 2325977,
+      "columns": 32,
+      "cached": false,
+      "bytes": 34847427
+    },
+    {
+      "shard": "hmda_2020_CO.parquet",
+      "rows": 553804,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7596866
+    },
+    {
+      "shard": "hmda_2020_CT.parquet",
+      "rows": 161193,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2096532
+    },
+    {
+      "shard": "hmda_2020_DE.parquet",
+      "rows": 61181,
+      "columns": 32,
+      "cached": false,
+      "bytes": 723888
+    },
+    {
+      "shard": "hmda_2020_DC.parquet",
+      "rows": 38552,
+      "columns": 32,
+      "cached": false,
+      "bytes": 466856
+    },
+    {
+      "shard": "hmda_2020_FL.parquet",
+      "rows": 1170732,
+      "columns": 32,
+      "cached": false,
+      "bytes": 16808215
+    },
+    {
+      "shard": "hmda_2020_GA.parquet",
+      "rows": 562386,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7631656
+    },
+    {
+      "shard": "hmda_2020_HI.parquet",
+      "rows": 69658,
+      "columns": 32,
+      "cached": false,
+      "bytes": 895163
+    },
+    {
+      "shard": "hmda_2020_ID.parquet",
+      "rows": 143981,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1828034
+    },
+    {
+      "shard": "hmda_2020_IL.parquet",
+      "rows": 606638,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8263149
+    },
+    {
+      "shard": "hmda_2020_IN.parquet",
+      "rows": 369885,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4911040
+    },
+    {
+      "shard": "hmda_2020_IA.parquet",
+      "rows": 158010,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1983908
+    },
+    {
+      "shard": "hmda_2020_KS.parquet",
+      "rows": 123517,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1557677
+    },
+    {
+      "shard": "hmda_2020_KY.parquet",
+      "rows": 204831,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2629611
+    },
+    {
+      "shard": "hmda_2020_LA.parquet",
+      "rows": 180693,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2338296
+    },
+    {
+      "shard": "hmda_2020_ME.parquet",
+      "rows": 74290,
+      "columns": 32,
+      "cached": false,
+      "bytes": 928061
+    },
+    {
+      "shard": "hmda_2020_MD.parquet",
+      "rows": 374685,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5057411
+    },
+    {
+      "shard": "hmda_2020_MA.parquet",
+      "rows": 400746,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5384812
+    },
+    {
+      "shard": "hmda_2020_MI.parquet",
+      "rows": 531488,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7303131
+    },
+    {
+      "shard": "hmda_2020_MN.parquet",
+      "rows": 356113,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4695066
+    },
+    {
+      "shard": "hmda_2020_MS.parquet",
+      "rows": 102956,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1266026
+    },
+    {
+      "shard": "hmda_2020_MO.parquet",
+      "rows": 314703,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4124333
+    },
+    {
+      "shard": "hmda_2020_MT.parquet",
+      "rows": 58378,
+      "columns": 32,
+      "cached": false,
+      "bytes": 737300
+    },
+    {
+      "shard": "hmda_2020_NE.parquet",
+      "rows": 94812,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1161815
+    },
+    {
+      "shard": "hmda_2020_NV.parquet",
+      "rows": 213222,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2718913
+    },
+    {
+      "shard": "hmda_2020_NH.parquet",
+      "rows": 86554,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1069858
+    },
+    {
+      "shard": "hmda_2020_NJ.parquet",
+      "rows": 447535,
+      "columns": 32,
+      "cached": false,
+      "bytes": 6182348
+    },
+    {
+      "shard": "hmda_2020_NM.parquet",
+      "rows": 87522,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1080923
+    },
+    {
+      "shard": "hmda_2020_NY.parquet",
+      "rows": 509540,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7418419
+    },
+    {
+      "shard": "hmda_2020_NC.parquet",
+      "rows": 596234,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8298129
+    },
+    {
+      "shard": "hmda_2020_ND.parquet",
+      "rows": 33366,
+      "columns": 32,
+      "cached": false,
+      "bytes": 374276
+    },
+    {
+      "shard": "hmda_2020_OH.parquet",
+      "rows": 557923,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7623742
+    },
+    {
+      "shard": "hmda_2020_OK.parquet",
+      "rows": 144778,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1851305
+    },
+    {
+      "shard": "hmda_2020_OR.parquet",
+      "rows": 284008,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3753068
+    },
+    {
+      "shard": "hmda_2020_PA.parquet",
+      "rows": 557901,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7817307
+    },
+    {
+      "shard": "hmda_2020_PR.parquet",
+      "rows": 19808,
+      "columns": 32,
+      "cached": false,
+      "bytes": 259769
+    },
+    {
+      "shard": "hmda_2020_RI.parquet",
+      "rows": 62022,
+      "columns": 32,
+      "cached": false,
+      "bytes": 725034
+    },
+    {
+      "shard": "hmda_2020_SC.parquet",
+      "rows": 295926,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3871570
+    },
+    {
+      "shard": "hmda_2020_SD.parquet",
+      "rows": 44823,
+      "columns": 32,
+      "cached": false,
+      "bytes": 520894
+    },
+    {
+      "shard": "hmda_2020_TN.parquet",
+      "rows": 364523,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4902152
+    },
+    {
+      "shard": "hmda_2020_TX.parquet",
+      "rows": 1253554,
+      "columns": 32,
+      "cached": false,
+      "bytes": 17594426
+    },
+    {
+      "shard": "hmda_2020_UT.parquet",
+      "rows": 308157,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3988802
+    },
+    {
+      "shard": "hmda_2020_VT.parquet",
+      "rows": 29243,
+      "columns": 32,
+      "cached": false,
+      "bytes": 339980
+    },
+    {
+      "shard": "hmda_2020_VA.parquet",
+      "rows": 552353,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7591144
+    },
+    {
+      "shard": "hmda_2020_WA.parquet",
+      "rows": 584055,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8146453
+    },
+    {
+      "shard": "hmda_2020_WV.parquet",
+      "rows": 55664,
+      "columns": 32,
+      "cached": false,
+      "bytes": 663869
+    },
+    {
+      "shard": "hmda_2020_WI.parquet",
+      "rows": 363102,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4806157
+    },
+    {
+      "shard": "hmda_2020_WY.parquet",
+      "rows": 30327,
+      "columns": 32,
+      "cached": false,
+      "bytes": 364554
+    },
+    {
+      "shard": "hmda_2021_AL.parquet",
+      "rows": 243242,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3229241
+    },
+    {
+      "shard": "hmda_2021_AK.parquet",
+      "rows": 31985,
+      "columns": 32,
+      "cached": false,
+      "bytes": 363347
+    },
+    {
+      "shard": "hmda_2021_AZ.parquet",
+      "rows": 568500,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7611868
+    },
+    {
+      "shard": "hmda_2021_AR.parquet",
+      "rows": 131923,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1725505
+    },
+    {
+      "shard": "hmda_2021_CA.parquet",
+      "rows": 2327860,
+      "columns": 32,
+      "cached": false,
+      "bytes": 35562852
+    },
+    {
+      "shard": "hmda_2021_CO.parquet",
+      "rows": 509674,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7088898
+    },
+    {
+      "shard": "hmda_2021_CT.parquet",
+      "rows": 185138,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2452389
+    },
+    {
+      "shard": "hmda_2021_DE.parquet",
+      "rows": 69415,
+      "columns": 32,
+      "cached": false,
+      "bytes": 836161
+    },
+    {
+      "shard": "hmda_2021_DC.parquet",
+      "rows": 37300,
+      "columns": 32,
+      "cached": false,
+      "bytes": 461112
+    },
+    {
+      "shard": "hmda_2021_FL.parquet",
+      "rows": 1311886,
+      "columns": 32,
+      "cached": false,
+      "bytes": 19153965
+    },
+    {
+      "shard": "hmda_2021_GA.parquet",
+      "rows": 602153,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8290437
+    },
+    {
+      "shard": "hmda_2021_HI.parquet",
+      "rows": 74296,
+      "columns": 32,
+      "cached": false,
+      "bytes": 983524
+    },
+    {
+      "shard": "hmda_2021_ID.parquet",
+      "rows": 148010,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1943319
+    },
+    {
+      "shard": "hmda_2021_IL.parquet",
+      "rows": 606336,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8405908
+    },
+    {
+      "shard": "hmda_2021_IN.parquet",
+      "rows": 374563,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5146843
+    },
+    {
+      "shard": "hmda_2021_IA.parquet",
+      "rows": 155464,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2020884
+    },
+    {
+      "shard": "hmda_2021_KS.parquet",
+      "rows": 121914,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1562075
+    },
+    {
+      "shard": "hmda_2021_KY.parquet",
+      "rows": 211336,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2790204
+    },
+    {
+      "shard": "hmda_2021_LA.parquet",
+      "rows": 183658,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2410430
+    },
+    {
+      "shard": "hmda_2021_ME.parquet",
+      "rows": 75925,
+      "columns": 32,
+      "cached": false,
+      "bytes": 971834
+    },
+    {
+      "shard": "hmda_2021_MD.parquet",
+      "rows": 395279,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5404722
+    },
+    {
+      "shard": "hmda_2021_MA.parquet",
+      "rows": 401367,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5549340
+    },
+    {
+      "shard": "hmda_2021_MI.parquet",
+      "rows": 548842,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7659164
+    },
+    {
+      "shard": "hmda_2021_MN.parquet",
+      "rows": 335777,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4554708
+    },
+    {
+      "shard": "hmda_2021_MS.parquet",
+      "rows": 111142,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1419121
+    },
+    {
+      "shard": "hmda_2021_MO.parquet",
+      "rows": 313405,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4202047
+    },
+    {
+      "shard": "hmda_2021_MT.parquet",
+      "rows": 59077,
+      "columns": 32,
+      "cached": false,
+      "bytes": 774002
+    },
+    {
+      "shard": "hmda_2021_NE.parquet",
+      "rows": 88633,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1128626
+    },
+    {
+      "shard": "hmda_2021_NV.parquet",
+      "rows": 220630,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2872752
+    },
+    {
+      "shard": "hmda_2021_NH.parquet",
+      "rows": 88407,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1122665
+    },
+    {
+      "shard": "hmda_2021_NJ.parquet",
+      "rows": 472466,
+      "columns": 32,
+      "cached": false,
+      "bytes": 6591033
+    },
+    {
+      "shard": "hmda_2021_NM.parquet",
+      "rows": 95922,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1207138
+    },
+    {
+      "shard": "hmda_2021_NY.parquet",
+      "rows": 580089,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8463072
+    },
+    {
+      "shard": "hmda_2021_NC.parquet",
+      "rows": 651711,
+      "columns": 32,
+      "cached": false,
+      "bytes": 9246699
+    },
+    {
+      "shard": "hmda_2021_ND.parquet",
+      "rows": 31327,
+      "columns": 32,
+      "cached": false,
+      "bytes": 375575
+    },
+    {
+      "shard": "hmda_2021_OH.parquet",
+      "rows": 596988,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8340130
+    },
+    {
+      "shard": "hmda_2021_OK.parquet",
+      "rows": 152792,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1968206
+    },
+    {
+      "shard": "hmda_2021_OR.parquet",
+      "rows": 281253,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3824183
+    },
+    {
+      "shard": "hmda_2021_PA.parquet",
+      "rows": 619564,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8761605
+    },
+    {
+      "shard": "hmda_2021_PR.parquet",
+      "rows": 27120,
+      "columns": 32,
+      "cached": false,
+      "bytes": 348788
+    },
+    {
+      "shard": "hmda_2021_RI.parquet",
+      "rows": 67101,
+      "columns": 32,
+      "cached": false,
+      "bytes": 815038
+    },
+    {
+      "shard": "hmda_2021_SC.parquet",
+      "rows": 315856,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4235233
+    },
+    {
+      "shard": "hmda_2021_SD.parquet",
+      "rows": 37364,
+      "columns": 32,
+      "cached": false,
+      "bytes": 461835
+    },
+    {
+      "shard": "hmda_2021_TN.parquet",
+      "rows": 382922,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5293010
+    },
+    {
+      "shard": "hmda_2021_TX.parquet",
+      "rows": 1291205,
+      "columns": 32,
+      "cached": false,
+      "bytes": 18448013
+    },
+    {
+      "shard": "hmda_2021_UT.parquet",
+      "rows": 280677,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3720515
+    },
+    {
+      "shard": "hmda_2021_VT.parquet",
+      "rows": 30101,
+      "columns": 32,
+      "cached": false,
+      "bytes": 369676
+    },
+    {
+      "shard": "hmda_2021_VA.parquet",
+      "rows": 554677,
+      "columns": 32,
+      "cached": false,
+      "bytes": 7728592
+    },
+    {
+      "shard": "hmda_2021_WA.parquet",
+      "rows": 562680,
+      "columns": 32,
+      "cached": false,
+      "bytes": 8006051
+    },
+    {
+      "shard": "hmda_2021_WV.parquet",
+      "rows": 62075,
+      "columns": 32,
+      "cached": false,
+      "bytes": 759829
+    },
+    {
+      "shard": "hmda_2021_WI.parquet",
+      "rows": 346991,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4755845
+    },
+    {
+      "shard": "hmda_2021_WY.parquet",
+      "rows": 31029,
+      "columns": 32,
+      "cached": false,
+      "bytes": 385829
+    },
+    {
+      "shard": "hmda_2022_AL.parquet",
+      "rows": 174593,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2366723
+    },
+    {
+      "shard": "hmda_2022_AK.parquet",
+      "rows": 19854,
+      "columns": 32,
+      "cached": false,
+      "bytes": 238534
+    },
+    {
+      "shard": "hmda_2022_AZ.parquet",
+      "rows": 310252,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4240947
+    },
+    {
+      "shard": "hmda_2022_AR.parquet",
+      "rows": 95123,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1252970
+    },
+    {
+      "shard": "hmda_2022_CA.parquet",
+      "rows": 1048299,
+      "columns": 32,
+      "cached": false,
+      "bytes": 16106835
+    },
+    {
+      "shard": "hmda_2022_CO.parquet",
+      "rows": 274318,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3857595
+    },
+    {
+      "shard": "hmda_2022_CT.parquet",
+      "rows": 115354,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1532022
+    },
+    {
+      "shard": "hmda_2022_DE.parquet",
+      "rows": 41575,
+      "columns": 32,
+      "cached": false,
+      "bytes": 478658
+    },
+    {
+      "shard": "hmda_2022_DC.parquet",
+      "rows": 18309,
+      "columns": 32,
+      "cached": false,
+      "bytes": 237733
+    },
+    {
+      "shard": "hmda_2022_FL.parquet",
+      "rows": 913506,
+      "columns": 32,
+      "cached": false,
+      "bytes": 13571813
+    },
+    {
+      "shard": "hmda_2022_GA.parquet",
+      "rows": 396059,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5565810
+    },
+    {
+      "shard": "hmda_2022_HI.parquet",
+      "rows": 43464,
+      "columns": 32,
+      "cached": false,
+      "bytes": 596535
+    },
+    {
+      "shard": "hmda_2022_ID.parquet",
+      "rows": 84608,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1127116
+    },
+    {
+      "shard": "hmda_2022_IL.parquet",
+      "rows": 338116,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4746695
+    },
+    {
+      "shard": "hmda_2022_IN.parquet",
+      "rows": 254863,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3569229
+    },
+    {
+      "shard": "hmda_2022_IA.parquet",
+      "rows": 102821,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1319586
+    },
+    {
+      "shard": "hmda_2022_KS.parquet",
+      "rows": 78193,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1020029
+    },
+    {
+      "shard": "hmda_2022_KY.parquet",
+      "rows": 146668,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1988224
+    },
+    {
+      "shard": "hmda_2022_LA.parquet",
+      "rows": 125441,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1674128
+    },
+    {
+      "shard": "hmda_2022_ME.parquet",
+      "rows": 50130,
+      "columns": 32,
+      "cached": false,
+      "bytes": 622293
+    },
+    {
+      "shard": "hmda_2022_MD.parquet",
+      "rows": 208528,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2861046
+    },
+    {
+      "shard": "hmda_2022_MA.parquet",
+      "rows": 221833,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3071738
+    },
+    {
+      "shard": "hmda_2022_MI.parquet",
+      "rows": 343877,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4856528
+    },
+    {
+      "shard": "hmda_2022_MN.parquet",
+      "rows": 177704,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2423157
+    },
+    {
+      "shard": "hmda_2022_MS.parquet",
+      "rows": 86186,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1122046
+    },
+    {
+      "shard": "hmda_2022_MO.parquet",
+      "rows": 200395,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2714316
+    },
+    {
+      "shard": "hmda_2022_MT.parquet",
+      "rows": 34068,
+      "columns": 32,
+      "cached": false,
+      "bytes": 472369
+    },
+    {
+      "shard": "hmda_2022_NE.parquet",
+      "rows": 54903,
+      "columns": 32,
+      "cached": false,
+      "bytes": 715937
+    },
+    {
+      "shard": "hmda_2022_NV.parquet",
+      "rows": 120219,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1583399
+    },
+    {
+      "shard": "hmda_2022_NH.parquet",
+      "rows": 52704,
+      "columns": 32,
+      "cached": false,
+      "bytes": 649719
+    },
+    {
+      "shard": "hmda_2022_NJ.parquet",
+      "rows": 271836,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3830057
+    },
+    {
+      "shard": "hmda_2022_NM.parquet",
+      "rows": 59966,
+      "columns": 32,
+      "cached": false,
+      "bytes": 788233
+    },
+    {
+      "shard": "hmda_2022_NY.parquet",
+      "rows": 400702,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5883325
+    },
+    {
+      "shard": "hmda_2022_NC.parquet",
+      "rows": 438675,
+      "columns": 32,
+      "cached": false,
+      "bytes": 6353674
+    },
+    {
+      "shard": "hmda_2022_ND.parquet",
+      "rows": 18620,
+      "columns": 32,
+      "cached": false,
+      "bytes": 237319
+    },
+    {
+      "shard": "hmda_2022_OH.parquet",
+      "rows": 407140,
+      "columns": 32,
+      "cached": false,
+      "bytes": 5797470
+    },
+    {
+      "shard": "hmda_2022_OK.parquet",
+      "rows": 113917,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1512638
+    },
+    {
+      "shard": "hmda_2022_OR.parquet",
+      "rows": 151146,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2079205
+    },
+    {
+      "shard": "hmda_2022_PA.parquet",
+      "rows": 427948,
+      "columns": 32,
+      "cached": false,
+      "bytes": 6124942
+    },
+    {
+      "shard": "hmda_2022_PR.parquet",
+      "rows": 20403,
+      "columns": 32,
+      "cached": false,
+      "bytes": 271591
+    },
+    {
+      "shard": "hmda_2022_RI.parquet",
+      "rows": 41875,
+      "columns": 32,
+      "cached": false,
+      "bytes": 521585
+    },
+    {
+      "shard": "hmda_2022_SC.parquet",
+      "rows": 211869,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2877441
+    },
+    {
+      "shard": "hmda_2022_SD.parquet",
+      "rows": 24650,
+      "columns": 32,
+      "cached": false,
+      "bytes": 319671
+    },
+    {
+      "shard": "hmda_2022_TN.parquet",
+      "rows": 275226,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3832462
+    },
+    {
+      "shard": "hmda_2022_TX.parquet",
+      "rows": 868882,
+      "columns": 32,
+      "cached": false,
+      "bytes": 12463147
+    },
+    {
+      "shard": "hmda_2022_UT.parquet",
+      "rows": 162701,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2210799
+    },
+    {
+      "shard": "hmda_2022_VT.parquet",
+      "rows": 20234,
+      "columns": 32,
+      "cached": false,
+      "bytes": 259067
+    },
+    {
+      "shard": "hmda_2022_VA.parquet",
+      "rows": 303804,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4261373
+    },
+    {
+      "shard": "hmda_2022_WA.parquet",
+      "rows": 296113,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4260973
+    },
+    {
+      "shard": "hmda_2022_WV.parquet",
+      "rows": 46061,
+      "columns": 32,
+      "cached": false,
+      "bytes": 559472
+    },
+    {
+      "shard": "hmda_2022_WI.parquet",
+      "rows": 206690,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2854273
+    },
+    {
+      "shard": "hmda_2022_WY.parquet",
+      "rows": 18098,
+      "columns": 32,
+      "cached": false,
+      "bytes": 236882
+    },
+    {
+      "shard": "hmda_2023_AL.parquet",
+      "rows": 133956,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1848928
+    },
+    {
+      "shard": "hmda_2023_AK.parquet",
+      "rows": 12000,
+      "columns": 32,
+      "cached": false,
+      "bytes": 152332
+    },
+    {
+      "shard": "hmda_2023_AZ.parquet",
+      "rows": 199708,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2756909
+    },
+    {
+      "shard": "hmda_2023_AR.parquet",
+      "rows": 75181,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1007098
+    },
+    {
+      "shard": "hmda_2023_CA.parquet",
+      "rows": 600302,
+      "columns": 32,
+      "cached": false,
+      "bytes": 9283804
+    },
+    {
+      "shard": "hmda_2023_CO.parquet",
+      "rows": 175185,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2488773
+    },
+    {
+      "shard": "hmda_2023_CT.parquet",
+      "rows": 83351,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1131708
+    },
+    {
+      "shard": "hmda_2023_DE.parquet",
+      "rows": 29929,
+      "columns": 32,
+      "cached": false,
+      "bytes": 375389
+    },
+    {
+      "shard": "hmda_2023_DC.parquet",
+      "rows": 11610,
+      "cached": true
+    },
+    {
+      "shard": "hmda_2023_FL.parquet",
+      "rows": 679297,
+      "columns": 32,
+      "cached": false,
+      "bytes": 10237207
+    },
+    {
+      "shard": "hmda_2023_GA.parquet",
+      "rows": 297104,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4229733
+    },
+    {
+      "shard": "hmda_2023_HI.parquet",
+      "rows": 23665,
+      "columns": 32,
+      "cached": false,
+      "bytes": 338142
+    },
+    {
+      "shard": "hmda_2023_ID.parquet",
+      "rows": 55241,
+      "columns": 32,
+      "cached": false,
+      "bytes": 757076
+    },
+    {
+      "shard": "hmda_2023_IL.parquet",
+      "rows": 248611,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3512570
+    },
+    {
+      "shard": "hmda_2023_IN.parquet",
+      "rows": 191424,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2703915
+    },
+    {
+      "shard": "hmda_2023_IA.parquet",
+      "rows": 76225,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1010315
+    },
+    {
+      "shard": "hmda_2023_KS.parquet",
+      "rows": 61656,
+      "columns": 32,
+      "cached": false,
+      "bytes": 822285
+    },
+    {
+      "shard": "hmda_2023_KY.parquet",
+      "rows": 112098,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1522977
+    },
+    {
+      "shard": "hmda_2023_LA.parquet",
+      "rows": 91028,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1205880
+    },
+    {
+      "shard": "hmda_2023_ME.parquet",
+      "rows": 36601,
+      "columns": 32,
+      "cached": false,
+      "bytes": 484147
+    },
+    {
+      "shard": "hmda_2023_MD.parquet",
+      "rows": 141543,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1961309
+    },
+    {
+      "shard": "hmda_2023_MA.parquet",
+      "rows": 145557,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2078868
+    },
+    {
+      "shard": "hmda_2023_MI.parquet",
+      "rows": 249657,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3564056
+    },
+    {
+      "shard": "hmda_2023_MN.parquet",
+      "rows": 128027,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1771591
+    },
+    {
+      "shard": "hmda_2023_MS.parquet",
+      "rows": 68476,
+      "columns": 32,
+      "cached": false,
+      "bytes": 901022
+    },
+    {
+      "shard": "hmda_2023_MO.parquet",
+      "rows": 149923,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2055043
+    },
+    {
+      "shard": "hmda_2023_MT.parquet",
+      "rows": 22127,
+      "columns": 32,
+      "cached": false,
+      "bytes": 319500
+    },
+    {
+      "shard": "hmda_2023_NE.parquet",
+      "rows": 42708,
+      "columns": 32,
+      "cached": false,
+      "bytes": 558080
+    },
+    {
+      "shard": "hmda_2023_NV.parquet",
+      "rows": 77286,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1035028
+    },
+    {
+      "shard": "hmda_2023_NH.parquet",
+      "rows": 36576,
+      "columns": 32,
+      "cached": false,
+      "bytes": 494493
+    },
+    {
+      "shard": "hmda_2023_NJ.parquet",
+      "rows": 194765,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2785020
+    },
+    {
+      "shard": "hmda_2023_NM.parquet",
+      "rows": 43694,
+      "columns": 32,
+      "cached": false,
+      "bytes": 573937
+    },
+    {
+      "shard": "hmda_2023_NY.parquet",
+      "rows": 278132,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4160724
+    },
+    {
+      "shard": "hmda_2023_NC.parquet",
+      "rows": 327936,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4789495
+    },
+    {
+      "shard": "hmda_2023_ND.parquet",
+      "rows": 13883,
+      "columns": 32,
+      "cached": false,
+      "bytes": 180343
+    },
+    {
+      "shard": "hmda_2023_OH.parquet",
+      "rows": 302368,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4310354
+    },
+    {
+      "shard": "hmda_2023_OK.parquet",
+      "rows": 90450,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1213899
+    },
+    {
+      "shard": "hmda_2023_OR.parquet",
+      "rows": 94164,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1314478
+    },
+    {
+      "shard": "hmda_2023_PA.parquet",
+      "rows": 315100,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4545575
+    },
+    {
+      "shard": "hmda_2023_PR.parquet",
+      "rows": 17123,
+      "columns": 32,
+      "cached": false,
+      "bytes": 231391
+    },
+    {
+      "shard": "hmda_2023_RI.parquet",
+      "rows": 28844,
+      "columns": 32,
+      "cached": false,
+      "bytes": 364542
+    },
+    {
+      "shard": "hmda_2023_SC.parquet",
+      "rows": 163145,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2237965
+    },
+    {
+      "shard": "hmda_2023_SD.parquet",
+      "rows": 17793,
+      "columns": 32,
+      "cached": false,
+      "bytes": 234616
+    },
+    {
+      "shard": "hmda_2023_TN.parquet",
+      "rows": 201118,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2827054
+    },
+    {
+      "shard": "hmda_2023_TX.parquet",
+      "rows": 656422,
+      "columns": 32,
+      "cached": false,
+      "bytes": 9459246
+    },
+    {
+      "shard": "hmda_2023_UT.parquet",
+      "rows": 103847,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1433835
     },
     {
       "shard": "hmda_2023_VT.parquet",
       "rows": 13970,
+      "cached": true
+    },
+    {
+      "shard": "hmda_2023_VA.parquet",
+      "rows": 214053,
       "columns": 32,
       "cached": false,
-      "bytes": 186356
+      "bytes": 3021452
+    },
+    {
+      "shard": "hmda_2023_WA.parquet",
+      "rows": 179799,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2630153
+    },
+    {
+      "shard": "hmda_2023_WV.parquet",
+      "rows": 36380,
+      "columns": 32,
+      "cached": false,
+      "bytes": 458684
+    },
+    {
+      "shard": "hmda_2023_WI.parquet",
+      "rows": 154644,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2209615
+    },
+    {
+      "shard": "hmda_2023_WY.parquet",
+      "rows": 12415,
+      "columns": 32,
+      "cached": false,
+      "bytes": 165758
+    },
+    {
+      "shard": "hmda_2024_AL.parquet",
+      "rows": 144489,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1901770
+    },
+    {
+      "shard": "hmda_2024_AK.parquet",
+      "rows": 13372,
+      "columns": 32,
+      "cached": false,
+      "bytes": 166193
+    },
+    {
+      "shard": "hmda_2024_AZ.parquet",
+      "rows": 218334,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2889019
+    },
+    {
+      "shard": "hmda_2024_AR.parquet",
+      "rows": 80626,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1042956
+    },
+    {
+      "shard": "hmda_2024_CA.parquet",
+      "rows": 691809,
+      "columns": 32,
+      "cached": false,
+      "bytes": 10206875
+    },
+    {
+      "shard": "hmda_2024_CO.parquet",
+      "rows": 185132,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2533621
+    },
+    {
+      "shard": "hmda_2024_CT.parquet",
+      "rows": 88504,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1161729
+    },
+    {
+      "shard": "hmda_2024_DE.parquet",
+      "rows": 32906,
+      "columns": 32,
+      "cached": false,
+      "bytes": 406972
+    },
+    {
+      "shard": "hmda_2024_DC.parquet",
+      "rows": 11363,
+      "columns": 32,
+      "cached": false,
+      "bytes": 153567
+    },
+    {
+      "shard": "hmda_2024_FL.parquet",
+      "rows": 683860,
+      "columns": 32,
+      "cached": false,
+      "bytes": 9773217
+    },
+    {
+      "shard": "hmda_2024_GA.parquet",
+      "rows": 316285,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4294539
+    },
+    {
+      "shard": "hmda_2024_HI.parquet",
+      "rows": 23327,
+      "columns": 32,
+      "cached": false,
+      "bytes": 326447
+    },
+    {
+      "shard": "hmda_2024_ID.parquet",
+      "rows": 60327,
+      "columns": 32,
+      "cached": false,
+      "bytes": 795581
+    },
+    {
+      "shard": "hmda_2024_IL.parquet",
+      "rows": 273687,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3657262
+    },
+    {
+      "shard": "hmda_2024_IN.parquet",
+      "rows": 209349,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2830226
+    },
+    {
+      "shard": "hmda_2024_IA.parquet",
+      "rows": 81055,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1023988
+    },
+    {
+      "shard": "hmda_2024_KS.parquet",
+      "rows": 67639,
+      "columns": 32,
+      "cached": false,
+      "bytes": 867168
+    },
+    {
+      "shard": "hmda_2024_KY.parquet",
+      "rows": 120390,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1566015
+    },
+    {
+      "shard": "hmda_2024_LA.parquet",
+      "rows": 91609,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1167552
+    },
+    {
+      "shard": "hmda_2024_ME.parquet",
+      "rows": 40582,
+      "columns": 32,
+      "cached": false,
+      "bytes": 520156
+    },
+    {
+      "shard": "hmda_2024_MD.parquet",
+      "rows": 157721,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2073348
+    },
+    {
+      "shard": "hmda_2024_MA.parquet",
+      "rows": 155385,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2112455
+    },
+    {
+      "shard": "hmda_2024_MI.parquet",
+      "rows": 274802,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3728703
+    },
+    {
+      "shard": "hmda_2024_MN.parquet",
+      "rows": 136569,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1809136
+    },
+    {
+      "shard": "hmda_2024_MS.parquet",
+      "rows": 72904,
+      "columns": 32,
+      "cached": false,
+      "bytes": 921257
+    },
+    {
+      "shard": "hmda_2024_MO.parquet",
+      "rows": 165588,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2168778
+    },
+    {
+      "shard": "hmda_2024_MT.parquet",
+      "rows": 24781,
+      "columns": 32,
+      "cached": false,
+      "bytes": 342543
+    },
+    {
+      "shard": "hmda_2024_NE.parquet",
+      "rows": 46622,
+      "columns": 32,
+      "cached": false,
+      "bytes": 586069
+    },
+    {
+      "shard": "hmda_2024_NV.parquet",
+      "rows": 88242,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1133409
+    },
+    {
+      "shard": "hmda_2024_NH.parquet",
+      "rows": 39655,
+      "columns": 32,
+      "cached": false,
+      "bytes": 517859
+    },
+    {
+      "shard": "hmda_2024_NJ.parquet",
+      "rows": 215234,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2939960
+    },
+    {
+      "shard": "hmda_2024_NM.parquet",
+      "rows": 50036,
+      "columns": 32,
+      "cached": false,
+      "bytes": 629616
+    },
+    {
+      "shard": "hmda_2024_NY.parquet",
+      "rows": 283359,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4025837
+    },
+    {
+      "shard": "hmda_2024_NC.parquet",
+      "rows": 342338,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4747602
+    },
+    {
+      "shard": "hmda_2024_ND.parquet",
+      "rows": 15351,
+      "columns": 32,
+      "cached": false,
+      "bytes": 193741
+    },
+    {
+      "shard": "hmda_2024_OH.parquet",
+      "rows": 325801,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4456859
+    },
+    {
+      "shard": "hmda_2024_OK.parquet",
+      "rows": 96780,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1246506
+    },
+    {
+      "shard": "hmda_2024_OR.parquet",
+      "rows": 99895,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1350179
+    },
+    {
+      "shard": "hmda_2024_PA.parquet",
+      "rows": 328267,
+      "columns": 32,
+      "cached": false,
+      "bytes": 4489213
+    },
+    {
+      "shard": "hmda_2024_PR.parquet",
+      "rows": 16537,
+      "columns": 32,
+      "cached": false,
+      "bytes": 219623
+    },
+    {
+      "shard": "hmda_2024_RI.parquet",
+      "rows": 30872,
+      "columns": 32,
+      "cached": false,
+      "bytes": 383953
+    },
+    {
+      "shard": "hmda_2024_SC.parquet",
+      "rows": 172817,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2274206
+    },
+    {
+      "shard": "hmda_2024_SD.parquet",
+      "rows": 19267,
+      "columns": 32,
+      "cached": false,
+      "bytes": 248977
+    },
+    {
+      "shard": "hmda_2024_TN.parquet",
+      "rows": 210774,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2845286
+    },
+    {
+      "shard": "hmda_2024_TX.parquet",
+      "rows": 679129,
+      "columns": 32,
+      "cached": false,
+      "bytes": 9240100
+    },
+    {
+      "shard": "hmda_2024_UT.parquet",
+      "rows": 111188,
+      "columns": 32,
+      "cached": false,
+      "bytes": 1478465
+    },
+    {
+      "shard": "hmda_2024_VT.parquet",
+      "rows": 14713,
+      "columns": 32,
+      "cached": false,
+      "bytes": 196504
+    },
+    {
+      "shard": "hmda_2024_VA.parquet",
+      "rows": 237531,
+      "columns": 32,
+      "cached": false,
+      "bytes": 3213083
+    },
+    {
+      "shard": "hmda_2024_WA.parquet",
+      "rows": 197047,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2762587
+    },
+    {
+      "shard": "hmda_2024_WV.parquet",
+      "rows": 38419,
+      "columns": 32,
+      "cached": false,
+      "bytes": 465346
+    },
+    {
+      "shard": "hmda_2024_WI.parquet",
+      "rows": 167105,
+      "columns": 32,
+      "cached": false,
+      "bytes": 2260787
+    },
+    {
+      "shard": "hmda_2024_WY.parquet",
+      "rows": 14428,
+      "columns": 32,
+      "cached": false,
+      "bytes": 188862
     }
   ]
 }

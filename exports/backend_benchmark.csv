@@ -1,0 +1,3 @@
+backend,segundos,filas_entrada,grupos_salida,equivalente
+duckdb,1.03,62375170,6801,True
+pyspark,30.13,62375170,6801,True

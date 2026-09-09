@@ -156,12 +156,18 @@ def run_spark(shards: list[str] | None = None, *, shuffle_partitions: int = 8) -
 
     t0 = time.perf_counter()
     df = spark.read.parquet(*shards)
+    # try_cast, no cast. HMDA codifica los numericos faltantes como el texto
+    # 'NA', y las semanticas difieren: try_cast de DuckDB devuelve NULL, mientras
+    # que cast de Spark 4 LANZA (modo ANSI activado por defecto desde Spark 4).
+    # Usar try_cast explicito hace las dos implementaciones equivalentes POR
+    # CONSTRUCCION, en vez de depender de spark.sql.ansi.enabled=false, que es un
+    # flag de sesion que alguien puede cambiar sin notar que rompe la comparacion.
     base = df.select(
-        F.col("activity_year").cast("int").alias("year"),
+        F.expr("try_cast(activity_year as int)").alias("year"),
         F.col("state_code").alias("state"),
         F.col("derived_race").alias("race"),
-        F.col("loan_amount").cast("double").alias("loan_amount"),
-        (F.col("income").cast("double") * 1000).alias("income"),
+        F.expr("try_cast(loan_amount as double)").alias("loan_amount"),
+        (F.expr("try_cast(income as double)") * 1000).alias("income"),
         F.when(F.col("action_taken") == "3", 1).otherwise(0).alias("denied"),
     )
     clean = (

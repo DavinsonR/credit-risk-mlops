@@ -11,8 +11,11 @@ una auditoría**.
 
 | Modelo | Fuente | Target | Ancla regulatoria |
 |---|---|---|---|
-| **A — Default / Pérdida** | SBA 7(a) FOIA (~1.5M préstamos, FY1991–presente) | Charge-off (PD) + severidad (LGD) | SR 11-7 |
-| **B — Underwriting / Acceso** | HMDA (FFIEC/CFPB, ~10M solicitudes/año) | Denegación | ECOA / Reg B |
+| **A — Default / Pérdida** | SBA 7(a) FOIA · 1.96M préstamos, FY1991–2026 | Charge-off (PD) + severidad (LGD) | SR 11-7 |
+| **B — Underwriting / Acceso** | HMDA · **62.4M solicitudes**, FY2020–2024 | Denegación | ECOA / Reg B |
+
+Los datos de HMDA se verifican contra los conteos oficiales del CFPB: no basta con
+que la descarga termine, tiene que estar **completa**.
 
 ## Principios
 
@@ -24,16 +27,23 @@ una auditoría**.
 5. **Las transformaciones fit-on-train no viven en dbt** — filtrarían. dbt se queda
    en bronze/silver; el feature engineering va en Python.
 6. **Ningún dato crudo se commitea.** `make acquire` los baja y verifica por SHA256.
+7. **Las clases protegidas se conservan para medir, jamás para entrenar.** Sin ellas
+   en el panel no se puede calcular disparate impact; con ellas en el modelo se
+   discrimina. Ver [ADR 0006](docs/adr/0006-exclusiones-en-hmda.md).
 
 ## Uso
 
 **Windows** (no requiere `make`):
 
 ```powershell
-.un.ps1 setup       # entorno con uv (Python 3.12)
-.un.ps1 acquire     # descarga fuentes + verifica hashes
-.un.ps1 all         # train -> gates -> model card -> economía
-.un.ps1 help        # todas las tareas
+.
+un.ps1 setup       # entorno con uv (Python 3.12)
+.
+un.ps1 acquire     # descarga fuentes + verifica hashes
+.
+un.ps1 all         # train -> gates -> model card -> economía
+.
+un.ps1 help        # todas las tareas
 ```
 
 **Linux / macOS** (lo que corre CI):
