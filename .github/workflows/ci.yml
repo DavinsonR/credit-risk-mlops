@@ -26,7 +26,11 @@ jobs:
           enable-cache: true
 
       - name: Instalar dependencias
-        run: uv sync --extra dev
+        # onnx y serve, no solo dev: los tests de paridad entre las tres vias de
+        # serving importan onnxruntime y fastapi. Sin ellos pytest falla al
+        # importar y el fallo no dice que faltaba una dependencia opcional.
+        # No se instalan neural ni spark: PyTorch y la JVM no hacen falta aqui.
+        run: uv sync --extra dev --extra onnx --extra serve
 
       - name: Lint (ruff)
         run: |

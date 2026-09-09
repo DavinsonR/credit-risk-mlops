@@ -27,10 +27,27 @@ import pytest
 from crmlops.config import repo_root
 
 ARTIFACTS = repo_root() / "exports" / "onnx"
-pytestmark = pytest.mark.skipif(
-    not (ARTIFACTS / "model.onnx").exists(),
-    reason="Falta el export ONNX; correr `uv run python -m crmlops.export.onnx`",
-)
+
+# Dos razones distintas para saltarse, y cada una dice cual es. Un skip mudo
+# convierte "no se probo" en indistinguible de "paso".
+_faltan_extras = None
+try:
+    import fastapi  # noqa: F401
+    import onnxruntime  # noqa: F401
+except ImportError as exc:  # pragma: no cover - depende del entorno
+    _faltan_extras = str(exc)
+
+pytestmark = [
+    pytest.mark.skipif(
+        not (ARTIFACTS / "model.onnx").exists(),
+        reason="Falta el export ONNX; correr `uv run python -m crmlops.export.onnx`",
+    ),
+    pytest.mark.skipif(
+        _faltan_extras is not None,
+        reason=f"Faltan extras de serving ({_faltan_extras}); "
+        "correr `uv sync --extra onnx --extra serve`",
+    ),
+]
 
 
 @pytest.fixture(scope="module")
