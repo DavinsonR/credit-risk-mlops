@@ -21,9 +21,10 @@ from crmlops.evaluation.economics import (
     random_baseline,
     summarize_at,
 )
+from crmlops.features.spec import load_spec
 from crmlops.models.calibration import fit_calibrator
 from crmlops.models.gbm import GBMChallenger
-from crmlops.models.train import CATEGORICAL, NUMERIC, PRODUCTION_CALIBRATOR, TARGET
+from crmlops.models.train import PRODUCTION_CALIBRATOR, TARGET
 from crmlops.sources.contracts import validate_panel
 from crmlops.sources.loader import load_panel, split_out_of_time
 
@@ -43,7 +44,9 @@ def money(x: float) -> str:
 def main() -> int:
     cfg = load_config()
     seed = cfg["project"]["random_seed"]
+    spec = load_spec(cfg)
     panel = validate_panel(load_panel(cfg))
+    spec.validate_against(panel)
     sp = split_out_of_time(panel, cfg)
     tr, va, te = sp["train"], sp["valid"], sp["test"]
 
@@ -51,7 +54,7 @@ def main() -> int:
     print("ECONOMIA DE LA DECISION - que habria pasado con el modelo")
     print("=" * 88)
 
-    model = GBMChallenger(NUMERIC, CATEGORICAL, random_state=seed)
+    model = GBMChallenger(list(spec.numeric), list(spec.categorical), random_state=seed)
     model.fit(tr, tr[TARGET], va, va[TARGET])
     cal = fit_calibrator(PRODUCTION_CALIBRATOR, va[TARGET].to_numpy(), model.predict_proba(va))
     pd_test = cal.transform(model.predict_proba(te))

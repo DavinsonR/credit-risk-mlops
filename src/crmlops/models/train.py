@@ -17,12 +17,13 @@ import sys
 import time
 
 import mlflow
-import numpy as np
 import pandas as pd
 
 from crmlops.config import load_config, repo_root, resolve_path
-from crmlops.evaluation.metrics import calibration, discrimination, psi
+from crmlops.evaluation.metrics import calibration, discrimination, psi, stability
+from crmlops.features.spec import load_spec
 from crmlops.governance.gates import config_fingerprint
+from crmlops.governance.integrity import code_fingerprint, save_predictions
 from crmlops.models.calibration import CALIBRATORS, fit_calibrator
 from crmlops.models.gbm import GBMChallenger
 from crmlops.models.neural import NeuralChallenger
@@ -36,32 +37,35 @@ PRODUCTION_CALIBRATOR = "intercept"  # declarado ANTES de ver test
 # estadisticamente significativa. Ver docs/adr/0004-modelo-de-produccion.md.
 PRODUCTION_MODEL = "lightgbm"
 
-NUMERIC = [
-    "gross_approval",
-    "sba_guaranteed",
-    "initial_rate",
-    "jobs_supported",
-    "guarantee_pct",
-    "log_gross_approval",
-]
-CATEGORICAL = [
-    "naics_sector",
-    "business_type",
-    "business_age",
-    "revolver_status",
-    "collateral_ind",
-    "rate_type",
-    "processing_method",
-    "borrower_state",
-    "has_franchise",
-]
+# Las listas de features viven en config.yaml y se leen con load_spec().
+# Antes estaban hardcodeadas aqui, en otra convencion de nombres que la del
+# config, y el fingerprint del gate hasheaba la de config: se podia quitar una
+# variable del modelo sin que el control lo notara. Ver docs/AUDIT.md defecto A2.
 
 
-def build_models(seed: int) -> dict:
+def build_models(seed: int, spec) -> dict:
+    num, cat = list(spec.numeric), list(spec.categorical)
     return {
-        "scorecard_woe": WoEScorecard(NUMERIC, CATEGORICAL, random_state=seed),
-        "lightgbm": GBMChallenger(NUMERIC, CATEGORICAL, random_state=seed),
-        "neural_mlp": NeuralChallenger(NUMERIC, CATEGORICAL, random_state=seed),
+        "scorecard_woe": WoEScorecard(num, cat, random_state=seed),
+        "lightgbm": GBMChallenger(num, cat, random_state=seed),
+        "neural_mlp": NeuralChallenger(num, cat, random_state=seed),
+    }
+
+
+def _production_block(y_test, p_test, res, model_name: str) -> dict:
+    """Metricas de la configuracion que realmente se despacha (modelo + calibrador)."""
+    d, c = discrimination(y_test, p_test), calibration(y_test, p_test)
+    raw = res.loc[res.modelo == model_name].iloc[0]
+    return {
+        "auc_test": d.auc,
+        "gini_test": d.gini,
+        "ks_test": d.ks,
+        "brier_test": c.brier,
+        "ece_test": c.ece,
+        "calibration_ratio": c.calibration_ratio,
+        # La degradacion out-of-time se mide sobre el modelo crudo: el calibrador
+        # se ajusta con valid y no interviene en como el modelo envejece.
+        "drop_oot": float(raw["drop_oot"]),
     }
 
 
@@ -79,7 +83,9 @@ def main() -> int:
         "resources"
     ][0]["vintage"]
 
+    spec = load_spec(cfg)
     panel = validate_panel(load_panel(cfg))
+    spec.validate_against(panel)
     sp = split_out_of_time(panel, cfg)
     tr, va, te = sp["train"], sp["valid"], sp["test"]
 
@@ -97,7 +103,7 @@ def main() -> int:
 
     rows, calib_rows, preds = [], [], {}
 
-    for name, model in build_models(seed).items():
+    for name, model in build_models(seed, spec).items():
         with mlflow.start_run(run_name=name):
             t0 = time.perf_counter()
             _fit(name, model, tr, va)
@@ -143,6 +149,10 @@ def main() -> int:
                     "ratio_test": c_te.calibration_ratio,
                     "drop_oot": d_tr.auc - d_te.auc,
                     "psi": psi(p["train"], p["test"]),
+                    # Descompone el PSI: un corrimiento de nivel (ciclo) se
+                    # arregla recalibrando; un cambio de forma exige revisar el
+                    # modelo. El PSI a secas no los distingue.
+                    "psi_shape": stability(p["train"], p["test"]).psi_shape,
                     "segundos": secs,
                 }
             )
@@ -177,6 +187,21 @@ def main() -> int:
     print("=" * 92)
 
     out = resolve_path("exports")
+
+    # Predicciones de test: permiten que el gate RECOMPUTE las metricas en vez
+    # de creerlas. Sin esto, editar metrics.json a mano burla los cuatro gates.
+    prod_cal = fit_calibrator(
+        PRODUCTION_CALIBRATOR, va[TARGET].to_numpy(), preds[PRODUCTION_MODEL]["valid"]
+    )
+    prod_test = prod_cal.transform(preds[PRODUCTION_MODEL]["test"])
+    to_save = {name: p["test"] for name, p in preds.items()}
+    # La configuracion de PRODUCCION es modelo + calibrador. El gate la evalua a
+    # ella, no al modelo crudo: antes se controlaba algo distinto de lo que se
+    # despachaba (docs/AUDIT.md, defecto C).
+    to_save["produccion"] = prod_test
+    pred_path = save_predictions(te[TARGET].to_numpy(), to_save)
+    print(f"Predicciones de verificacion -> {pred_path.relative_to(repo_root())}")
+
     res.to_csv(out / "model_comparison.csv", index=False)
     cal.to_csv(out / "calibration_comparison.csv", index=False)
     (out / "metrics.json").write_text(
@@ -192,17 +217,23 @@ def main() -> int:
                 "split_rates": {k: float(sp[k][TARGET].mean()) for k in ("train", "valid", "test")},
                 "models": res.to_dict(orient="records"),
                 "production_model": PRODUCTION_MODEL,
+                "production_metrics": _production_block(
+                    te[TARGET].to_numpy(), prod_test, res, PRODUCTION_MODEL
+                ),
                 "production_calibrator": PRODUCTION_CALIBRATOR,
                 # Ata estas metricas a la configuracion que las produjo. Si alguien
                 # cambia el split o las exclusiones sin reentrenar, el gate lo ve.
                 "config_fingerprint": config_fingerprint(cfg),
+                # Huella del codigo de modelado. El gate recomputa las metricas
+                # desde las predicciones guardadas y ademas exige que el codigo
+                # no haya cambiado. Ver docs/AUDIT.md defecto A1.
+                "code_fingerprint": code_fingerprint(),
             },
             indent=2,
         )
         + "\n",
         encoding="utf-8",
     )
-    np.save(out / "_preds_test.npy", np.vstack([preds[m]["test"] for m in res.modelo]))
     print(f"\nExportado a {out}")
     return 0
 

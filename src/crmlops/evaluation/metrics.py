@@ -31,6 +31,13 @@ class CalibrationMetrics:
     calibration_ratio: float  # predicho / observado; 1.0 es perfecto
 
 
+def _logit(p: np.ndarray) -> np.ndarray:
+    """Logit con recorte. Local a este modulo para no crear una dependencia
+    circular con crmlops.models.calibration, que importa de aqui."""
+    p = np.clip(np.asarray(p, dtype=float), 1e-6, 1 - 1e-6)
+    return np.log(p / (1 - p))
+
+
 def discrimination(y_true: np.ndarray, y_score: np.ndarray) -> DiscriminationMetrics:
     """AUC, Gini y KS.
 
@@ -86,14 +93,17 @@ def reliability_table(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) 
 
 
 def psi(expected: np.ndarray, actual: np.ndarray, n_bins: int = 10) -> float:
-    """Population Stability Index entre dos distribuciones de score.
+    """Population Stability Index. Convencion: <0.10 estable, 0.10-0.25 vigilar, >0.25 accion.
 
-    Convencion de la industria: <0.10 estable, 0.10-0.25 vigilar, >0.25 accion.
-    Los bins se definen SOBRE `expected` (la referencia de entrenamiento) y se
-    aplican a `actual`: definirlos sobre ambos escondería justamente la deriva
-    que se quiere medir.
+    Los cortes se definen SOBRE `expected` (la referencia de entrenamiento) y se
+    aplican a `actual`: definirlos sobre ambos esconderia justamente la deriva que
+    se quiere detectar.
     """
-    expected, actual = np.asarray(expected, dtype=float), np.asarray(actual, dtype=float)
+    expected = np.asarray(expected, dtype=float)
+    actual = np.asarray(actual, dtype=float)
+    if expected.size == 0 or actual.size == 0:
+        return 0.0
+
     edges = np.unique(np.quantile(expected, np.linspace(0, 1, n_bins + 1)))
     if len(edges) < 3:
         return 0.0
@@ -104,6 +114,57 @@ def psi(expected: np.ndarray, actual: np.ndarray, n_bins: int = 10) -> float:
     eps = 1e-6  # evita log(0) en bins vacios
     e, a = np.clip(e, eps, None), np.clip(a, eps, None)
     return float(np.sum((a - e) * np.log(a / e)))
+
+
+@dataclass
+class StabilityDecomposition:
+    """Separa el corrimiento de NIVEL del cambio de FORMA."""
+
+    psi_total: float
+    psi_shape: float
+    level_shift: float  # razon entre medias, actual / referencia
+
+    @property
+    def interpretation(self) -> str:
+        if self.psi_total < 0.10:
+            return "estable"
+        if self.psi_shape < 0.10:
+            return "corrimiento de NIVEL: recalibrar basta, no hace falta reentrenar"
+        return "cambio de FORMA: la mezcla de solicitantes cambio, evaluar reentrenamiento"
+
+
+def stability(expected: np.ndarray, actual: np.ndarray, n_bins: int = 10) -> StabilityDecomposition:
+    """Descompone el PSI en nivel y forma.
+
+    El PSI a secas no distingue dos situaciones que exigen respuestas distintas:
+
+      - La TASA BASE se movio con el ciclo (de 6.75% a 9.60% en este dataset). Un
+        modelo bien calibrado desplaza todas sus probabilidades hacia arriba y el
+        PSI lo reporta como inestabilidad, aunque la poblacion sea identica. Se
+        arregla recalibrando.
+      - La MEZCLA de solicitantes cambio. Eso si exige revisar el modelo.
+
+    Para separarlas se re-centra `actual` en escala logit hasta igualar su media
+    con la de `expected`, y se recalcula el PSI. Lo que sobrevive a esa correccion
+    es cambio de forma; lo que desaparece era nivel.
+
+    (Correccion a docs/AUDIT.md, defecto D1: el PSI crudo no esta "mal calculado"
+    --es el estandar-- pero por si solo no dice cual de las dos cosas paso.)
+    """
+    expected = np.asarray(expected, dtype=float)
+    actual = np.asarray(actual, dtype=float)
+    total = psi(expected, actual, n_bins)
+
+    le, la = _logit(expected), _logit(actual)
+    shifted = 1.0 / (1.0 + np.exp(-(la - la.mean() + le.mean())))
+    shape = psi(expected, shifted, n_bins)
+
+    ref_mean = float(np.mean(expected))
+    return StabilityDecomposition(
+        psi_total=total,
+        psi_shape=shape,
+        level_shift=float(np.mean(actual)) / ref_mean if ref_mean else float("nan"),
+    )
 
 
 def summarize(y_true: np.ndarray, y_prob: np.ndarray) -> dict[str, float]:

@@ -38,7 +38,8 @@
       "ratio_test": 5.555324315585143,
       "drop_oot": 0.002063292336857536,
       "psi": 0.20331471558670458,
-      "segundos": 88.40891140000895
+      "psi_shape": 0.013320316093736594,
+      "segundos": 56.16585370001849
     },
     {
       "modelo": "lightgbm",
@@ -52,7 +53,8 @@
       "ratio_test": 0.8702434325744275,
       "drop_oot": 0.029890594212046873,
       "psi": 0.17460933214034136,
-      "segundos": 3.3660869999439456
+      "psi_shape": 0.016789630813376387,
+      "segundos": 3.0494871999835595
     },
     {
       "modelo": "scorecard_woe",
@@ -66,10 +68,21 @@
       "ratio_test": 0.8166416553997647,
       "drop_oot": -0.016297409846977473,
       "psi": 0.132280608345734,
-      "segundos": 2.3289382999646477
+      "psi_shape": 0.038020457216272396,
+      "segundos": 2.2209907000069506
     }
   ],
   "production_model": "lightgbm",
+  "production_metrics": {
+    "auc_test": 0.7004661352641914,
+    "gini_test": 0.4009322705283829,
+    "ks_test": 0.2882574326135246,
+    "brier_test": 0.08284203500131557,
+    "ece_test": 0.0107440984805956,
+    "calibration_ratio": 0.9652640560364378,
+    "drop_oot": 0.029890594212046873
+  },
   "production_calibrator": "intercept",
-  "config_fingerprint": "73b45ff4228182d7"
+  "config_fingerprint": "969867602d1192cc",
+  "code_fingerprint": "46391734fe8cf0f8"
 }

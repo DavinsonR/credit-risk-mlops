@@ -41,10 +41,19 @@ no es lo mismo que relevante**, y confundirlos es un error clásico.
 | export a ONNX | directo | requiere trazado |
 | superficie de fallo | determinista | semilla, épocas, batch |
 
-El `ratio 5.56` de la red merece atención: predecía **5.5 veces** la tasa real de
-incumplimiento. Es consecuencia del `pos_weight` que compensa el desbalance, y se
-corrige con recalibración — pero un modelo que sale de fábrica tan descalibrado
-exige un paso extra que nunca puede fallar en producción.
+### Corrección posterior (auditoría, defecto D2)
+
+La versión original de este ADR usaba el `ratio 5.56` de la red como argumento en
+su contra. **Ese argumento queda retirado.** Esa descalibración la causé yo al
+ponerle `pos_weight` para compensar el desbalance; el GBM no lo lleva. Es una
+desventaja de mi configuración, no una propiedad de las redes neuronales. Una red
+entrenada sin `pos_weight` saldría razonablemente calibrada.
+
+La decisión no cambia, pero se sostiene sobre las razones que sí son propias del
+modelo: 17x el tiempo de entrenamiento, atribución aproximada en vez de exacta,
+export a ONNX que requiere trazado, y una superficie de fallo mayor (semilla,
+épocas, batch). El `ratio 5.56` sigue documentado como hecho medido, pero no como
+argumento.
 
 ## Sobre la recalibración
 

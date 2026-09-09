@@ -27,11 +27,39 @@ una auditoría**.
 
 ## Uso
 
-```bash
-make setup          # entorno con uv (Python 3.12)
-make acquire        # descarga fuentes + verifica hashes
-make signal-check   # ¿existe poder discriminante? gate de viabilidad
+**Windows** (no requiere `make`):
+
+```powershell
+.un.ps1 setup       # entorno con uv (Python 3.12)
+.un.ps1 acquire     # descarga fuentes + verifica hashes
+.un.ps1 all         # train -> gates -> model card -> economía
+.un.ps1 help        # todas las tareas
 ```
+
+**Linux / macOS** (lo que corre CI):
+
+```bash
+make setup
+make acquire
+make train && make gates && make card
+```
+
+## Gates de promoción
+
+El modelo no se promueve si no pasa los siete gates, y CI los ejecuta en cada PR:
+
+| Gate | Qué garantiza |
+|---|---|
+| `config_coherente` | Las métricas corresponden al `config.yaml` actual |
+| `integridad` | Las métricas se **recomputan** desde las predicciones, no se creen |
+| `auc_test` | Piso absoluto de discriminación |
+| `margen_sobre_baseline` | El retador supera al scorecard interpretable por ≥0.02 |
+| `drop_oot` | La degradación out-of-time no excede 2x la variación natural |
+| `brier_test` | Le gana al predictor sin habilidad (constante = tasa base) |
+| `ece_test` | Predicho y observado coinciden dentro de 2 puntos porcentuales |
+
+Cada umbral tiene su derivación escrita al lado en `config.yaml`. Ninguno se eligió
+porque el modelo lo pasaba — ver [docs/AUDIT.md](docs/AUDIT.md).
 
 ## Licencia
 

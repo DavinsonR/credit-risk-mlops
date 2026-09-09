@@ -22,20 +22,46 @@ def cfg() -> dict:
 
 @pytest.fixture
 def metrics(cfg, tmp_path):
-    """Un metrics.json sintetico que pasa todos los gates."""
+    """metrics.json coherente con predicciones REALES.
+
+    Se generan predicciones sinteticas y las metricas se DERIVAN de ellas, no se
+    inventan: de otro modo el chequeo de integridad las rechazaria, que es
+    justamente lo que debe hacer.
+    """
+    import numpy as np
+
+    from crmlops.governance import integrity
+
+    rng = np.random.default_rng(0)
+    n = 4000
+    y = (rng.random(n) < 0.1).astype("uint8")
+
+    def con_separacion(sep: float) -> np.ndarray:
+        """Predicciones con señal. El AUC exacto no importa: los tests son
+        relativos al valor recomputado, no a una cifra fija."""
+        return np.clip(0.1 + sep * y + rng.normal(0, 0.12, n), 0.001, 0.999)
+
+    (tmp_path / "exports" / "verification").mkdir(parents=True)
+    preds = {"lightgbm": con_separacion(0.25), "scorecard_woe": con_separacion(0.10)}
+    integrity.save_predictions(y, preds, root=tmp_path)
+    real = integrity.recompute_metrics(root=tmp_path)
+
     payload = {
         "vintage": "260630",
         "seed": cfg["project"]["random_seed"],
         "config_fingerprint": config_fingerprint(cfg),
+        "code_fingerprint": integrity.code_fingerprint(),
         "production_model": "lightgbm",
         "production_calibrator": "intercept",
+        "production_metrics": {
+            **real["lightgbm"],
+            "drop_oot": 0.03,
+            "ece_test": 0.01,
+        },
         "splits": {"train": [2011, 2015], "valid": [2016, 2016], "test": [2017, 2018]},
-        "models": [
-            {"modelo": "lightgbm", "auc_test": 0.70, "drop_oot": 0.03, "brier_test": 0.08},
-            {"modelo": "scorecard_woe", "auc_test": 0.66, "drop_oot": -0.01, "brier_test": 0.08},
-        ],
+        "models": [{"modelo": name, **real[name], "drop_oot": 0.03} for name in preds],
     }
-    path = tmp_path / "metrics.json"
+    path = tmp_path / "exports" / "metrics.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
 
@@ -49,7 +75,10 @@ def test_pasa_cuando_el_modelo_cumple(metrics, cfg):
 
 
 def test_falla_cuando_el_auc_no_alcanza(metrics, cfg):
-    cfg["gates"]["min_auc_test"] = 0.75
+    """Umbral relativo al AUC real del fixture: el test no depende de que las
+    predicciones sinteticas acierten una cifra concreta."""
+    real = json.loads(metrics.read_text(encoding="utf-8"))["production_metrics"]["auc_test"]
+    cfg["gates"]["min_auc_test"] = real + 0.05
     assert "auc_test" in _fallidos(evaluate(metrics, cfg))
 
 
@@ -87,3 +116,36 @@ def test_el_fingerprint_ignora_cambios_cosmeticos(cfg):
 
     cfg["splits"]["train"] = {"start": 2010, "end": 2015}
     assert config_fingerprint(cfg) != antes
+
+
+def test_el_gate_evalua_produccion_no_el_modelo_crudo(metrics, cfg):
+    """La configuracion de produccion es modelo + calibrador.
+
+    Antes se controlaba el modelo crudo mientras se despachaba el calibrado
+    (docs/AUDIT.md, defecto C).
+    """
+    data = json.loads(metrics.read_text(encoding="utf-8"))
+    # Metricas de produccion peores que las crudas: el gate debe usar ESTAS.
+    data["production_metrics"] = {
+        "auc_test": 0.50,
+        "drop_oot": 0.03,
+        "brier_test": 0.08,
+        "ece_test": 0.01,
+    }
+    metrics.write_text(json.dumps(data), encoding="utf-8")
+    assert "auc_test" in _fallidos(evaluate(metrics, cfg))
+
+
+def test_el_margen_sobre_baseline_es_relativo(metrics, cfg):
+    """Si el retador no supera al interpretable, no se promueve."""
+    data = json.loads(metrics.read_text(encoding="utf-8"))
+    for m in data["models"]:
+        m["auc_test"] = 0.70  # produccion y baseline empatados
+    data["production_metrics"] = {
+        "auc_test": 0.70,
+        "drop_oot": 0.03,
+        "brier_test": 0.08,
+        "ece_test": 0.01,
+    }
+    metrics.write_text(json.dumps(data), encoding="utf-8")
+    assert "margen_sobre_baseline" in _fallidos(evaluate(metrics, cfg))

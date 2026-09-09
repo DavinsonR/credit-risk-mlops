@@ -1,6 +1,6 @@
 # Model Card - lightgbm
 
-> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-09 16:26 UTC.
+> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-09 17:04 UTC.
 > **No editar a mano**: se regenera en cada entrenamiento.
 
 ## 1. Detalles del modelo
@@ -13,8 +13,8 @@
 | Calibrador de produccion | `intercept` |
 | Semilla | 42 |
 | Vintage de datos | `260630` |
-| Huella de configuracion | `73b45ff4228182d7` |
-| Version del codigo | `088dde954e60` |
+| Huella de configuracion | `969867602d1192cc` |
+| Version del codigo | `7ff9a077dd5a` |
 
 ## 2. Uso previsto
 
@@ -54,8 +54,8 @@ temporal y un split aleatorio la esconde.
 **Solo informacion disponible al momento de aprobar.** Cualquier campo posterior
 a la decision es fuga, aunque sea anterior al resultado.
 
-- Numericas: `GrossApproval`, `SBAGuaranteedApproval`, `InitialInterestRate`, `JobsSupported`
-- Categoricas: `BusinessType`, `BusinessAge`, `RevolverStatus`, `CollateralInd`, `FixedorVariableInterestInd`, `ProcessingMethod`, `BorrState`
+- Numericas: `gross_approval`, `sba_guaranteed`, `initial_rate`, `jobs_supported`, `guarantee_pct`, `log_gross_approval`
+- Categoricas: `naics_sector`, `business_type`, `business_age`, `revolver_status`, `collateral_ind`, `rate_type`, `processing_method`, `borrower_state`, `has_franchise`
 
 **Excluida por contaminacion:** `TermInMonths` se sobrescribe cuando el prestamo
 se liquida - 84.8% de los charge-off tienen plazo no-redondo contra 9.4% de los
@@ -79,9 +79,12 @@ test. Se usa ajuste de intercepto: monotono, no puede alterar el ranking.
 | Gate | Valor | Umbral | Resultado |
 |---|---|---|---|
 | `config_coherente` | n/a | >= 0 | PASA |
-| `auc_test` | 0.7005 | >= 0.68 | PASA |
+| `integridad` | n/a | >= 0 | PASA |
+| `auc_test` | 0.7005 | >= 0.6894 | PASA |
 | `drop_oot` | 0.0299 | <= 0.08 | PASA |
-| `brier_test` | 0.0831 | <= 0.2 | PASA |
+| `brier_test` | 0.0828 | <= 0.0868 | PASA |
+| `ece_test` | 0.0107 | <= 0.02 | PASA |
+| `margen_sobre_baseline` | 0.0311 | >= 0.02 | PASA |
 
 Un modelo que no pasa estos gates no se promueve. El gate de coherencia verifica
 que estas metricas correspondan al `config.yaml` actual, para que nadie cambie el

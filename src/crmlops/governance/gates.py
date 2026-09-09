@@ -3,16 +3,17 @@
 Un gate solo sirve si puede FALLAR el build. Si es un reporte que alguien lee
 cuando se acuerda, no es un control: es documentacion.
 
-DISENO -- por que el gate lee un artefacto commiteado y no reentrena en CI.
-Entrenar exige ~860 MB de datos crudos que no se commitean y cuyo vintage rota
-cada trimestre. Un CI que descargue eso seria lento y no determinista. En vez de
-eso, `make train` produce exports/metrics.json localmente, ESE archivo se
-commitea, y CI verifica que los numeros publicados cumplen los umbrales.
+TRES PROPIEDADES QUE ESTE GATE SI GARANTIZA (las tres nacieron de docs/AUDIT.md):
 
-El agujero obvio de ese diseno seria que alguien cambie config.yaml (el split,
-la semilla) sin reentrenar, dejando metricas que ya no corresponden. Por eso el
-gate tambien verifica COHERENCIA: el hash de la configuracion relevante grabado
-en metrics.json tiene que coincidir con el config.yaml actual.
+1. *Integridad* -- las metricas se RECOMPUTAN desde las predicciones guardadas, no
+   se creen. Editar exports/metrics.json a mano ya no burla nada.
+2. *Coherencia* -- el config y el codigo que produjeron las metricas tienen que
+   ser los actuales. Cambiar el split o las features sin reentrenar falla.
+3. *Umbrales derivados* -- cada umbral sale de una cantidad medible, no de un
+   numero que el modelo casualmente pasaba.
+
+Y evalua la CONFIGURACION DE PRODUCCION (modelo + calibrador), no el modelo
+crudo: antes se controlaba algo distinto de lo que se despachaba.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from crmlops.config import load_config, repo_root
+from crmlops.governance.integrity import check as integrity_check
 
 
 @dataclass
@@ -40,23 +42,26 @@ class GateResult:
         shown = "n/a" if self.value is None else f"{self.value:.4f}"
         op = ">=" if self.direction == "min" else "<="
         extra = f"  {self.detail}" if self.detail else ""
-        return f"  {mark}  {self.name:22s} {shown:>8} {op} {self.threshold}{extra}"
+        return f"  {mark}  {self.name:26s} {shown:>8} {op} {self.threshold}{extra}"
 
 
 def config_fingerprint(cfg: dict | None = None) -> str:
     """Hash de las partes de config.yaml que cambian el significado de una metrica.
 
-    Solo entran las claves que afectan al numero. Cambiar un comentario o una
-    ruta no debe invalidar un entrenamiento; cambiar el split o las exclusiones si.
+    Solo entran las claves que afectan al numero. Cambiar un comentario o una ruta
+    no debe invalidar un entrenamiento; cambiar el split o las features si.
     """
     cfg = cfg or load_config()
     material = {
         "splits": cfg["splits"],
         "exclusions": cfg["exclusions"],
         "target": cfg["target"],
+        # Las listas de PANEL son las que el modelo realmente consume
+        # (crmlops.features.spec las lee de aqui). Hashearlas significa que
+        # agregar o quitar una variable invalida el entrenamiento anterior.
         "features": {
             k: cfg["features"][k]
-            for k in ("numeric", "categorical", "derived", "forbidden_panel")
+            for k in ("numeric", "categorical", "forbidden_panel")
             if k in cfg["features"]
         },
         "seed": cfg["project"]["random_seed"],
@@ -65,15 +70,14 @@ def config_fingerprint(cfg: dict | None = None) -> str:
     return hashlib.sha256(blob).hexdigest()[:16]
 
 
-def _metric(record: dict, key: str) -> float | None:
+def _num(record: dict, key: str) -> float | None:
     v = record.get(key)
     return float(v) if isinstance(v, int | float) else None
 
 
 def evaluate(metrics_path: Path | None = None, cfg: dict | None = None) -> list[GateResult]:
-    """Evalua los gates sobre el modelo de produccion registrado."""
     cfg = cfg or load_config()
-    gates = cfg["gates"]
+    g = cfg["gates"]
     path = metrics_path or (repo_root() / "exports" / "metrics.json")
 
     if not path.exists():
@@ -91,9 +95,8 @@ def evaluate(metrics_path: Path | None = None, cfg: dict | None = None) -> list[
     data = json.loads(path.read_text(encoding="utf-8"))
     results: list[GateResult] = []
 
-    # --- coherencia: las metricas corresponden a ESTA configuracion ---
-    recorded = data.get("config_fingerprint")
-    current = config_fingerprint(cfg)
+    # ---------- 1. Coherencia con la configuracion ----------
+    recorded, current = data.get("config_fingerprint"), config_fingerprint(cfg)
     results.append(
         GateResult(
             "config_coherente",
@@ -107,10 +110,23 @@ def evaluate(metrics_path: Path | None = None, cfg: dict | None = None) -> list[
         )
     )
 
+    # ---------- 2. Integridad: recomputar, no creer ----------
+    # exports/metrics.json -> la raiz de artefactos es el padre de exports/
+    artifacts_root = path.parent.parent
+    issues = integrity_check(data, artifacts_root=artifacts_root)
+    for issue in issues:
+        results.append(GateResult(f"integridad:{issue.kind}", None, 0, "min", False, issue.detail))
+    if not issues:
+        results.append(
+            GateResult(
+                "integridad", None, 0, "min", True, "metricas recomputadas desde predicciones"
+            )
+        )
+
+    # ---------- 3. Desempeno de la configuracion de PRODUCCION ----------
     prod_name = data.get("production_model")
     models = {m["modelo"]: m for m in data.get("models", [])}
-    prod = models.get(prod_name)
-    if prod is None:
+    if prod_name not in models:
         results.append(
             GateResult(
                 "modelo_produccion",
@@ -123,16 +139,41 @@ def evaluate(metrics_path: Path | None = None, cfg: dict | None = None) -> list[
         )
         return results
 
-    checks = [
-        ("auc_test", _metric(prod, "auc_test"), gates["min_auc_test"], "min"),
-        ("drop_oot", _metric(prod, "drop_oot"), gates["max_auc_drop_oot"], "max"),
-        ("brier_test", _metric(prod, "brier_test"), gates["max_brier"], "max"),
+    # Se evalua modelo + calibrador. Si falta el bloque de produccion se cae al
+    # modelo crudo, pero se deja constancia: no es lo que se despacha.
+    prod = data.get("production_metrics")
+    if prod is None:
+        prod = models[prod_name]
+        results.append(
+            GateResult(
+                "metricas_de_produccion",
+                None,
+                0,
+                "min",
+                False,
+                "falta production_metrics; se evaluo el modelo CRUDO, no el calibrado",
+            )
+        )
+
+    checks: list[tuple[str, float | None, float, str]] = [
+        ("auc_test", _num(prod, "auc_test"), g["min_auc_test"], "min"),
+        ("drop_oot", _num(prod, "drop_oot"), g["max_auc_drop_oot"], "max"),
+        ("brier_test", _num(prod, "brier_test"), g["max_brier_test"], "max"),
+        ("ece_test", _num(prod, "ece_test"), g["max_ece_test"], "max"),
     ]
-    # El gate de fairness solo aplica cuando hay un modelo con clases protegidas
-    # (HMDA, Semana 6). Se declara aqui para que no se olvide de conectarlo.
-    dir_ratio = _metric(prod, "disparate_impact_ratio")
+
+    # Gate RELATIVO: el retador tiene que superar al baseline interpretable.
+    # Es el unico que no se puede acomodar eligiendo el numero, porque se mide
+    # contra un modelo entrenado en la misma corrida.
+    baseline = models.get(g["baseline_model"])
+    auc = _num(prod, "auc_test")
+    if baseline is not None and auc is not None:
+        margin = auc - float(baseline["auc_test"])
+        checks.append(("margen_sobre_baseline", margin, g["min_margin_over_baseline"], "min"))
+
+    dir_ratio = _num(prod, "disparate_impact_ratio")
     if dir_ratio is not None:
-        checks.append(("disparate_impact", dir_ratio, gates["min_disparate_impact_ratio"], "min"))
+        checks.append(("disparate_impact", dir_ratio, g["min_disparate_impact_ratio"], "min"))
 
     for name, value, thr, direction in checks:
         if value is None:
@@ -148,19 +189,20 @@ def main() -> int:
     cfg = load_config()
     results = evaluate(cfg=cfg)
 
-    print("=" * 78)
+    print("=" * 84)
     print("GATES DE PROMOCION")
-    print("=" * 78)
+    print("=" * 84)
     for r in results:
         print(r.render())
 
     failed = [r for r in results if not r.passed]
-    print("=" * 78)
+    print("=" * 84)
     if failed:
         print(f"BLOQUEADO: {len(failed)} de {len(results)} gates fallaron.")
         for r in failed:
             print(f"  - {r.name}: {r.detail or 'fuera de umbral'}")
-        print("\nUn modelo que no pasa los gates no se promueve. Ver config.yaml: gates")
+        print("\nUn modelo que no pasa los gates no se promueve.")
+        print("Cada umbral tiene su derivacion escrita en config.yaml: gates")
         return 1
     print(f"APROBADO: {len(results)} gates pasaron.")
     return 0

@@ -39,12 +39,11 @@ exclusions:
   require_positive_term: true
 
 target:
-  # PD: probabilidad de charge-off
-  pd_column: LoanStatus
+  # Solo se declaran las claves que el código LEE. Antes había cuatro más
+  # (pd_column, lgd_numerator, lgd_denominator) que ningún módulo consultaba:
+  # config que aparenta funcionalidad es peor que config ausente, porque promete
+  # una capacidad que no existe. Ver docs/AUDIT.md, defecto B2.
   pd_positive_value: CHGOFF
-  # LGD: severidad, derivada del monto cargado a pérdida
-  lgd_numerator: GrossChargeOffAmount
-  lgd_denominator: GrossApproval
 
 # Validación OUT-OF-TIME. Nunca split aleatorio: el riesgo de crédito
 # tiene deriva temporal y un split aleatorio la esconde.
@@ -74,54 +73,111 @@ signal_gate:
   note: "Si el baseline rápido no supera este AUC, se pivotea el target."
 
 # Gates de CI que bloquean promoción de modelos.
+#
+# CADA UMBRAL TIENE DERIVACIÓN. Antes eran números elegidos porque el modelo los
+# pasaba, que es una racionalización, no un control (docs/AUDIT.md, defecto C).
+# En gobierno de modelos el umbral ES el artefacto, más que el modelo.
+#
+# Los gates se evalúan sobre la CONFIGURACIÓN DE PRODUCCIÓN — modelo + calibrador —
+# no sobre el modelo crudo. Antes se evaluaba el crudo mientras producción
+# despachaba el calibrado.
 gates:
-  min_auc_test: 0.68
-  max_auc_drop_oot: 0.08        # degradación train→test tolerada
-  max_brier: 0.20               # calibración
-  min_disparate_impact_ratio: 0.80   # regla de los 4/5 (EEOC)
+  # Modelo de referencia: el scorecard WoE, interpretable y aceptado sin discusión
+  # por un validador. Es el piso permanente.
+  baseline_model: scorecard_woe
+
+  # POLÍTICA, no número: el retador tiene que superar al interpretable por un
+  # margen claro. Si no lo hace, se despliega el interpretable y punto. Un gate
+  # relativo no se puede acomodar eligiendo la cifra.
+  # 0.02 de AUC ~ 0.04 de Gini, el mínimo que un comité de riesgo considera
+  # material frente a perder interpretabilidad.
+  min_margin_over_baseline: 0.02
+
+  # Piso absoluto de respaldo, por si el baseline también se degradara.
+  # Derivado del baseline medido (0.6694) + el margen exigido.
+  min_auc_test: 0.6894
+
+  # Derivado de la variación natural de AUC entre cosechas de test con la misma
+  # configuración: FY2017 0.717 | FY2018 0.685 | FY2019 0.678 -> rango 0.039.
+  # Se admite el doble de esa variación antes de considerarlo degradación real.
+  max_auc_drop_oot: 0.08
+
+  # El modelo debe al menos vencer al predictor SIN HABILIDAD, que predice
+  # siempre la tasa base. Su Brier es p(1-p) = 0.096 x 0.904 = 0.0868.
+  # El umbral anterior era 0.20: 2.3 veces PEOR que no hacer nada.
+  max_brier_test: 0.0868
+
+  # Calibración: lo predicho y lo observado deben coincidir dentro de 2 puntos
+  # porcentuales en promedio. Por encima de eso, el expected loss en dólares
+  # empieza a desviarse lo suficiente como para cambiar una decisión de corte.
+  max_ece_test: 0.02
+
+  # Regla de los 4/5 del EEOC (Uniform Guidelines on Employee Selection
+  # Procedures, 29 CFR 1607.4D). Es el único umbral con origen legal, no técnico.
+  min_disparate_impact_ratio: 0.80
 
 # Features disponibles EN EL MOMENTO DE LA DECISIÓN de aprobación.
 # Cualquier campo posterior a la decisión es fuga, aunque sea anterior al resultado.
+#
+# IMPORTANTE: estos son nombres a nivel PANEL (los que produce el loader), y el
+# código LOS LEE de aquí. No hay copia hardcodeada en Python. Antes sí la había,
+# en otra convención de nombres, y el fingerprint hasheaba esta lista mientras el
+# modelo usaba la otra: se podía quitar una variable sin que el gate lo notara.
+# Ver docs/AUDIT.md, defecto A2.
 features:
   numeric:
-    - GrossApproval
-    - SBAGuaranteedApproval
-    - InitialInterestRate
-    - JobsSupported
-  categorical:
-    - BusinessType
-    - BusinessAge
-    - RevolverStatus
-    - CollateralInd
-    - FixedorVariableInterestInd
-    - ProcessingMethod
-    - BorrState
-  derived:
-    - guarantee_pct      # SBAGuaranteedApproval / GrossApproval
-    - naics_sector       # 2 primeros dígitos del NaicsCode
-    - has_franchise      # FranchiseCode no vacío
+    - gross_approval
+    - sba_guaranteed
+    - initial_rate
+    - jobs_supported
+    - guarantee_pct
     - log_gross_approval
 
-  # NUNCA usar como feature. El test tests/test_no_leakage.py lo verifica.
-  forbidden:
-    - LoanStatus            # el target
-    - PaidInFullDate        # resultado
-    - ChargeOffDate         # resultado
-    - GrossChargeOffAmount  # resultado (severidad)
-    - FirstDisbursementDate # posterior a la decisión de aprobación
-    - SoldSecMrktInd        # venta en mercado secundario, posterior a la originación
-    - AsOfDate              # fecha del corte, constante
-    - TermInMonths          # CONTAMINADO: se sobrescribe al liquidar. Ver ADR 0002.
-                            # 84.8% de los CHGOFF tienen plazo no-redondo vs 9.4%
-                            # de los cancelados. No usar, ni bucketizado.
-    - ApprovalFY            # define el split; usarla impediría puntuar préstamos nuevos
+  categorical:
+    - naics_sector
+    - business_type
+    - business_age
+    - revolver_status
+    - collateral_ind
+    - rate_type
+    - processing_method
+    - borrower_state
+    - has_franchise
 
-  # Nombres a nivel PANEL (ya renombrados) que jamás pueden ser features.
-  # Se declaran explícitamente en vez de derivarlos por string-matching del
-  # nombre fuente: TermInMonths -> term_months no coincide por normalización,
-  # y un guard que falla en silencio es peor que no tenerlo.
+  # De qué campo fuente sale cada feature del panel. Documentación de linaje:
+  # hace auditable de dónde viene cada número.
+  lineage:
+    gross_approval:     GrossApproval
+    sba_guaranteed:     SBAGuaranteedApproval
+    initial_rate:       InitialInterestRate
+    jobs_supported:     JobsSupported
+    guarantee_pct:      SBAGuaranteedApproval / GrossApproval
+    log_gross_approval: ln(GrossApproval)
+    naics_sector:       NaicsCode (2 primeros dígitos)
+    has_franchise:      FranchiseCode no vacío
+    business_type:      BusinessType
+    business_age:       BusinessAge
+    revolver_status:    RevolverStatus
+    collateral_ind:     CollateralInd
+    rate_type:          FixedorVariableInterestInd
+    processing_method:  ProcessingMethod
+    borrower_state:     BorrState
+
+  # Nombres de PANEL que jamás pueden ser features.
   forbidden_panel:
-    - term_months      # ADR 0002
+    - term_months      # ADR 0002: se sobrescribe al liquidar
     - is_chargeoff     # target PD
     - chargeoff_amount # target LGD
     - approval_fy      # eje del split out-of-time
+
+  # Nombres FUENTE prohibidos, para el chequeo sobre la query del loader.
+  forbidden:
+    - LoanStatus
+    - PaidInFullDate
+    - ChargeOffDate
+    - GrossChargeOffAmount
+    - FirstDisbursementDate
+    - SoldSecMrktInd
+    - AsOfDate
+    - ApprovalFY
+    - TermInMonths

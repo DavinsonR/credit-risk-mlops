@@ -287,3 +287,78 @@ _(escribir: por qué un repo puede tener CI verde y aun así ser irreproducible)
 ### Pendiente Semana 5
 - HMDA a escala: ~50M filas, dos backends (DuckDB y PySpark) con benchmark.
 - Conectar el gate de fairness, que ya está declarado pero sin datos que lo activen.
+
+---
+
+## Auditoría interna y cierre de los 9 defectos
+
+Sometí el proyecto a una auditoría adversarial ([docs/AUDIT.md](docs/AUDIT.md)).
+Un proyecto que afirma construir "ML que sobrevive una auditoría" tiene que
+soportar una. No la soportó bien: **9 defectos, dos críticos en el mecanismo
+central.**
+
+### Lo que estaba roto
+
+**El gate se engañaba editando el archivo que leía.** Puse AUC 0.95 a mano en
+`metrics.json` y los cuatro gates pasaron. El control validaba su propia entrada
+sin verificarla.
+
+**El fingerprint no cubría el código.** Comenté una feature en `train.py` y el
+hash no se movió, porque hasheaba `config.yaml` mientras el modelo usaba listas
+hardcodeadas en Python — en otra convención de nombres.
+
+**Los umbrales los elegí porque el modelo los pasaba.** El de Brier estaba en
+0.20 cuando el predictor sin habilidad da 0.0868: era 2.3 veces peor que no
+hacer nada. Decorativo.
+
+### Lo que quedó
+
+De 4 gates a 7, y los nuevos verifican **el artefacto**, no solo el modelo:
+las métricas se recomputan desde predicciones guardadas, y cada umbral tiene su
+derivación escrita al lado.
+
+El gate más sólido es el relativo: el retador debe superar al scorecard
+interpretable por ≥0.02. Ese no se puede acomodar eligiendo el número, porque se
+mide contra un modelo entrenado en la misma corrida.
+
+### El hallazgo que salió de arreglar config muerto
+
+`stress_cohorts` estaba declarado con comentarios sobre SR 11-7 y ninguna línea
+que lo leyera. Al implementarlo:
+
+| Cohorte | tasa base | AUC | ratio calibración |
+|---|---|---|---|
+| test (referencia) | 9.60% | 0.7005 | 0.97 |
+| **crisis 2005-2008** | **31.19%** | **0.5456** | **0.12** |
+| covid 2020-2021 | 6.23% | 0.7231 | 1.36 |
+
+**En un régimen tipo 2007 el modelo colapsa a casi azar y subestima el riesgo 8
+veces.** Es el hallazgo más importante del proyecto, y salió de implementar algo
+que yo había dejado como YAML decorativo.
+
+### Mi plan de features estaba medio equivocado
+Escribí que faltaban "NAICS a 4 dígitos, identidad del banco". Medido: NAICS-4
+**empeora** (0.6890 vs 0.7009) por sobreajuste. La identidad del banco sí ayuda
+(+1.3 puntos) pero la descarté por política ([ADR 0005](docs/adr/0005-features-descartadas-y-tuning.md)):
+el banco no es un atributo del prestatario, y penalizar a alguien por dónde pidió
+el préstamo es exactamente lo que un examen de fair lending cuestiona.
+
+El tuning que nunca hice: 25 configuraciones, **+0.0009**. Mi afirmación de que
+los hiperparámetros estaban "deliberadamente regularizados" resultó cierta por
+suerte, no por verificación. Ahora está verificada.
+
+### Un bug encontrado durante el arreglo
+Escribiendo los tests apareció que `check()` usaba una sola raíz para las
+predicciones y para el código. Habría llegado a producción sin los tests.
+
+### Un hallazgo mío que estaba mal enunciado
+Dije que el PSI "está mal construido". Impreciso: el PSI sobre la escala del
+score *es* el estándar. El problema real es que no distingue nivel de forma.
+Implementé `stability()`, que los separa:
+
+```
+PSI total 0.1746 | PSI de forma 0.0168 | nivel 1.238x
+-> corrimiento de NIVEL: recalibrar basta, no hace falta reentrenar
+```
+
+_(escribir: por qué un control que no se ha intentado romper no es un control)_
