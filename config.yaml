@@ -50,9 +50,21 @@ target:
 # tiene deriva temporal y un split aleatorio la esconde.
 splits:
   date_column: ApprovalFY
-  train: { start: 2000, end: 2013 }
-  valid: { start: 2014, end: 2016 }   # incluye maduración post-crisis
-  test:  { start: 2017, end: 2019 }   # out-of-time puro
+  # Ventanas elegidas por dos criterios medidos, no por intuición. Ver ADR 0003.
+  #  1. Régimen homogéneo: la tasa base del 7(a) fue 32-37% en 2006-2008 y 6-7%
+  #     en 2012-2015. Entrenar cruzando la crisis cuesta ~2 puntos de AUC.
+  #  2. Censura acotada: solo cosechas con >=70% de préstamos resueltos. FY2019
+  #     está al 60.9% y su muestra queda sesgada hacia los que resolvieron rápido.
+  train: { start: 2011, end: 2015 }   # post-crisis, 82-85% resuelto
+  valid: { start: 2016, end: 2016 }   # 80.3% resuelto
+  test:  { start: 2017, end: 2018 }   # 75.5% y 70.0% resuelto
+
+# Cohortes de estrés: NO se entrena con ellas. Se usan para responder la pregunta
+# que exige SR 11-7: si vuelve un 2007, ¿qué le pasa al modelo?
+stress_cohorts:
+  crisis_2005_2008: { start: 2005, end: 2008 }   # tasa base 24-37%
+  covid_2020_2021:  { start: 2020, end: 2021 }   # régimen de emergencia
+  reciente_2019:    { start: 2019, end: 2019 }   # censura al 60.9%
 
 # Gate de viabilidad de la Semana 1.
 # Criterio fijado ANTES de ver resultados finales: eso lo hace de-risking, no p-hacking.

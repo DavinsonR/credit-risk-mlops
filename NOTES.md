@@ -84,7 +84,67 @@ economía real. Ahora exige **dos señales** y solo su combinación condena:
 
 _(escribir: por qué este test conjunto es defendible y dónde puede fallar)_
 
-### Pendiente para Semana 2
-- Baseline scorecard WoE + logística.
+### Pendiente
 - NAICS a 4 dígitos, identidad del banco, overlay macro de FRED.
-- Extender la auditoría a campos categóricos (hoy solo cubre numéricos).
+- Extender la auditoría de contaminación a campos categóricos.
+
+---
+
+## Semana 2 — Baseline y diseño del split
+
+### El split estaba mal diseñado
+El primer split (train FY2000-2013) lo elegí por intuición: "usar todo y dejar lo
+reciente para test". Dos síntomas lo delataron: **valid salía peor que test** (orden
+imposible) y el **PSI daba 4.08**, un absurdo.
+
+Causa: la tasa base del 7(a) es fuertemente cíclica — 36.9% en FY2007 contra 6.2% en
+FY2013. Entrenar cruzando la crisis mezcla dos regímenes con un factor de 6 entre sí.
+Medido, cuesta ~2.4 puntos de AUC.
+
+Segundo criterio que faltaba: **censura por maduración**. FY2019 solo tiene 60.9% de
+préstamos resueltos, así que su muestra está sesgada hacia los que resolvieron rápido.
+El AUC por año lo confirma (2017: 0.717 → 2019: 0.678): la degradación sigue la
+censura, no el calendario.
+
+Diseño nuevo ([ADR 0003](docs/adr/0003-diseno-del-split-temporal.md)): train FY2011-2015,
+valid FY2016, test FY2017-2018. Regla: solo cosechas con ≥70% resuelto.
+
+| | antes | ahora |
+|---|---|---|
+| AUC test | 0.6669 | **0.6870** |
+| PSI train→test | 4.08 | **0.1323** |
+| orden valid > test | ✗ | ✓ |
+
+Las cohortes descartadas no se tiran: la crisis 2005-2008 pasa a ser el **escenario de
+estrés** que SR 11-7 exige de todas formas.
+
+### Baseline: scorecard WoE + logística
+
+| | train | valid | test |
+|---|---|---|---|
+| AUC | 0.6531 | 0.6725 | **0.6694** |
+| Gini | 0.3062 | 0.3450 | 0.3388 |
+| KS | 0.2236 | 0.2596 | 0.2453 |
+| Brier | 0.0617 | 0.0708 | 0.0847 |
+
+Degradación train→test: **−0.0163** (test mejor que train). El binning regulariza tanto
+que no hay sobreajuste. Variables seleccionadas por IV: 10 de 15.
+
+### Hallazgo: la calibración deriva con el ciclo
+El modelo **sub-predice el riesgo en test**: predicho 7.84% vs observado 9.60%
+(calibration_ratio 0.8166). Y el error crece con el decil — en el más riesgoso son
+5 puntos porcentuales.
+
+Es esperable: la tasa base subió de 6.75% (train) a 9.60% (test). El modelo está
+calibrado al régimen de entrenamiento. **El ranking aguanta, la calibración no.**
+
+Importa porque el expected loss se calcula con la probabilidad, no con el ranking: un
+modelo que ordena bien pero sub-predice sistemáticamente subestima la pérdida de la
+cartera. Es exactamente el punto de monitoreo continuo que exige SR 11-7.
+
+_(escribir: por qué recalibrar es preferible a reentrenar, y cada cuánto)_
+
+### Pendiente Semana 3
+- Recalibración (Platt/isotónica) y ajuste de intercepto por régimen.
+- Retadores: LightGBM y red neuronal PyTorch contra este baseline.
+- LGD desde GrossChargeOffAmount → expected loss en dólares.

@@ -27,3 +27,5 @@ htmlcov/
 *.duckdb.wal
 mlruns/
 .DS_Store
+mlflow.db
+mlartifacts/
