@@ -29,3 +29,6 @@ mlruns/
 .DS_Store
 mlflow.db
 mlartifacts/
+
+# Artefactos intermedios de exports (regenerables): prefijo _
+exports/_*
