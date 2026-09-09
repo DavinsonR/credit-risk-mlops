@@ -99,12 +99,7 @@ class OllamaProvider(Provider):
         self.host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
 
     def available(self) -> bool:
-        try:
-            r = requests.get(f"{self.host}/api/tags", timeout=3)
-            tags = {m["name"] for m in r.json().get("models", [])}
-            return any(t.split(":")[0] == self.model.split(":")[0] for t in tags)
-        except requests.RequestException:
-            return False
+        return self.model in installed_ollama_models(self.host)
 
     def generate(self, prompt: str, *, temperature: float = 0.0, seed: int = 42) -> str:
         r = requests.post(
@@ -182,10 +177,26 @@ ALL_PROVIDERS: tuple[type[Provider], ...] = (
 )
 
 
+def installed_ollama_models(host: str | None = None) -> list[str]:
+    """Modelos presentes en el Ollama local."""
+    host = host or os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+    try:
+        r = requests.get(f"{host}/api/tags", timeout=3)
+        return sorted(m["name"] for m in r.json().get("models", []))
+    except requests.RequestException:
+        return []
+
+
 def available_providers() -> list[Provider]:
-    """Los que responden ahora mismo. El harness reporta cuales se evaluaron."""
-    out = []
-    for cls in ALL_PROVIDERS:
+    """Los que responden ahora mismo. El harness reporta cuales se evaluaron.
+
+    Se enumeran TODOS los modelos locales instalados, no solo uno. Comparar
+    tamanos dentro del mismo proveedor responde una pregunta que comparar
+    proveedores no responde: si un fallo viene del modelo o de la tarea.
+    """
+    out: list[Provider] = [TemplateProvider()]
+    out += [OllamaProvider(model=m) for m in installed_ollama_models()]
+    for cls in (GroqProvider, GeminiProvider):
         p = cls()
         if p.available():
             out.append(p)

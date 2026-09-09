@@ -25,6 +25,7 @@ from crmlops.config import resolve_path
 from crmlops.explain.reasons import Reason
 from crmlops.llm.adverse_action import NoticeRequest
 from crmlops.llm.evals import EvalResult, evaluate
+from crmlops.llm.hybrid import generate as hybrid_generate
 from crmlops.llm.providers import Provider, available_providers
 
 # Casos sintéticos que cubren situaciones distintas: muchas razones y pocas,
@@ -106,9 +107,29 @@ LANGUAGES = ("es", "en")
 
 
 def run_case(
-    provider: Provider, name: str, amount: float, reasons: list[Reason], language: str
+    provider: Provider,
+    name: str,
+    amount: float,
+    reasons: list[Reason],
+    language: str,
+    *,
+    hybrid: bool = False,
 ) -> EvalResult:
     request = NoticeRequest(amount=amount, reasons=reasons, language=language)
+
+    if hybrid:
+        # El hibrido valida la reescritura antes de usarla y cae a la plantilla
+        # si falla: por construccion nunca es peor que el baseline.
+        a = hybrid_generate(request, provider)
+        b = hybrid_generate(request, provider)
+        return evaluate(
+            a.text,
+            reasons,
+            provider=provider.name,
+            language=language,
+            seconds=a.seconds,
+            second_run=b.text,
+        )
 
     if provider.name == "template":
         texto = request.build_template()
@@ -140,16 +161,28 @@ def run(providers: list[Provider] | None = None) -> pd.DataFrame:
     providers = providers if providers is not None else available_providers()
     filas = []
     for p in providers:
-        for name, amount, reasons in CASES:
-            for lang in LANGUAGES:
-                r = run_case(p, name, amount, reasons, lang)
-                filas.append({"caso": name, **r.as_dict(), "pasa": r.passes})
+        # Cada LLM se evalua de dos formas: solo, y como reescritor dentro del
+        # hibrido. Comparar ambos aisla cuanto del fallo viene del modelo y
+        # cuanto de dejarlo elegir los hechos.
+        modos = (
+            [(False, p.model)]
+            if p.name == "template"
+            else [(False, p.model), (True, f"{p.model} (hibrido)")]
+        )
+        for hib, etiqueta in modos:
+            for name, amount, reasons in CASES:
+                for lang in LANGUAGES:
+                    r = run_case(p, name, amount, reasons, lang, hybrid=hib)
+                    filas.append(
+                        {"caso": name, "modelo": etiqueta, **r.as_dict(), "pasa": r.passes}
+                    )
     return pd.DataFrame(filas)
 
 
 def summarize(df: pd.DataFrame) -> pd.DataFrame:
     return (
-        df.groupby("provider", observed=True)
+        df.assign(arm=df["provider"] + " / " + df["modelo"])
+        .groupby("arm", observed=True)
         .agg(
             casos=("caso", "size"),
             fidelidad=("faithfulness", "mean"),
@@ -170,15 +203,15 @@ def main() -> int:
     print("=" * 92)
     print("HARNESS DE AVISOS DE ADVERSE ACTION")
     print("=" * 92)
-    print(f"Proveedores disponibles: {', '.join(p.name for p in providers)}")
+    print("Brazos: " + ", ".join(f"{p.name}/{p.model}" for p in providers))
     print(
         f"Casos: {len(CASES)} x {len(LANGUAGES)} idiomas = {len(CASES) * len(LANGUAGES)} avisos c/u"
     )
 
-    faltantes = {"ollama", "groq", "gemini"} - {p.name for p in providers}
+    faltantes = {"groq", "gemini"} - {p.name for p in providers}
     if faltantes:
         print(f"No disponibles: {', '.join(sorted(faltantes))}")
-        print("  (ollama: `ollama pull llama3.2:3b` · groq/gemini: claves en .env)")
+        print("  (claves en .env; ver .env.example)")
 
     print("\nGenerando y evaluando...\n", flush=True)
     df = run(providers)
@@ -186,7 +219,8 @@ def main() -> int:
 
     print(resumen.to_string())
 
-    base = resumen.loc["template"] if "template" in resumen.index else None
+    base_key = next((k for k in resumen.index if k.startswith("template")), None)
+    base = resumen.loc[base_key] if base_key else None
     print("\n" + "=" * 92)
     print("VEREDICTO")
     print("=" * 92)
@@ -198,7 +232,7 @@ def main() -> int:
             f"pasa {base.pasa:.0%}"
         )
         for name, row in resumen.iterrows():
-            if name == "template":
+            if name == base_key:
                 continue
             delta = row.fidelidad - base.fidelidad
             veredicto = (
@@ -209,7 +243,7 @@ def main() -> int:
                 else "NO supera al baseline"
             )
             print(
-                f"  {name:10s} fidelidad {row.fidelidad:.4f} ({delta:+.4f})  "
+                f"  {name:26s} fidelidad {row.fidelidad:.4f} ({delta:+.4f})  "
                 f"pasa {row.pasa:.0%}  {row.segundos:.1f}s  ->  {veredicto}"
             )
         print("\n  La plantilla no alucina, no depende de red y cuesta cero.")
