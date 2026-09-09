@@ -30,6 +30,16 @@ neural = ["torch>=2.4"]
 # PySpark solo para el benchmark de backends; requiere un JDK instalado.
 #   uv sync --extra spark
 spark = ["pyspark>=3.5"]
+onnx = [
+    "onnxmltools>=1.16.0",
+    "onnxruntime>=1.29.0",
+    "skl2onnx>=1.20.0",
+]
+serve = [
+    "fastapi>=0.141.1",
+    "httpx>=0.28.1",
+    "uvicorn[standard]>=0.52.4",
+]
 
 # Indice explicito para torch CPU. `explicit = true` es la clave: sin eso uv
 # resolveria TODAS las dependencias contra el indice de PyTorch y rompe

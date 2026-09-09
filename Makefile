@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark onnx serve web lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -45,6 +45,16 @@ disparity:  ## Disparidad observada en HMDA, antes de cualquier modelo
 
 benchmark:  ## DuckDB vs PySpark sobre el mismo trabajo de features
 	$(UV) run python -m crmlops.features.benchmark
+
+onnx:  ## Exporta a ONNX; falla si el grafo no reproduce al modelo
+	$(UV) run python -m crmlops.export.onnx
+
+serve:  ## Levanta la API de scoring en :8000
+	$(UV) run uvicorn app:app --app-dir serving/api --port 8000
+
+web:  ## Demo en el navegador (modelo en WASM) en :8899
+	$(UV) run python serving/web/build.py
+	$(UV) run python -m http.server 8899 --directory serving/web
 
 reproduce:  ## Reentrena y ASSERTA que las metricas son identicas a las commiteadas
 	$(UV) run python -m crmlops.governance.reproduce

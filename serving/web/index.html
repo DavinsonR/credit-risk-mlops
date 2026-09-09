@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scoring de riesgo crediticio SBA 7(a)</title>
+<!--
+  Tercera vía de serving: el modelo corre EN EL NAVEGADOR del visitante.
+
+  Sin servidor, sin arranque en frío, sin costo. onnxruntime-web ejecuta el mismo
+  grafo ONNX que la API de FastAPI y la función de Vercel, y aplica el mismo
+  contract.json. Los tres caminos tienen que dar el mismo número; si divergen, es
+  el fallo más peligroso posible porque nadie ve un error.
+
+  El grafo pesa ~1.9 MB y se descarga una vez.
+-->
+<style>
+  :root {
+    --bg: #fbfbfa; --fg: #1a1a19; --muted: #6b6b68; --line: #e3e3e0;
+    --card: #ffffff; --accent: #2b5f8f;
+    --a: #1f7a4d; --b: #4a8c3f; --c: #b8860b; --d: #c1621f; --e: #a83232;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#161614; --fg:#eceae5; --muted:#9a978f; --line:#33312d;
+            --card:#1f1e1b; --accent:#7aa7cc; }
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif; }
+  .wrap { max-width: 940px; margin: 0 auto; padding: 32px 20px 64px; }
+  h1 { font-size: 1.5rem; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--muted); margin: 0 0 24px; font-size: 0.92rem; }
+  .grid { display: grid; grid-template-columns: 1fr 320px; gap: 24px; align-items: start; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 20px; }
+  fieldset { border: none; padding: 0; margin: 0 0 18px; }
+  legend { font-weight: 600; font-size: 0.78rem; text-transform: uppercase;
+           letter-spacing: 0.06em; color: var(--muted); padding: 0 0 8px; }
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  label { display: block; font-size: 0.82rem; color: var(--muted); margin-bottom: 3px; }
+  input, select { width: 100%; padding: 7px 9px; border: 1px solid var(--line);
+    border-radius: 6px; background: var(--bg); color: var(--fg); font: inherit; font-size: 0.9rem; }
+  button { width: 100%; padding: 11px; border: none; border-radius: 7px;
+    background: var(--accent); color: #fff; font: inherit; font-weight: 600; cursor: pointer; }
+  button:disabled { opacity: 0.5; cursor: wait; }
+  .band { font-size: 3.2rem; font-weight: 700; line-height: 1; margin: 6px 0 2px; }
+  .band-A{color:var(--a)} .band-B{color:var(--b)} .band-C{color:var(--c)}
+  .band-D{color:var(--d)} .band-E{color:var(--e)}
+  .pd { font-size: 1.7rem; font-weight: 600; margin: 14px 0 2px; }
+  dl { margin: 16px 0 0; display: grid; grid-template-columns: 1fr auto; gap: 7px 12px; font-size: 0.88rem; }
+  dt { color: var(--muted); } dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  .note { font-size: 0.78rem; color: var(--muted); border-top: 1px solid var(--line);
+          margin-top: 18px; padding-top: 12px; }
+  .status { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; }
+  .warn { border-left: 3px solid var(--d); padding: 10px 12px; margin-top: 20px;
+          background: var(--card); font-size: 0.83rem; border-radius: 0 6px 6px 0; }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Scoring de riesgo crediticio — SBA 7(a)</h1>
+  <p class="sub">
+    El modelo corre <strong>en tu navegador</strong>. Ningún dato sale de esta página.
+  </p>
+
+  <div class="grid">
+    <div class="card">
+      <div class="status" id="status">Cargando modelo…</div>
+      <form id="form">
+        <fieldset>
+          <legend>Préstamo</legend>
+          <div class="row">
+            <div><label for="gross">Monto aprobado (USD)</label>
+              <input type="number" id="gross" value="250000" min="1000" step="1000" /></div>
+            <div><label for="guar">Garantía SBA (USD)</label>
+              <input type="number" id="guar" value="187500" min="0" step="1000" /></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div><label for="rate">Tasa inicial (%)</label>
+              <input type="number" id="rate" value="8.5" min="0" max="30" step="0.25" /></div>
+            <div><label for="jobs">Empleos sostenidos</label>
+              <input type="number" id="jobs" value="6" min="0" step="1" /></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Negocio</legend>
+          <div class="row">
+            <div><label for="naics">Sector NAICS</label>
+              <select id="naics">
+                <option value="72">72 — Alojamiento y comida</option>
+                <option value="23">23 — Construcción</option>
+                <option value="44">44 — Comercio minorista</option>
+                <option value="54">54 — Servicios profesionales</option>
+                <option value="62">62 — Salud</option>
+                <option value="81">81 — Otros servicios</option>
+                <option value="31">31 — Manufactura</option>
+                <option value="48">48 — Transporte</option>
+              </select></div>
+            <div><label for="age">Antigüedad</label>
+              <select id="age">
+                <option>Existing or more than 2 years old</option>
+                <option>Existing, 5 or more years</option>
+                <option>New, Less than 1 Year old</option>
+                <option>Startup, Loan Funds will Open Business</option>
+                <option>Change of Ownership</option>
+              </select></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div><label for="state">Estado</label>
+              <select id="state">
+                <option>TX</option><option>CA</option><option>FL</option><option>NY</option>
+                <option>GA</option><option>IL</option><option>OH</option><option>WY</option>
+              </select></div>
+            <div><label for="type">Tipo</label>
+              <select id="type">
+                <option>CORPORATION</option><option>INDIVIDUAL</option><option>PARTNERSHIP</option>
+              </select></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div><label for="coll">Con colateral</label>
+              <select id="coll"><option value="Y">Sí</option><option value="N">No</option></select></div>
+            <div><label for="method">Método de procesamiento</label>
+              <select id="method">
+                <option>Preferred Lenders Program</option>
+                <option>SBA Express Program</option>
+                <option>7a General</option>
+                <option>Community Advantage Initiative</option>
+              </select></div>
+          </div>
+        </fieldset>
+
+        <button type="submit" id="btn" disabled>Calcular riesgo</button>
+      </form>
+    </div>
+
+    <div class="card" id="result" hidden>
+      <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Banda</div>
+      <div class="band" id="band">—</div>
+      <div style="color:var(--muted);font-size:0.86rem" id="bandLabel"></div>
+      <div class="pd" id="pd">—</div>
+      <div style="color:var(--muted);font-size:0.82rem">probabilidad de charge-off</div>
+      <dl>
+        <dt>Pérdida esperada</dt><dd id="el">—</dd>
+        <dt>Absorbe la SBA</dt><dd id="elSba">—</dd>
+        <dt>Absorbe el banco</dt><dd id="elLender">—</dd>
+      </dl>
+      <div class="note">
+        La SBA garantiza parte del préstamo, así que el contribuyente y el banco
+        <strong>no pierden lo mismo</strong>. El margen de equilibrio del banco es
+        1.05% contra 3.91% bruto.
+      </div>
+    </div>
+  </div>
+
+  <div class="warn">
+    <strong>No es una decisión automática de crédito.</strong> Es una entrada a una
+    decisión humana. El modelo se entrenó sobre FY2011-2015 y <strong>no está validado
+    para regímenes de crisis</strong>: en un escenario tipo 2007 su AUC cae a 0.55 y
+    subestima el riesgo por un factor de ocho.
+    HMDA muestra además que el crédito no se endurece de forma pareja entre grupos.
+    Ver <code>reports/VALIDATION_REPORT.md</code>.
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.19.2/ort.min.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+let session = null, contract = null;
+
+// onnxruntime-web busca sus binarios .wasm relativos a la PAGINA, no al script,
+// asi que hay que apuntarlo al CDN explicitamente.
+//
+// Y NO se fija numThreads=1. Parece lo prudente -- SharedArrayBuffer exige
+// cabeceras COOP/COEP que un hosting estatico gratuito no siempre permite -- pero
+// hace que ORT busque `ort-wasm-simd.wasm`, un archivo que esta version NO
+// publica (404). Recibe el HTML del error como si fuera wasm y falla con
+// "BufferSource argument is empty", que no menciona la causa.
+//
+// La build `simd-threaded` es la unica que se distribuye y funciona igual con un
+// solo hilo cuando SharedArrayBuffer no esta disponible: ORT lo detecta solo.
+ort.env.wasm.wasmPaths = "https://cdn.jsdelivr.net/npm/onnxruntime-web@1.19.2/dist/";
+
+const money = (v) => "$" + v.toLocaleString("en-US", { maximumFractionDigits: 0 });
+
+/**
+ * Aplica el contrato de serving. Es la misma lógica que serving/api/app.py y
+ * serving/vercel/api/score.py, reimplementada en JS.
+ *
+ * El orden importa: ONNX recibe un tensor posicional, no un objeto.
+ */
+function encode(payload) {
+  const gross = payload.gross_approval;
+  const derived = {
+    guarantee_pct: gross ? payload.sba_guaranteed / gross : null,
+    log_gross_approval: gross > 0 ? Math.log(gross) : null,
+  };
+  const row = [];
+  for (const name of contract.numeric) {
+    const v = name in derived ? derived[name] : payload[name];
+    row.push(v === null || v === undefined ? NaN : Number(v));
+  }
+  for (const name of contract.categorical) {
+    const vocab = contract.categories[name] || [];
+    const idx = vocab.indexOf(String(payload[name]));
+    row.push(idx >= 0 ? idx : contract.unknown_code);
+  }
+  return Float32Array.from(row);
+}
+
+/** Desplazamiento de intercepto en escala logit. Monótono: no altera el ranking. */
+function calibrate(p) {
+  if (contract.calibrator !== "intercept") return p;
+  const q = Math.min(Math.max(p, 1e-6), 1 - 1e-6);
+  const logit = Math.log(q / (1 - q)) + (contract.calibrator_shift || 0);
+  return 1 / (1 + Math.exp(-logit));
+}
+
+const BANDS = [[0.03,"A","riesgo muy bajo"],[0.06,"B","riesgo bajo"],
+               [0.12,"C","riesgo moderado"],[0.20,"D","riesgo alto"],
+               [1.01,"E","riesgo muy alto"]];
+
+async function init() {
+  try {
+    contract = await (await fetch("contract.json")).json();
+    session = await ort.InferenceSession.create("model.onnx", {
+      executionProviders: ["wasm"],
+    });
+    $("status").textContent =
+      `Modelo cargado · ${contract.feature_order.length} variables · ` +
+      `paridad verificada ${contract.parity.max_abs_diff.toExponential(2)}`;
+    $("btn").disabled = false;
+  } catch (err) {
+    $("status").textContent = "No se pudo cargar el modelo: " + err.message;
+  }
+}
+
+$("form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const payload = {
+    gross_approval: Number($("gross").value),
+    sba_guaranteed: Number($("guar").value),
+    initial_rate: Number($("rate").value),
+    jobs_supported: Number($("jobs").value),
+    naics_sector: $("naics").value,
+    business_type: $("type").value,
+    business_age: $("age").value,
+    revolver_status: "N",
+    collateral_ind: $("coll").value,
+    rate_type: "V",
+    processing_method: $("method").value,
+    borrower_state: $("state").value,
+    has_franchise: 0,
+  };
+
+  const input = new ort.Tensor("float32", encode(payload),
+                               [1, contract.feature_order.length]);
+  const out = await session.run({ [session.inputNames[0]]: input });
+
+  // El grafo devuelve [label, probabilidades]; se busca el tensor 2D.
+  let raw = null;
+  for (const name of session.outputNames) {
+    const t = out[name];
+    if (t.dims.length === 2 && t.dims[1] >= 2) { raw = t.data[1]; break; }
+  }
+  const pd = calibrate(raw);
+  const [, letter, label] = BANDS.find(([t]) => pd < t);
+
+  const lgd = 0.735;  // severidad media observada en los charge-off del panel
+  const el = pd * lgd * payload.gross_approval;
+  const share = payload.sba_guaranteed / payload.gross_approval;
+
+  $("band").textContent = letter;
+  $("band").className = "band band-" + letter;
+  $("bandLabel").textContent = label;
+  $("pd").textContent = (pd * 100).toFixed(2) + "%";
+  $("el").textContent = money(el);
+  $("elSba").textContent = money(el * share);
+  $("elLender").textContent = money(el * (1 - share));
+  $("result").hidden = false;
+});
+
+init();
+</script>
+</body>
+</html>

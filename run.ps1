@@ -29,6 +29,9 @@ $Tasks = [ordered]@{
     "hmda-train"   = @{ desc = "Modelo de denegacion + auditoria de equidad"; cmd = { uv run python -m crmlops.models.train_hmda } }
     "disparity"    = @{ desc = "Disparidad observada, antes de cualquier modelo"; cmd = { uv run python -m crmlops.fairness.observed } }
     "benchmark"    = @{ desc = "DuckDB vs PySpark sobre el mismo trabajo"; cmd = { uv run python -m crmlops.features.benchmark } }
+    "onnx"         = @{ desc = "Exporta a ONNX y verifica paridad numerica"; cmd = { uv run python -m crmlops.export.onnx } }
+    "serve"        = @{ desc = "Levanta la API de scoring en :8000"; cmd = { uv run uvicorn app:app --app-dir serving/api --port 8000 } }
+    "web"          = @{ desc = "Demo en el navegador (modelo en WASM) en :8899"; cmd = { uv run python serving/web/build.py; uv run python -m http.server 8899 --directory serving/web } }
     "reproduce"    = @{ desc = "Reentrena y ASSERTA metricas identicas a las commiteadas"; cmd = { uv run python -m crmlops.governance.reproduce } }
     "lint"         = @{ desc = "ruff check + format check"; cmd = { uv run ruff check .; uv run ruff format --check . } }
     "test"         = @{ desc = "pytest"; cmd = { uv run pytest -m "not data" -q } }

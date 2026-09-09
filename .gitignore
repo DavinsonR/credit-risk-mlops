@@ -35,3 +35,7 @@ exports/_*
 
 # JDK local para PySpark (bootstrap_jdk.py)
 .jdk/
+
+# El demo web usa copias de exports/onnx/ generadas al construir
+serving/web/model.onnx
+serving/web/contract.json

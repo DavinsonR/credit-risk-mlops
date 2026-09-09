@@ -60,3 +60,69 @@ jobs:
             exit 1
           fi
           echo "OK: autoria limpia"
+
+  serving:
+    name: Imagen de serving
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Construir y ejecutar de verdad. Un Dockerfile que nunca se construyo en
+      # CI es una afirmacion, no una capacidad verificada.
+      - name: Construir la imagen
+        run: docker build -f serving/api/Dockerfile -t crmlops-serving:ci .
+
+      - name: Verificar que la imagen NO trae el stack de entrenamiento
+        run: |
+          # La razon de exportar a ONNX es que el serving no reproduzca el
+          # entorno de entrenamiento. Si LightGBM o pandas entran a la imagen,
+          # esa separacion se perdio en silencio.
+          for pkg in lightgbm pandas sklearn torch pyspark; do
+            if docker run --rm --entrypoint python crmlops-serving:ci \
+                 -c "import $pkg" 2>/dev/null; then
+              echo "::error::La imagen de serving incluye $pkg; deberia traer solo onnxruntime"
+              exit 1
+            fi
+          done
+          echo "OK: la imagen no incluye el stack de entrenamiento"
+
+      - name: Smoke test del servicio
+        run: |
+          docker run -d --name scoring -p 8000:8000 crmlops-serving:ci
+          for i in $(seq 1 30); do
+            curl -fsS http://localhost:8000/health >/dev/null 2>&1 && break
+            sleep 2
+          done
+
+          echo "--- /health ---"
+          curl -fsS http://localhost:8000/health | tee /tmp/health.json
+          echo
+
+          echo "--- /score ---"
+          curl -fsS -X POST http://localhost:8000/score \
+            -H 'Content-Type: application/json' \
+            -d '{"gross_approval":250000,"sba_guaranteed":187500,"initial_rate":8.5,
+                 "jobs_supported":6,"naics_sector":"72","business_type":"CORPORATION",
+                 "business_age":"Existing or more than 2 years old","revolver_status":"N",
+                 "collateral_ind":"Y","rate_type":"V",
+                 "processing_method":"Preferred Lenders Program",
+                 "borrower_state":"TX","has_franchise":0}' | tee /tmp/score.json
+          echo
+
+          # La respuesta tiene que ser una probabilidad valida, no cualquier JSON.
+          # Se usa python -c y no un heredoc: dentro de un bloque `run: |` el
+          # terminador del heredoc queda indentado y el shell nunca lo reconoce.
+          python -c "
+          import json
+          d = json.load(open('/tmp/score.json'))
+          pd = d['probability_of_default']
+          assert 0 < pd < 1, f'PD fuera de rango: {pd}'
+          assert d['score_band'] in 'ABCDE', d['score_band']
+          suma = d['expected_loss_sba_usd'] + d['expected_loss_lender_usd']
+          assert abs(suma - d['expected_loss_usd']) < 1, 'la perdida no cuadra'
+          print(f'OK: PD={pd:.6f} banda={d[\"score_band\"]} EL=\${d[\"expected_loss_usd\"]:,.2f}')
+          "
+
+      - name: Logs si algo fallo
+        if: failure()
+        run: docker logs scoring || true
