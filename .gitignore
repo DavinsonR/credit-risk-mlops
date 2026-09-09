@@ -32,3 +32,6 @@ mlartifacts/
 
 # Artefactos intermedios de exports (regenerables): prefijo _
 exports/_*
+
+# JDK local para PySpark (bootstrap_jdk.py)
+.jdk/

@@ -22,6 +22,20 @@ sources:
     license: US Government Work / FOIA (dominio público)
     encoding: latin-1
 
+  # HMDA: el laboratorio de equidad. A diferencia de SBA, SI trae clases
+  # protegidas (raza, etnia, sexo, edad) porque la ley obliga a reportarlas
+  # justamente para poder auditar discriminación crediticia.
+  hmda:
+    api: https://ffiec.cfpb.gov/v2/data-browser-api/view
+    # 2020-2024 cubre tres regímenes distintos en cinco años: el auge de
+    # refinanciación (2020-21), el shock de tasas (2022) y la normalización
+    # (2023-24). Es variación de régimen real, no simulada.
+    years: [2020, 2021, 2022, 2023, 2024]
+    # 1 = originado, 3 = denegado. Se excluyen retirados, incompletos y
+    # comprados por otra institución: no son decisiones de suscripción.
+    actions_kept: [1, 3]
+    license: Dato público federal (HMDA / Regulation C)
+
 # Reglas de exclusión — quirks conocidos del dataset SBA.
 # Cada regla existe por una razón documentada; no borrar sin leer el ADR.
 exclusions:

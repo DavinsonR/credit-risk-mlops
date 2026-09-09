@@ -27,6 +27,9 @@ dev = ["ruff>=0.6", "pytest>=8.0", "pytest-cov>=5.0"]
 # torch va como extra: CI no lo necesita y son ~200 MB.
 #   uv sync --extra neural
 neural = ["torch>=2.4"]
+# PySpark solo para el benchmark de backends; requiere un JDK instalado.
+#   uv sync --extra spark
+spark = ["pyspark>=3.5"]
 
 # Indice explicito para torch CPU. `explicit = true` es la clave: sin eso uv
 # resolveria TODAS las dependencias contra el indice de PyTorch y rompe

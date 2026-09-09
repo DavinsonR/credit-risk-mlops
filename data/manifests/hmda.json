@@ -1,0 +1,54 @@
+{
+  "source": "hmda",
+  "acquired_at": "2026-09-09T19:37:58+00:00",
+  "years": [
+    2023
+  ],
+  "n_states": 2,
+  "total_rows": 25580,
+  "total_bytes": 345657,
+  "seconds": 3.8,
+  "columns_kept": 32,
+  "excluded": {
+    "outcome_only": [
+      "interest_rate",
+      "rate_spread",
+      "total_loan_costs",
+      "total_points_and_fees",
+      "origination_charges",
+      "discount_points",
+      "lender_credits",
+      "purchaser_type",
+      "denial_reason-1",
+      "denial_reason-2",
+      "denial_reason-3",
+      "denial_reason-4"
+    ],
+    "lender_decision": [
+      "aus-1",
+      "aus-2",
+      "aus-3",
+      "aus-4",
+      "aus-5"
+    ],
+    "protected_proxy": [
+      "tract_minority_population_percent"
+    ]
+  },
+  "shards": [
+    {
+      "shard": "hmda_2023_DC.parquet",
+      "rows": 11610,
+      "columns": 32,
+      "cached": false,
+      "bytes": 159301
+    },
+    {
+      "shard": "hmda_2023_VT.parquet",
+      "rows": 13970,
+      "columns": 32,
+      "cached": false,
+      "bytes": 186356
+    }
+  ]
+}
