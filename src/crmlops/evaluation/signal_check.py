@@ -125,11 +125,7 @@ def main() -> int:
         print(f"  {k:6s} {v:.4f}")
     print(f"  degradacion train->test (out-of-time): {auc['train'] - auc['test']:+.4f}")
 
-    imp = (
-        pd.Series(model.feature_importances_, index=cols)
-        .sort_values(ascending=False)
-        .head(10)
-    )
+    imp = pd.Series(model.feature_importances_, index=cols).sort_values(ascending=False).head(10)
     print("\nTop 10 features por ganancia:")
     for name, val in imp.items():
         print(f"  {name:22s} {val:>8,}")

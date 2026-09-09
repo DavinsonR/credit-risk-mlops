@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Sin permisos de escritura: CI solo verifica, no publica.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint y tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Instalar uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Instalar dependencias
+        run: uv sync --extra dev
+
+      - name: Lint (ruff)
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      # CI corre sobre tests/fixtures/ (muestra sin PII), NUNCA descarga datos:
+      # el corte completo son ~860 MB y el vintage rota cada trimestre, asi que
+      # un CI que descargue seria lento y no determinista.
+      - name: Tests
+        run: uv run pytest -m "not data" -q
+
+      - name: Verificar que no se commitearon datos crudos
+        run: |
+          if git ls-files | grep -E 'data/(raw|interim|parquet)/.*\.(csv|parquet)$'; then
+            echo "::error::Hay datos crudos trackeados en git"
+            exit 1
+          fi
+          echo "OK: sin datos crudos en el repo"
+
+      - name: Verificar autoria sin atribucion a IA
+        run: |
+          if git log --format='%B' -50 | grep -iE 'co-authored-by:.*(claude|anthropic|copilot)'; then
+            echo "::error::Se detecto atribucion a IA en el historial"
+            exit 1
+          fi
+          echo "OK: autoria limpia"

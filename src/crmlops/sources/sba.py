@@ -119,7 +119,9 @@ def acquire(*, force: bool = False, source: str = "sba_7a") -> dict:
     }
     out = manifest_dir / f"{source}.json"
     out.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
-    print(f"\nManifiesto -> {out.relative_to(Path.cwd()) if out.is_relative_to(Path.cwd()) else out}")
+    print(
+        f"\nManifiesto -> {out.relative_to(Path.cwd()) if out.is_relative_to(Path.cwd()) else out}"
+    )
     return manifest
 
 
@@ -139,7 +141,9 @@ def verify(source: str = "sba_7a") -> bool:
             print(f"  FALTA    {entry['filename']}")
             ok = False
         elif (digest := _sha256(path)) != entry["sha256"]:
-            print(f"  MISMATCH {entry['filename']}  esperado {entry['sha256'][:12]} vs {digest[:12]}")
+            print(
+                f"  MISMATCH {entry['filename']}  esperado {entry['sha256'][:12]} vs {digest[:12]}"
+            )
             ok = False
         else:
             print(f"  OK       {entry['filename']}")

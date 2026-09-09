@@ -48,8 +48,7 @@ def test_ninguna_columna_prohibida_en_el_select(cfg):
         if col in proyectadas_con_proposito:
             continue
         assert not re.search(rf"\b{re.escape(col)}\b", select_part), (
-            f"Columna prohibida {col!r} proyectada en el panel. "
-            "Ver config.yaml: features.forbidden"
+            f"Columna prohibida {col!r} proyectada en el panel. Ver config.yaml: features.forbidden"
         )
 
 

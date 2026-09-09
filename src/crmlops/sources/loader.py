@@ -23,11 +23,12 @@ def _sql_list(values: list[str]) -> str:
     return f"({escaped})"
 
 
-def build_query(cfg: dict | None = None) -> str:
+def build_query(cfg: dict | None = None, source_glob: str | None = None) -> str:
+    """Construye la query del panel. `source_glob` permite apuntar a un fixture en CI."""
     cfg = cfg or load_config()
     exc = cfg["exclusions"]
     tgt = cfg["target"]
-    raw = (repo_root() / RAW_GLOB).as_posix()
+    raw = source_glob or (repo_root() / RAW_GLOB).as_posix()
 
     reader = (
         f"read_csv('{raw}', union_by_name=true, ignore_errors=true, "
@@ -76,10 +77,14 @@ def build_query(cfg: dict | None = None) -> str:
     """
 
 
-def load_panel(cfg: dict | None = None) -> pd.DataFrame:
-    """Devuelve el panel filtrado y con features derivadas."""
+def load_panel(cfg: dict | None = None, source_glob: str | None = None) -> pd.DataFrame:
+    """Devuelve el panel filtrado y con features derivadas.
+
+    `source_glob` permite cargar desde un fixture muestreado (CI) en vez de los
+    CSV completos, que no se commitean.
+    """
     cfg = cfg or load_config()
-    df = duckdb.connect().execute(build_query(cfg)).fetchdf()
+    df = duckdb.connect().execute(build_query(cfg, source_glob)).fetchdf()
     return df.dropna(subset=["approval_fy"])
 
 
