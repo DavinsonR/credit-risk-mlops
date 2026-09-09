@@ -1,0 +1,38 @@
+{
+  "source": "sba_7a",
+  "acquired_at": "2026-09-09T03:25:03+00:00",
+  "resources": [
+    {
+      "filename": "FOIA_7a_FY1991_FY1999_asof_260630.csv",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY1991_FY1999_asof_260630.csv",
+      "fiscal_years": "FY1991_FY1999",
+      "vintage": "260630",
+      "sha256": "05040efc4a43224a02460d606ea744579a54b650bdb99663a833ed0b31936213",
+      "bytes": 146416885
+    },
+    {
+      "filename": "FOIA_7a_FY2000_FY2009_asof_260630.csv",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2000_FY2009_asof_260630.csv",
+      "fiscal_years": "FY2000_FY2009",
+      "vintage": "260630",
+      "sha256": "66674e18a700fbba0378c25118c291ac2759784a550c643cab5747eced763d6a",
+      "bytes": 318425094
+    },
+    {
+      "filename": "FOIA_7a_FY2010_FY2019_asof_260630.csv",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2010_FY2019_asof_260630.csv",
+      "fiscal_years": "FY2010_FY2019",
+      "vintage": "260630",
+      "sha256": "01a3e2c7988a6f4052e53f218a309feb2ec2fe42887bebdc0fa94ac8b1024ade",
+      "bytes": 255101999
+    },
+    {
+      "filename": "FOIA_7a_FY2020_Present_asof_260630.csv",
+      "url": "https://data.sba.gov/sites/default/files/uploaded_resources/FOIA_7a_FY2020_Present_asof_260630.csv",
+      "fiscal_years": "FY2020_Present",
+      "vintage": "260630",
+      "sha256": "6c1e9132b5141a19f82bdc8ccafb86c9a01662461cad41ddb36a3cf409d8a4fe",
+      "bytes": 181130871
+    }
+  ]
+}
