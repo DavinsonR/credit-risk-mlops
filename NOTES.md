@@ -228,7 +228,62 @@ supone que rechazar no altera el comportamiento del resto (prestatario, banco,
 mercado). Sirve para dimensionar; para política de crédito real haría falta un
 experimento.
 
-### Pendiente Semana 4
-- Gobierno: model card auto-generado y reporte de validación SR 11-7.
-- Gates de CI que bloqueen promoción.
-- `make reproduce` verificado.
+---
+
+## Semana 4 — Gobierno
+
+### Los gates bloquean de verdad
+Un gate que solo se ha visto pasar no es un control, es decoración. Probé los dos
+modos de falla:
+
+**Modo 1 — el modelo no alcanza el umbral.**
+```
+FALLA  auc_test    0.7005 >= 0.75
+BLOQUEADO: 1 de 4 gates fallaron.        exit=1
+```
+
+**Modo 2 — alguien cambia el split sin reentrenar.** Este es el sutil, y el que
+más me interesaba cubrir:
+```
+FALLA  config_coherente   metricas de config 73b45ff4228182d7,
+                          actual 750c75a7c5623832: reentrenar
+```
+
+El segundo existe por una decisión de diseño: los gates leen
+`exports/metrics.json` (commiteado) en vez de reentrenar en CI, porque entrenar
+exige ~860 MB de datos crudos que no viven en el repo y cuyo vintage rota cada
+trimestre. El agujero obvio de ese diseño sería que alguien edite `config.yaml` y
+deje métricas que ya no corresponden. El fingerprint lo cierra: hashea solo las
+claves que **cambian el significado de un número** (splits, exclusiones, target,
+features, semilla), así que cambiar una ruta o un comentario no invalida nada,
+pero cambiar el split sí.
+
+Estado actual: **4 gates, todos pasan.**
+
+### Model card generado, no escrito
+Un model card escrito a mano se desincroniza en la primera iteración y nadie lo
+nota. `reports/MODEL_CARD.md` se construye desde `exports/metrics.json`, así que
+o refleja el modelo actual o el gate de coherencia falla. Incluye limitaciones
+declaradas: reject inference, deriva de calibración con el ciclo, el supuesto del
+contrafactual, y censura residual del 25-30%.
+
+Nota ética que quedó registrada: **el extracto FOIA de SBA no trae clases
+protegidas**, así que sobre estos datos no se puede auditar sesgo. Eso va a HMDA
+en Semana 6. Y `borrower_state` y `naics_sector` son proxies geográficos y
+sectoriales que pueden correlacionar con características protegidas — queda
+declarado, no oculto.
+
+### make reproduce
+```
+REPRODUCIBLE: 3 modelos, 6 metricas cada uno, identicas hasta 0.0001.
+```
+Incluye la red PyTorch. La tolerancia no es cero a propósito: LightGBM con
+`n_jobs=-1` y PyTorch en CPU multihilo pueden diferir en el último bit según cómo
+se repartan los hilos. 1e-4 es mucho más fino que cualquier diferencia capaz de
+cambiar una decisión.
+
+_(escribir: por qué un repo puede tener CI verde y aun así ser irreproducible)_
+
+### Pendiente Semana 5
+- HMDA a escala: ~50M filas, dos backends (DuckDB y PySpark) con benchmark.
+- Conectar el gate de fairness, que ya está declarado pero sin datos que lo activen.

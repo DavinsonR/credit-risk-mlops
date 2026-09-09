@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card reproduce lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -18,6 +18,24 @@ verify:  ## Revalida los datos locales contra el manifiesto commiteado
 
 signal-check:  ## GATE SEMANA 1: confirma que existe poder discriminante
 	$(UV) run python -m crmlops.evaluation.signal_check
+
+train:  ## Entrena baseline + retadores; escribe exports/metrics.json
+	$(UV) run python -m crmlops.models.train
+
+economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
+	$(UV) run python -m crmlops.models.train_economics
+
+gates:  ## Gates de promocion. Falla (exit 1) si el modelo no cumple
+	$(UV) run python -m crmlops.governance.gates
+
+card:  ## Regenera reports/MODEL_CARD.md desde la ultima corrida
+	$(UV) run python -m crmlops.governance.model_card
+
+reproduce:  ## Reentrena y ASSERTA que las metricas son identicas a las commiteadas
+	$(UV) run python -m crmlops.governance.reproduce
+
+audit:  ## Auditoria de contaminacion post-originacion sobre los candidatos
+	$(UV) run python -m crmlops.evaluation.contamination_audit
 
 lint:  ## ruff check + format check
 	$(UV) run ruff check .

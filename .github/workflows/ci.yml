@@ -47,6 +47,12 @@ jobs:
           fi
           echo "OK: sin datos crudos en el repo"
 
+      # Los gates leen exports/metrics.json (commiteado) en vez de reentrenar:
+      # entrenar exige ~860 MB de datos crudos que no viven en el repo. El gate
+      # de coherencia impide que ese artefacto se desincronice de config.yaml.
+      - name: Gates de promocion del modelo
+        run: uv run python -m crmlops.governance.gates
+
       - name: Verificar autoria sin atribucion a IA
         run: |
           if git log --format='%B' -50 | grep -iE 'co-authored-by:.*(claude|anthropic|copilot)'; then

@@ -22,6 +22,7 @@ import pandas as pd
 
 from crmlops.config import load_config, repo_root, resolve_path
 from crmlops.evaluation.metrics import calibration, discrimination, psi
+from crmlops.governance.gates import config_fingerprint
 from crmlops.models.calibration import CALIBRATORS, fit_calibrator
 from crmlops.models.gbm import GBMChallenger
 from crmlops.models.neural import NeuralChallenger
@@ -31,6 +32,9 @@ from crmlops.sources.loader import load_panel, split_out_of_time
 
 TARGET = "is_chargeoff"
 PRODUCTION_CALIBRATOR = "intercept"  # declarado ANTES de ver test
+# LightGBM y no la red neuronal, pese a que la red gana 0.0049 de AUC de forma
+# estadisticamente significativa. Ver docs/adr/0004-modelo-de-produccion.md.
+PRODUCTION_MODEL = "lightgbm"
 
 NUMERIC = [
     "gross_approval",
@@ -184,8 +188,14 @@ def main() -> int:
                     k: [int(sp[k]["approval_fy"].min()), int(sp[k]["approval_fy"].max())]
                     for k in ("train", "valid", "test")
                 },
+                "split_sizes": {k: len(sp[k]) for k in ("train", "valid", "test")},
+                "split_rates": {k: float(sp[k][TARGET].mean()) for k in ("train", "valid", "test")},
                 "models": res.to_dict(orient="records"),
+                "production_model": PRODUCTION_MODEL,
                 "production_calibrator": PRODUCTION_CALIBRATOR,
+                # Ata estas metricas a la configuracion que las produjo. Si alguien
+                # cambia el split o las exclusiones sin reentrenar, el gate lo ve.
+                "config_fingerprint": config_fingerprint(cfg),
             },
             indent=2,
         )

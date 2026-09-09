@@ -15,6 +15,16 @@
       2018
     ]
   },
+  "split_sizes": {
+    "train": 217060,
+    "valid": 51423,
+    "test": 89313
+  },
+  "split_rates": {
+    "train": 0.06750668018059523,
+    "valid": 0.07885576493008965,
+    "test": 0.09596587282926337
+  },
   "models": [
     {
       "modelo": "neural_mlp",
@@ -28,7 +38,7 @@
       "ratio_test": 5.555324315585143,
       "drop_oot": 0.002063292336857536,
       "psi": 0.20331471558670458,
-      "segundos": 61.15650619997177
+      "segundos": 88.40891140000895
     },
     {
       "modelo": "lightgbm",
@@ -42,7 +52,7 @@
       "ratio_test": 0.8702434325744275,
       "drop_oot": 0.029890594212046873,
       "psi": 0.17460933214034136,
-      "segundos": 3.536177299974952
+      "segundos": 3.3660869999439456
     },
     {
       "modelo": "scorecard_woe",
@@ -56,8 +66,10 @@
       "ratio_test": 0.8166416553997647,
       "drop_oot": -0.016297409846977473,
       "psi": 0.132280608345734,
-      "segundos": 2.396854499995243
+      "segundos": 2.3289382999646477
     }
   ],
-  "production_calibrator": "intercept"
+  "production_model": "lightgbm",
+  "production_calibrator": "intercept",
+  "config_fingerprint": "73b45ff4228182d7"
 }
