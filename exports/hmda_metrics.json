@@ -1,0 +1,20 @@
+{
+  "model": "hmda_lightgbm",
+  "seed": 42,
+  "approval_rate": 0.75,
+  "n_test": 1941270,
+  "auc_test": 0.8847021809305798,
+  "gini_test": 0.7694043618611597,
+  "ks_test": 0.6077855896536125,
+  "brier_test": 0.10210549973819338,
+  "ece_test": 0.004523801458363895,
+  "psi": 0.1164827137498862,
+  "psi_shape": 0.20990981006284104,
+  "disparate_impact_ratio": 0.763867980853527,
+  "worst_dimension_group": "Native Hawaiian or Other Pacific Islander",
+  "fairness_delta": {
+    "RAZA": -0.001675555583660504,
+    "ETNIA": 0.008339023475697482,
+    "SEXO": 0.030796379545837804
+  }
+}

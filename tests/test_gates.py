@@ -149,3 +149,56 @@ def test_el_margen_sobre_baseline_es_relativo(metrics, cfg):
     }
     metrics.write_text(json.dumps(data), encoding="utf-8")
     assert "margen_sobre_baseline" in _fallidos(evaluate(metrics, cfg))
+
+
+# --- gate de equidad: bloquea PROMOCION, no rompe el build ---
+
+
+@pytest.fixture
+def hmda_metrics(tmp_path):
+    def _write(dir_ratio: float, promoted: bool):
+        path = tmp_path / "hmda_metrics.json"
+        path.write_text(
+            json.dumps(
+                {
+                    "model": "hmda_lightgbm",
+                    "disparate_impact_ratio": dir_ratio,
+                    "worst_dimension_group": "Grupo X",
+                    "promoted": promoted,
+                }
+            ),
+            encoding="utf-8",
+        )
+        return path
+
+    return _write
+
+
+def test_un_modelo_injusto_no_promovido_no_rompe_el_build(hmda_metrics, cfg):
+    """Medirlo, documentarlo y no desplegarlo ES el sistema funcionando."""
+    from crmlops.governance.gates import evaluate_fairness
+
+    res = evaluate_fairness(cfg, hmda_metrics(0.70, promoted=False))
+    assert res and res[0].passed
+    assert "NO promovido" in res[0].detail
+
+
+def test_promover_un_modelo_injusto_SI_rompe_el_build(hmda_metrics, cfg):
+    """Lo que el gate impide es desplegar algo que no cumple el umbral."""
+    from crmlops.governance.gates import evaluate_fairness
+
+    res = evaluate_fairness(cfg, hmda_metrics(0.70, promoted=True))
+    assert res and not res[0].passed
+
+
+def test_un_modelo_justo_promovido_pasa(hmda_metrics, cfg):
+    from crmlops.governance.gates import evaluate_fairness
+
+    res = evaluate_fairness(cfg, hmda_metrics(0.92, promoted=True))
+    assert res and res[0].passed
+
+
+def test_sin_archivo_de_hmda_no_hay_gate(tmp_path, cfg):
+    from crmlops.governance.gates import evaluate_fairness
+
+    assert evaluate_fairness(cfg, tmp_path / "no-existe.json") == []

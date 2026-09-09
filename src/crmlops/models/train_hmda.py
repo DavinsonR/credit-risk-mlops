@@ -162,6 +162,15 @@ def main() -> int:
         "disparate_impact_ratio": float(peor.disparate_impact_ratio),
         "worst_dimension_group": peor.worst_group,
         "fairness_delta": tabla.set_index("dimension")["delta"].to_dict(),
+        # Un gate BLOQUEA PROMOCION; no rompe el build. Este modelo existe, esta
+        # documentado, fallo el umbral de equidad y por eso NO se despliega.
+        # Marcarlo promoted=true sin arreglar la disparidad hace fallar el gate.
+        "promoted": bool(peor.disparate_impact_ratio >= FOUR_FIFTHS),
+        "promotion_blocked_by": (
+            None
+            if peor.disparate_impact_ratio >= FOUR_FIFTHS
+            else f"disparate_impact_ratio {peor.disparate_impact_ratio:.3f} < {FOUR_FIFTHS}"
+        ),
     }
     (out / "hmda_metrics.json").write_text(
         json.dumps(metrics, indent=2, default=float) + "\n", encoding="utf-8"

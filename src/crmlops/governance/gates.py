@@ -185,9 +185,45 @@ def evaluate(metrics_path: Path | None = None, cfg: dict | None = None) -> list[
     return results
 
 
+def evaluate_fairness(cfg: dict | None = None, path: Path | None = None) -> list[GateResult]:
+    """Gate de equidad sobre el modelo de HMDA.
+
+    Semantica deliberada: un gate BLOQUEA PROMOCION, no rompe el build. Un modelo
+    que falla el umbral y esta marcado `promoted: false` es el sistema
+    funcionando -- se midio, se documento y no se despliega. Lo que SI falla el
+    build es marcar `promoted: true` un modelo que no cumple.
+    """
+    cfg = cfg or load_config()
+    path = path or (repo_root() / "exports" / "hmda_metrics.json")
+    if not path.exists():
+        return []
+
+    data = json.loads(path.read_text(encoding="utf-8"))
+    dir_ratio = _num(data, "disparate_impact_ratio")
+    thr = cfg["gates"]["min_disparate_impact_ratio"]
+    cumple = dir_ratio is not None and dir_ratio >= thr
+    promovido = bool(data.get("promoted", False))
+
+    detalle = "" if cumple else f"peor grupo: {data.get('worst_dimension_group', '?')}"
+    if not cumple and not promovido:
+        detalle += "  -> NO promovido, gate cumpliendo su funcion"
+
+    return [
+        GateResult(
+            "hmda:disparate_impact",
+            dir_ratio,
+            thr,
+            "min",
+            # Solo falla el build si se pretende promover algo que no cumple.
+            passed=cumple or not promovido,
+            detail=detalle,
+        )
+    ]
+
+
 def main() -> int:
     cfg = load_config()
-    results = evaluate(cfg=cfg)
+    results = evaluate(cfg=cfg) + evaluate_fairness(cfg)
 
     print("=" * 84)
     print("GATES DE PROMOCION")
