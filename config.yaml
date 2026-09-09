@@ -35,6 +35,21 @@ sources:
     # comprados por otra institución: no son decisiones de suscripción.
     actions_kept: [1, 3]
     license: Dato público federal (HMDA / Regulation C)
+    # Split out-of-time. 2024 como prueba es el año más reciente disponible y
+    # cae del lado del shock de tasas; el modelo se entrena en el auge de
+    # refinanciación y se prueba en un régimen distinto. Es duro a propósito.
+    splits:
+      train: { start: 2020, end: 2022 }
+      valid: { start: 2023, end: 2023 }
+      test:  { start: 2024, end: 2024 }
+    # Muestreo Bernoulli por split. Con ~2M filas de prueba, el grupo protegido
+    # más pequeño (2+ razas minoritarias, ~0.2% de las solicitudes) conserva
+    # ~4,000 observaciones: error estándar de ~0.8 pp sobre su tasa de
+    # denegación, suficiente para un umbral que se juega en décimas.
+    sample_pct:
+      train: 10
+      valid: 25
+      test: 25
 
 # Reglas de exclusión — quirks conocidos del dataset SBA.
 # Cada regla existe por una razón documentada; no borrar sin leer el ADR.
