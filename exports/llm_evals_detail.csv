@@ -1,0 +1,7 @@
+caso,provider,language,faithfulness,recall,precision,hallucinated,compliant,prohibited_found,readability,words,within_length,consistent,seconds,error,pasa
+startup_alto_riesgo,template,es,1.0,1.0,1.0,[],True,[],62.6,87,True,True,0.0,,True
+startup_alto_riesgo,template,en,1.0,1.0,1.0,[],True,[],33.4,77,True,True,0.0,,True
+monto_alto_una_razon,template,es,1.0,1.0,1.0,[],True,[],55.4,69,True,True,0.0,,True
+monto_alto_una_razon,template,en,1.0,1.0,1.0,[],True,[],31.6,63,True,True,0.0,,True
+sin_colateral,template,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,0.0,,True
+sin_colateral,template,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,0.0,,True

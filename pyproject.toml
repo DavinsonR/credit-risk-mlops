@@ -40,6 +40,9 @@ serve = [
     "httpx>=0.28.1",
     "uvicorn[standard]>=0.52.4",
 ]
+explain = [
+    "shap>=0.52.0",
+]
 
 # Indice explicito para torch CPU. `explicit = true` es la clave: sin eso uv
 # resolveria TODAS las dependencias contra el indice de PyTorch y rompe

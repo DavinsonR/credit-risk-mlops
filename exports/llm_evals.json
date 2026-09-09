@@ -1,0 +1,19 @@
+{
+  "providers": [
+    "template"
+  ],
+  "n_cases": 6,
+  "summary": [
+    {
+      "provider": "template",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 44.7667,
+      "palabras": 73.0,
+      "consistente": 1.0,
+      "segundos": 0.0,
+      "pasa": 1.0
+    }
+  ]
+}
