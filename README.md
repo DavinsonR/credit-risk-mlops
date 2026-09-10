@@ -31,32 +31,36 @@ que la descarga termine, tiene que estar **completa**.
    en el panel no se puede calcular disparate impact; con ellas en el modelo se
    discrimina. Ver [ADR 0006](docs/adr/0006-exclusiones-en-hmda.md).
 
-## Uso
+## Instalación
+
+El único prerrequisito es [`uv`](https://docs.astral.sh/uv/). Python 3.12 y todas
+las dependencias las instala el propio proyecto — no hace falta tener Python.
 
 **Windows** (no requiere `make`):
 
 ```powershell
-.
-un.ps1 setup       # entorno con uv (Python 3.12)
-.
-un.ps1 acquire     # descarga fuentes + verifica hashes
-.
-un.ps1 all         # train -> gates -> model card -> economía
-.
-un.ps1 help        # todas las tareas
+.\run.ps1 setup       # Python 3.12 + dependencias + hook de autoría
+.\run.ps1 test        # verifica la instalación sin descargar nada
+.\run.ps1 acquire     # descarga fuentes + verifica hashes (~860 MB)
+.\run.ps1 all         # train -> gates -> model card -> economía
+.\run.ps1 help        # todas las tareas
 ```
 
 **Linux / macOS** (lo que corre CI):
 
 ```bash
 make setup
+make test
 make acquire
 make train && make gates && make card
 ```
 
+Paso a paso completo —extras opcionales, LLM local, PySpark, Docker, y qué debe
+imprimir cada comando— en **[docs/INSTALL.md](docs/INSTALL.md)**.
+
 ## Gates de promoción
 
-El modelo no se promueve si no pasa los siete gates, y CI los ejecuta en cada PR:
+El modelo no se promueve si no pasa los ocho gates, y CI los ejecuta en cada PR:
 
 | Gate | Qué garantiza |
 |---|---|
@@ -67,6 +71,7 @@ El modelo no se promueve si no pasa los siete gates, y CI los ejecuta en cada PR
 | `drop_oot` | La degradación out-of-time no excede 2x la variación natural |
 | `brier_test` | Le gana al predictor sin habilidad (constante = tasa base) |
 | `ece_test` | Predicho y observado coinciden dentro de 2 puntos porcentuales |
+| `hmda:disparate_impact` | Criterio de los cuatro quintos por clase protegida. **Hoy da 0.7639 y por eso el modelo de acceso no está promovido** |
 
 Cada umbral tiene su derivación escrita al lado en `config.yaml`. Ninguno se eligió
 porque el modelo lo pasaba — ver [docs/AUDIT.md](docs/AUDIT.md).

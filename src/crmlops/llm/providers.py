@@ -23,6 +23,7 @@ y el harness reporta cuáles se evaluaron.
 
 from __future__ import annotations
 
+import contextlib
 import os
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
@@ -66,10 +67,11 @@ class Provider(ABC):
         Sin esto, el harness mide un artefacto de arranque en frio y lo atribuye
         al modelo -- que es exactamente lo que hizo en su primera version.
         """
-        try:
+        # Si el calentamiento falla, se sigue: la generacion medida vendra despues
+        # y reportara su propio error con contexto. Abortar aqui convertiria un
+        # detalle de instrumentacion en un fallo del harness.
+        with contextlib.suppress(Exception):
             self.generate("Responde solo: ok", temperature=0.0, seed=42)
-        except Exception:
-            pass
 
     def run(self, prompt: str, **kw) -> Generation:
         import time

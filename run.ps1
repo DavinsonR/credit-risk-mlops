@@ -13,7 +13,20 @@ param([Parameter(Position = 0)][string]$Task = "help")
 $ErrorActionPreference = "Stop"
 
 $Tasks = [ordered]@{
-    "setup"        = @{ desc = "Crea el entorno (Python 3.12) e instala dependencias"; cmd = { uv python install 3.12; uv sync --extra dev } }
+    # El hook de autoria se apunta aqui y no a mano: .git/hooks no se clona, asi
+    # que sin esta linea un clon nuevo queda sin la proteccion y el trailer de IA
+    # solo lo veria CI, despues del push.
+    "setup"        = @{ desc = "Entorno (Python 3.12), dependencias y hook de autoria"; cmd = {
+            uv python install 3.12
+            uv sync --extra dev
+            if (Test-Path .git) {
+                git config core.hooksPath scripts/hooks
+                Write-Host "hook de autoria instalado (core.hooksPath=scripts/hooks)"
+            } else {
+                Write-Host "sin repo git: hook de autoria NO instalado" -ForegroundColor Yellow
+            }
+        }
+    }
     "setup-neural" = @{ desc = "Igual que setup, mas PyTorch (~200 MB)"; cmd = { uv sync --extra dev --extra neural } }
     "acquire"      = @{ desc = "Descubre y descarga las fuentes; escribe manifiesto SHA256"; cmd = { uv run python -m crmlops.sources.sba } }
     "verify"       = @{ desc = "Revalida los datos locales contra el manifiesto"; cmd = { uv run python -c "from crmlops.sources import sba; raise SystemExit(0 if sba.verify() else 1)" } }

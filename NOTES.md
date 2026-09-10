@@ -675,3 +675,86 @@ razonables y son falsas)_
 - Monitoreo de drift con datos trimestrales reales de SBA.
 - Reentrenamiento automático con gate de promoción.
 - Cerrar la pregunta abierta del híbrido (instrumentar la decisión de fallback).
+
+---
+
+## Documentar la instalación — y los cinco defectos que salieron al hacerlo
+
+Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
+cinco cosas rotas, dos de ellas serias, y ninguna se habría visto revisando código.
+
+### 1. Las instrucciones del README no se podían ejecutar
+
+El bloque de PowerShell decía, literalmente:
+
+```
+.
+un.ps1 setup       # entorno con uv
+```
+
+Un `\r` escrito sin escapar se volvió un salto de línea real y partió `.\run.ps1`
+en dos. La ironía es exacta: el defecto 8 de [docs/AUDIT.md](docs/AUDIT.md) era
+*"el README pide `make setup` en una máquina donde `make` no existe: instrucciones
+que no se pueden ejecutar"*. Lo arreglé, y al arreglarlo lo rompí de otra forma.
+
+Se encontró porque escribir una guía de instalación obliga a leer lo que ya está
+escrito como lo lee quien llega por primera vez. No hay test que cubra esto.
+
+### 2. `setup` no instalaba el hook de autoría
+
+`.git/hooks` no se clona. El hook vive en `scripts/hooks/` y solo funciona si
+`core.hooksPath` apunta ahí — y eso estaba configurado **en mi máquina**, a mano,
+nunca en `setup`. En un clon nuevo la restricción que más me importa del proyecto
+no existía, y un trailer de IA solo lo habría detectado CI, después del push.
+
+Ahora `make setup` y `.\run.ps1 setup` lo apuntan, e imprimen que lo hicieron.
+
+### 3. El hook fallaba abierto — el defecto serio
+
+El hook era una línea:
+
+```sh
+if grep -qiE 'co-authored-by:.*(claude|anthropic|...)' "$1"; then exit 1; fi
+```
+
+`grep` devuelve un código distinto de cero en **dos** situaciones que no son la
+misma: cuando no encuentra nada, y cuando no pudo buscar. Escrito así, el hook
+leía "no pude revisar" como "está limpio".
+
+Verificado, no supuesto: invocándolo con el `sh.exe` de Git for Windows sin
+`/usr/bin` en el PATH, `grep: command not found`, salida 0, **trailer aceptado sin
+imprimir nada**. Git lo llama con su propio PATH, así que en uso normal nunca
+fallaba. Eso es lo que lo hacía peligroso: un control que solo se cae en silencio
+y en el momento en que hace falta.
+
+Ahora rechaza si no puede leer el mensaje y rechaza si no hay `grep`. Y hay 16
+tests (`tests/test_authorship_hook.py`) que le pasan siete mensajes con atribución,
+seis legítimos —incluidos los que nombran a Anthropic u Ollama en prosa, porque
+este proyecto los compara— y los dos casos de fallo cerrado.
+
+**Los tests encontraron el defecto en la primera corrida.** El hook llevaba desde
+la semana 1 sin que nadie le pasara un mensaje malo.
+
+### 4. CI estaba en rojo y no me había dado cuenta
+
+`ruff check` falla en `providers.py`: el `try/except Exception: pass` del
+`warm_up()` que agregué en la semana 8 dispara `SIM105`. Está commiteado y
+pusheado, así que el CI de la semana 8 está rojo desde entonces.
+
+Empujé sin correr `lint`. La lección no es sutil: el proyecto tiene el comando,
+está en el Makefile y en `run.ps1`, y no lo corrí.
+
+### 5. El README anunciaba siete gates y son ocho
+
+Faltaba `hmda:disparate_impact`, que es justamente el que hoy **no** promueve el
+modelo de acceso (0.7639 contra un umbral de 0.80). El gate más interesante del
+repo era el que no estaba en la tabla.
+
+### Lo que esto dice del proyecto
+
+Cuatro de los cinco defectos viven en la capa que nadie audita: instrucciones,
+scripts de arranque, hooks. El modelo tiene 8 gates, 122 tests y un reporte de
+validación; la instalación tenía un README que no se podía copiar y pegar.
+
+_(escribir: por qué la documentación de instalación es un test de integración del
+proyecto y no una tarea de redacción)_

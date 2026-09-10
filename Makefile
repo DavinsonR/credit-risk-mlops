@@ -6,9 +6,16 @@ UV := uv
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN{FS=":.*?## "}{printf "  \033[36m%-16s\033[0m %s\n",$$1,$$2}'
 
-setup:  ## Crea el entorno (Python 3.12) e instala dependencias
+setup:  ## Crea el entorno (Python 3.12), instala dependencias y el hook de autoria
 	$(UV) python install 3.12
 	$(UV) sync --extra dev
+	@# El hook vive en scripts/hooks/ porque .git/hooks NO se clona. Sin este
+	@# apuntado, un clon nuevo no tiene la proteccion de autoria y el trailer
+	@# solo se detectaria en CI, despues del push: tarde.
+	@git rev-parse --git-dir >/dev/null 2>&1 \
+		&& git config core.hooksPath scripts/hooks \
+		&& echo "hook de autoria instalado (core.hooksPath=scripts/hooks)" \
+		|| echo "sin repo git: hook de autoria NO instalado"
 
 acquire:  ## Descubre y descarga las fuentes; escribe manifiesto con SHA256
 	$(UV) run python -m crmlops.sources.sba

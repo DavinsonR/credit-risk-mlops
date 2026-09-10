@@ -1,7 +1,37 @@
 #!/bin/sh
 # Impide que se cuele atribucion a asistentes de IA en los commits.
 # La autoria de este repo es exclusivamente humana por decision del autor.
-if grep -qiE 'co-authored-by:.*(claude|anthropic|copilot|gpt)|generated with \[?claude|🤖' "$1"; then
+#
+# ESTE CONTROL FALLA CERRADO, y esa es la parte que importa.
+#
+# La version anterior era una sola linea: `if grep -qiE ... "$1"`. El problema es
+# que grep devuelve un codigo distinto de cero en dos situaciones que no son la
+# misma: cuando NO encuentra nada, y cuando no pudo buscar --archivo ilegible, o
+# grep ausente del PATH--. Escrito asi, el hook interpretaba "no pude revisar"
+# como "esta limpio" y dejaba pasar el commit sin imprimir nada.
+#
+# No es hipotetico: verificado en Windows invocando el hook con `sh.exe` sin
+# /usr/bin en el PATH. `grep: command not found`, salida 0, trailer aceptado.
+# Git lo llama con su propio PATH y ahi funcionaba, asi que el defecto no se veia
+# nunca en uso normal -- que es exactamente lo que lo hace peligroso.
+#
+# Cubierto por tests/test_authorship_hook.py.
+
+msg="$1"
+
+if [ -z "$msg" ] || [ ! -r "$msg" ]; then
+  echo "commit-msg: no puedo leer el mensaje del commit (\"$msg\")." >&2
+  echo "Se rechaza por precaucion: este control no falla abierto." >&2
+  exit 1
+fi
+
+if ! command -v grep >/dev/null 2>&1; then
+  echo "commit-msg: no hay grep en el PATH; no puedo verificar la autoria." >&2
+  echo "Se rechaza por precaucion: este control no falla abierto." >&2
+  exit 1
+fi
+
+if grep -qiE 'co-authored-by:.*(claude|anthropic|copilot|gpt)|generated with \[?claude|🤖' "$msg"; then
   echo "commit-msg: se detecto atribucion a IA en el mensaje." >&2
   echo "Este repo no lleva trailers de asistentes. Quitalo y reintenta." >&2
   exit 1
