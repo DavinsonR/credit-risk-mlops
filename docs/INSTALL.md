@@ -80,23 +80,27 @@ cd credit-risk-mlops
 make setup
 ```
 
-> **`.\run`, no `.\run.ps1`.** En un Windows por defecto la ExecutionPolicy es
-> `Restricted` y llamar al `.ps1` directamente falla con `SecurityException` antes
-> de hacer nada:
+> **`.\run` es `run.cmd`.** En un Windows por defecto la ExecutionPolicy es
+> `Restricted` y **ningún `.ps1` arranca**: falla con `SecurityException` antes de
+> hacer nada.
 >
 > ```
 > .\run.ps1 : File ...\run.ps1 cannot be loaded because running scripts is
 > disabled on this system.
 > ```
 >
-> `run.cmd` no está sujeto a esa política y le pasa a `run.ps1` un bypass acotado
-> a esa invocación: no cambia ninguna configuración del sistema ni de la cuenta, y
-> no persiste nada. PowerShell resuelve `.\run` a `run.cmd` por `PATHEXT`, así que
-> se escribe igual de corto.
+> Un `.cmd` no está sujeto a esa política. `run.cmd` llama al script real
+> —`scripts/run.ps1`— con un bypass **acotado a esa invocación**: no cambia
+> configuración del sistema ni de tu cuenta, y no persiste nada.
 >
-> Si prefieres **no** rodear la política, habilítala una vez para tu usuario y usa
-> el `.ps1` directamente. Es un cambio permanente en tu cuenta, así que decídelo
-> tú:
+> El `.ps1` vive en `scripts/` y no en la raíz por una razón medida, no estética:
+> con los dos archivos juntos, `Get-Command .\run` devolvía **`run.ps1`**
+> —PowerShell lo prefiere sobre el `.cmd`— y el comando corto de esta guía seguía
+> fallando. Sacarlo de la raíz elimina la ambigüedad en vez de documentarla.
+>
+> Si prefieres **no** rodear la política, habilítala una vez para tu usuario y
+> llama a `scripts/run.ps1` directamente. Es un cambio permanente en tu cuenta,
+> así que decídelo tú:
 >
 > ```powershell
 > Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
@@ -357,11 +361,11 @@ colaran, esa separación se habría perdido en silencio.
 | Síntoma | Causa | Solución |
 |---|---|---|
 | `make: command not found` en Windows | No hay `make` en Windows | Usar `.\run <tarea>`. El Makefile sigue siendo la referencia porque CI corre en Linux. |
-| `running scripts is disabled on this system` / `UnauthorizedAccess` | ExecutionPolicy `Restricted`, que es el valor por defecto de Windows cliente | Usar `.\run` (el `.cmd`), no `.\run.ps1`. O `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` una vez. Ver el paso 3. |
+| `running scripts is disabled on this system` / `UnauthorizedAccess` | ExecutionPolicy `Restricted`, el valor por defecto de Windows cliente | Usar `.\run` (que es `run.cmd`). Si tienes un clon anterior a esta corrección, `git pull` primero: en él `.\run` todavía resuelve al `.ps1`. Alternativa permanente: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`. Ver el paso 3. |
 | `uv: command not found` justo tras instalar | El `PATH` cambió | Abrir una terminal nueva. |
-| `winget` falla al actualizar `uv` con `remove: Access is denied` y `0x8a150003` | Hay un proceso `uv run` vivo. `winget` pone el `uv.exe` en su propia carpeta de paquetes y Windows no borra un `.exe` en ejecución — el error no lo dice. Casi siempre es un `run.ps1 web` o `run.ps1 serve` olvidado | No hace falta actualizar: el `uv` que ya tienes sirve. Si igual lo quieres, cerrar el servidor (`Ctrl+C`, o `Get-Process uv \| Stop-Process`) y repetir. |
+| `winget` falla al actualizar `uv` con `remove: Access is denied` y `0x8a150003` | Hay un proceso `uv run` vivo. `winget` pone el `uv.exe` en su propia carpeta de paquetes y Windows no borra un `.exe` en ejecución — el error no lo dice. Casi siempre es un `run web` o `run serve` olvidado | No hace falta actualizar: el `uv` que ya tienes sirve. Si igual lo quieres, cerrar el servidor (`Ctrl+C`, o `Get-Process uv \| Stop-Process`) y repetir. |
 | `python --version` dice 3.13 o 3.14 | Es tu Python del sistema y no se usa | Irrelevante. `pyproject.toml` pide `>=3.12,<3.13` y `uv` instala su propio 3.12 aislado, sin tocar el tuyo. |
-| Acentos rotos en la consola | Codepage de Windows | `run.ps1` fija `PYTHONIOENCODING=utf-8`. Si invocas los módulos a mano, fíjala tú. |
+| Acentos rotos en la consola | Codepage de Windows | `run.cmd` fija `PYTHONIOENCODING=utf-8`. Si invocas los módulos a mano, fíjala tú. |
 | `RuntimeError: No hay JDK` | PySpark sin JVM | `uv run python scripts/bootstrap_jdk.py` |
 | `ModuleNotFoundError: onnxruntime` / `fastapi` | Falta un extra | `uv sync --extra dev --extra onnx --extra serve` |
 | `verify` reporta hash distinto | Vintage nuevo de SBA | Esperado cada trimestre. Ver [ADR 0001](adr/0001-descubrimiento-de-urls-sba.md). |

@@ -788,7 +788,39 @@ releer el código.
 
 `run.cmd`: un `.cmd` no está sujeto a la ExecutionPolicy y le pasa a `run.ps1` un
 bypass acotado a esa invocación. No cambia configuración del sistema ni de la
-cuenta, no persiste nada, y `PATHEXT` hace que `.\run setup` funcione tal cual.
+cuenta y no persiste nada.
+
+#### El primer arreglo no funcionó — y falló exactamente por lo mismo
+
+Publiqué `run.cmd` y le dije a Davirson que escribiera `.\run setup`. Volvió a
+fallar, con el mismo error.
+
+**PowerShell resuelve `.\run` al `.ps1`, no al `.cmd`.** Lo prefiere. Con los dos
+archivos juntos en la raíz, el comando corto de la guía seguía cayendo en el
+archivo que no arranca:
+
+```
+PS> Get-Command .\run
+Name        : run.ps1
+CommandType : ExternalScript
+```
+
+Yo lo había "verificado" corriendo `.\run help` en mi terminal — y funcionó,
+porque ahí `Process = Bypass` ejecuta el `.ps1` sin chistar. **Mi verificación
+tenía el mismo defecto que estaba arreglando: probé el arreglo en el único
+entorno donde el bug no existe.**
+
+Dos cosas salieron de ahí:
+
+1. **`run.ps1` se movió a `scripts/`.** Sin dos archivos con el mismo nombre en la
+   raíz no hay ambigüedad que documentar. `.\run` solo puede ser el `.cmd`.
+2. **Ahora reproduzco la política, no la asumo.** Un proceso hijo con
+   `powershell -NoProfile -ExecutionPolicy Restricted` es el entorno del usuario,
+   y ahí verifiqué el arreglo: `.\run help` desde la raíz y `run.cmd lint` desde
+   `C:\`, ambos con salida 0.
+
+Es la diferencia entre "no vi que fallara" y "lo ejecuté donde fallaba y ya no
+falla" — la misma distinción que el proyecto le exige a sus métricas.
 
 Queda dicho sin adornos en la cabecera del archivo: **esto rodea la
 ExecutionPolicy.** Microsoft la documenta como protección contra ejecución

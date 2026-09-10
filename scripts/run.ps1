@@ -4,16 +4,20 @@
 # `make setup` en una máquina donde `make` no existe: instrucciones que no se
 # pueden ejecutar (docs/AUDIT.md, defecto 8).
 #
-# INVOCAR POR `run.cmd`, NO POR ESTE ARCHIVO:
+# NO SE INVOCA DIRECTAMENTE. La puerta de entrada es `run.cmd`, en la raíz:
 #
 #   .\run setup
 #   .\run train
 #   .\run help
 #
-# En un Windows por defecto la ExecutionPolicy es `Restricted` y llamar a este
-# .ps1 directamente falla con SecurityException antes de hacer nada. `run.cmd` no
-# está sujeto a esa política y le pasa un bypass acotado a esta invocación. La
-# explicación completa está en su cabecera y en docs/INSTALL.md.
+# En un Windows por defecto la ExecutionPolicy es `Restricted` y este .ps1 no
+# arranca: falla con SecurityException antes de hacer nada. `run.cmd` no está
+# sujeto a esa política y le pasa un bypass acotado a esa invocación.
+#
+# Este archivo vive en `scripts/` por eso mismo: cuando estaba en la raíz junto al
+# .cmd, PowerShell resolvía `.\run` al .ps1 --lo prefiere-- y el comando corto de
+# la guía seguía fallando. La explicación completa está en la cabecera de
+# `run.cmd` y en docs/INSTALL.md.
 
 param([Parameter(Position = 0)][string]$Task = "help")
 

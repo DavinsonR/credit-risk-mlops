@@ -247,7 +247,7 @@ Los nueve defectos, cerrados. Cada uno con la prueba que antes fallaba.
 | D2 | Argumento injusto contra la red | **Retirado** | ADR 0004, sección de corrección |
 | D3 | Deuda de ingeniería | Parcial | `_preds_test.npy` fuera; recarga duplicada del panel sigue |
 | E | Features y tuning | **Cerrado** | Medido, decidido y documentado en ADR 0005 |
-| 8 | README con comandos inejecutables | **Cerrado** | `run.ps1` para Windows |
+| 8 | README con comandos inejecutables | **Cerrado** | `run.cmd` para Windows (ver NOTES: reabierto y vuelto a cerrar dos veces) |
 
 ## Sobre el defecto D1: mi hallazgo estaba mal enunciado
 

@@ -46,8 +46,11 @@ las dependencias las instala el propio proyecto — no hace falta tener Python.
 .\run help        # todas las tareas
 ```
 
-`.\run` es `run.cmd`, no `run.ps1`: en un Windows por defecto la ExecutionPolicy
-es `Restricted` y el `.ps1` no arranca. El `.cmd` sí, y no cambia nada del sistema.
+`.\run` es `run.cmd`: en un Windows por defecto la ExecutionPolicy es `Restricted`
+y ningún `.ps1` arranca. El script real vive en `scripts/run.ps1` —fuera de la
+raíz a propósito, porque PowerShell resuelve `.\run` al `.ps1` si están juntos— y
+el `.cmd` lo invoca sin cambiar nada de tu sistema. Detalle en
+[docs/INSTALL.md](docs/INSTALL.md).
 
 **Linux / macOS** (lo que corre CI):
 
