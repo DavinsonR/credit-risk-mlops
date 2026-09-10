@@ -54,6 +54,11 @@ uv --version
 
 > Debe imprimir `uv 0.12.x` o superior.
 
+> **Si ya tienes `uv`, salta este paso.** No hay que actualizarlo: el proyecto
+> resuelve contra `uv.lock`, así que la versión de `uv` no cambia lo que se
+> instala. Y `winget install` sobre un `uv` ya presente intenta *actualizarlo*,
+> que es donde aparece el error de la tabla de abajo.
+
 ### 2. Clonar el repo
 
 ```powershell
@@ -328,6 +333,8 @@ colaran, esa separación se habría perdido en silencio.
 |---|---|---|
 | `make: command not found` en Windows | No hay `make` en Windows | Usar `.\run.ps1 <tarea>`. El Makefile sigue siendo la referencia porque CI corre en Linux. |
 | `uv: command not found` justo tras instalar | El `PATH` cambió | Abrir una terminal nueva. |
+| `winget` falla al actualizar `uv` con `remove: Access is denied` y `0x8a150003` | Hay un proceso `uv run` vivo. `winget` pone el `uv.exe` en su propia carpeta de paquetes y Windows no borra un `.exe` en ejecución — el error no lo dice. Casi siempre es un `run.ps1 web` o `run.ps1 serve` olvidado | No hace falta actualizar: el `uv` que ya tienes sirve. Si igual lo quieres, cerrar el servidor (`Ctrl+C`, o `Get-Process uv \| Stop-Process`) y repetir. |
+| `python --version` dice 3.13 o 3.14 | Es tu Python del sistema y no se usa | Irrelevante. `pyproject.toml` pide `>=3.12,<3.13` y `uv` instala su propio 3.12 aislado, sin tocar el tuyo. |
 | Acentos rotos en la consola | Codepage de Windows | `run.ps1` fija `PYTHONIOENCODING=utf-8`. Si invocas los módulos a mano, fíjala tú. |
 | `RuntimeError: No hay JDK` | PySpark sin JVM | `uv run python scripts/bootstrap_jdk.py` |
 | `ModuleNotFoundError: onnxruntime` / `fastapi` | Falta un extra | `uv sync --extra dev --extra onnx --extra serve` |
