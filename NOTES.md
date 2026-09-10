@@ -678,10 +678,11 @@ razonables y son falsas)_
 
 ---
 
-## Documentar la instalación — y los cinco defectos que salieron al hacerlo
+## Documentar la instalación — y los seis defectos que salieron al hacerlo
 
 Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
-cinco cosas rotas, dos de ellas serias, y ninguna se habría visto revisando código.
+seis cosas rotas, tres de ellas serias, y ninguna se habría visto revisando la
+lógica del modelo.
 
 ### 1. Las instrucciones del README no se podían ejecutar
 
@@ -727,15 +728,28 @@ imprimir nada**. Git lo llama con su propio PATH, así que en uso normal nunca
 fallaba. Eso es lo que lo hacía peligroso: un control que solo se cae en silencio
 y en el momento en que hace falta.
 
-Ahora rechaza si no puede leer el mensaje y rechaza si no hay `grep`. Y hay 16
+Ahora rechaza si no puede leer el mensaje y rechaza si no hay `grep`. Y hay 17
 tests (`tests/test_authorship_hook.py`) que le pasan siete mensajes con atribución,
 seis legítimos —incluidos los que nombran a Anthropic u Ollama en prosa, porque
-este proyecto los compara— y los dos casos de fallo cerrado.
+este proyecto los compara— y los casos de fallo cerrado.
 
 **Los tests encontraron el defecto en la primera corrida.** El hook llevaba desde
 la semana 1 sin que nadie le pasara un mensaje malo.
 
-### 4. CI estaba en rojo y no me había dado cuenta
+### 4. El hook estaba en modo 100644 desde el primer commit
+
+Encontrado escribiendo el test anterior. **git ignora un hook que no tenga bit de
+ejecución, y lo ignora en silencio.** En Windows daba igual —Git for Windows no
+mira el bit— así que funcionaba justo en la máquina donde hago los commits, y no
+existía en ningún clon de Linux o macOS.
+
+Sumado al defecto 2, la conclusión es incómoda: **la restricción de autoría, que
+es la que más me importa del proyecto, estaba sostenida por la configuración local
+de una sola máquina.** No viajaba con el repo por dos razones independientes.
+
+`git update-index --chmod=+x`, y un test que asserta el modo en el índice.
+
+### 5. CI estaba en rojo y no me había dado cuenta
 
 `ruff check` falla en `providers.py`: el `try/except Exception: pass` del
 `warm_up()` que agregué en la semana 8 dispara `SIM105`. Está commiteado y
@@ -744,7 +758,7 @@ pusheado, así que el CI de la semana 8 está rojo desde entonces.
 Empujé sin correr `lint`. La lección no es sutil: el proyecto tiene el comando,
 está en el Makefile y en `run.ps1`, y no lo corrí.
 
-### 5. El README anunciaba siete gates y son ocho
+### 6. El README anunciaba siete gates y son ocho
 
 Faltaba `hmda:disparate_impact`, que es justamente el que hoy **no** promueve el
 modelo de acceso (0.7639 contra un umbral de 0.80). El gate más interesante del
@@ -752,9 +766,13 @@ repo era el que no estaba en la tabla.
 
 ### Lo que esto dice del proyecto
 
-Cuatro de los cinco defectos viven en la capa que nadie audita: instrucciones,
-scripts de arranque, hooks. El modelo tiene 8 gates, 122 tests y un reporte de
-validación; la instalación tenía un README que no se podía copiar y pegar.
+Cinco de los seis defectos viven en la capa que nadie audita: instrucciones,
+scripts de arranque, hooks, permisos de archivo. El modelo tiene 8 gates, 123 tests
+y un reporte de validación; la instalación tenía un README que no se podía copiar y
+pegar, y la garantía de autoría dependía de dos ajustes locales de mi máquina.
+
+El patrón se repite y ya es el del proyecto: **el defecto no estaba en lo que
+medía, estaba en lo que daba por medido.**
 
 _(escribir: por qué la documentación de instalación es un test de integración del
 proyecto y no una tarea de redacción)_

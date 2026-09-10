@@ -333,6 +333,7 @@ colaran, esa separación se habría perdido en silencio.
 | `ModuleNotFoundError: onnxruntime` / `fastapi` | Falta un extra | `uv sync --extra dev --extra onnx --extra serve` |
 | `verify` reporta hash distinto | Vintage nuevo de SBA | Esperado cada trimestre. Ver [ADR 0001](adr/0001-descubrimiento-de-urls-sba.md). |
 | Un test se salta con `data` | Requiere fuentes descargadas | Esperado en nivel 1. Correr `acquire` primero. |
+| El hook de autoría no bloquea nada | `core.hooksPath` sin apuntar, o el hook sin bit de ejecución (git lo ignora **en silencio**) | `setup` apunta el path; `tests/test_authorship_hook.py` verifica que el modo en el índice sea `100755`. Los dos casos existieron en este repo. |
 
 ## Qué NO hace falta
 

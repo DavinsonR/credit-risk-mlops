@@ -29,7 +29,8 @@ from pathlib import Path
 
 import pytest
 
-HOOK = Path(__file__).resolve().parents[1] / "scripts" / "hooks" / "commit-msg"
+REPO = Path(__file__).resolve().parents[1]
+HOOK = REPO / "scripts" / "hooks" / "commit-msg"
 
 TRAILER_CLAUDE = "Co-Authored-By: Claude <noreply@anthropic.com>"
 
@@ -94,10 +95,33 @@ def run_hook(
 def test_el_hook_existe_y_es_el_que_git_usa():
     assert HOOK.is_file(), f"falta {HOOK}"
     configurado = subprocess.run(
-        ["git", "config", "core.hooksPath"], capture_output=True, text=True
+        ["git", "config", "core.hooksPath"], cwd=REPO, capture_output=True, text=True
     ).stdout.strip()
     assert configurado == "scripts/hooks", (
         f"core.hooksPath es {configurado!r}; correr `make setup` o `.\\run.ps1 setup`"
+    )
+
+
+def test_el_hook_esta_marcado_ejecutable_en_git():
+    """En Linux y macOS git IGNORA un hook sin bit de ejecución, en silencio.
+
+    Estuvo en modo 100644 desde el primer commit. En Windows funcionaba igual
+    --Git for Windows no mira el bit-- así que el defecto era invisible en la
+    máquina donde se hacen los commits y total en cualquier clon de Linux: la
+    protección de autoría simplemente no corría.
+
+    El modo se arregla con `git update-index --chmod=+x scripts/hooks/commit-msg`.
+    """
+    salida = subprocess.run(
+        ["git", "ls-files", "-s", "scripts/hooks/commit-msg"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+    ).stdout.split()
+    assert salida, "el hook no está trackeado por git"
+    assert salida[0] == "100755", (
+        f"el hook está en modo {salida[0]}; git lo ignoraría en Linux y macOS. "
+        "Arreglar con: git update-index --chmod=+x scripts/hooks/commit-msg"
     )
 
 
