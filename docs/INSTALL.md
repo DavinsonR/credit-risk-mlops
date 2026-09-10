@@ -71,7 +71,7 @@ cd credit-risk-mlops
 **Windows:**
 
 ```powershell
-.\run.ps1 setup
+.\run setup
 ```
 
 **Linux / macOS:**
@@ -79,6 +79,31 @@ cd credit-risk-mlops
 ```bash
 make setup
 ```
+
+> **`.\run`, no `.\run.ps1`.** En un Windows por defecto la ExecutionPolicy es
+> `Restricted` y llamar al `.ps1` directamente falla con `SecurityException` antes
+> de hacer nada:
+>
+> ```
+> .\run.ps1 : File ...\run.ps1 cannot be loaded because running scripts is
+> disabled on this system.
+> ```
+>
+> `run.cmd` no está sujeto a esa política y le pasa a `run.ps1` un bypass acotado
+> a esa invocación: no cambia ninguna configuración del sistema ni de la cuenta, y
+> no persiste nada. PowerShell resuelve `.\run` a `run.cmd` por `PATHEXT`, así que
+> se escribe igual de corto.
+>
+> Si prefieres **no** rodear la política, habilítala una vez para tu usuario y usa
+> el `.ps1` directamente. Es un cambio permanente en tu cuenta, así que decídelo
+> tú:
+>
+> ```powershell
+> Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+> ```
+>
+> `RemoteSigned` basta: exige firma solo a los scripts descargados de internet, y
+> `git clone` no marca los archivos con Mark of the Web.
 
 Hace tres cosas, en este orden:
 
@@ -105,9 +130,9 @@ git config core.hooksPath
 ### 4. Verificar la instalación — sin descargar nada
 
 ```powershell
-.\run.ps1 test      # pytest -m "not data"
-.\run.ps1 lint      # ruff check + format check
-.\run.ps1 gates     # los 8 gates de promoción
+.\run test      # pytest -m "not data"
+.\run lint      # ruff check + format check
+.\run gates     # los 8 gates de promoción
 ```
 
 `gates` es la prueba de fuego: lee `exports/metrics.json`, **recomputa** las
@@ -146,7 +171,7 @@ esperado, y el reporte dice cuáles y por qué.
 ### 5. SBA 7(a) — modelo de default (861 MB)
 
 ```powershell
-.\run.ps1 acquire
+.\run acquire
 ```
 
 Descubre las URLs vigentes en `data.sba.gov`, baja 4 CSV (una por era fiscal),
@@ -169,14 +194,14 @@ escribe `data/manifests/` con el SHA256 de cada archivo y lo commitea.
 Verificar y entrenar:
 
 ```powershell
-.\run.ps1 verify     # revalida los hashes locales contra el manifiesto
-.\run.ps1 all        # train -> gates -> model card -> economía
+.\run verify     # revalida los hashes locales contra el manifiesto
+.\run all        # train -> gates -> model card -> economía
 ```
 
 ### 6. HMDA — modelo de acceso y laboratorio de equidad (829 MB)
 
 ```powershell
-.\run.ps1 hmda
+.\run hmda
 ```
 
 Baja por estado-año desde la API del CFPB y escribe Parquet directo, sin pasar por
@@ -187,8 +212,8 @@ Al terminar verifica los conteos contra las agregaciones oficiales del CFPB: no
 basta con que la descarga termine, tiene que estar **completa**.
 
 ```powershell
-.\run.ps1 disparity     # disparidad observada, antes de cualquier modelo
-.\run.ps1 hmda-train    # modelo de denegación + auditoría de equidad
+.\run disparity     # disparidad observada, antes de cualquier modelo
+.\run hmda-train    # modelo de denegación + auditoría de equidad
 ```
 
 ---
@@ -221,7 +246,7 @@ uv sync --extra dev --extra neural --extra onnx --extra serve --extra explain --
 
 ```powershell
 uv run python scripts/bootstrap_jdk.py
-.\run.ps1 benchmark
+.\run benchmark
 ```
 
 Baja el Microsoft Build of OpenJDK 17 (gratuito, sin registro) a `.jdk/` **dentro
@@ -244,7 +269,7 @@ ollama pull qwen2.5:7b      # 4.7 GB
 3. Correr el harness:
 
 ```powershell
-.\run.ps1 llm-evals
+.\run llm-evals
 ```
 
 `available_providers()` enumera los modelos instalados y evalúa los que
@@ -275,8 +300,8 @@ gobierno: sin claves, esos brazos simplemente no aparecen en el reporte.
 ### API de scoring
 
 ```powershell
-.\run.ps1 onnx      # exporta el modelo y verifica paridad numérica
-.\run.ps1 serve     # API en http://localhost:8000
+.\run onnx      # exporta el modelo y verifica paridad numérica
+.\run serve     # API en http://localhost:8000
 ```
 
 Probarla desde PowerShell — se usa un here-string y `Invoke-RestMethod` en vez de
@@ -310,7 +335,7 @@ curl -fsS -X POST http://localhost:8000/score -H 'Content-Type: application/json
 Demo en el navegador, con el modelo corriendo en WASM y sin backend:
 
 ```powershell
-.\run.ps1 web       # http://localhost:8899
+.\run web       # http://localhost:8899
 ```
 
 ### Docker (solo si quieres la imagen que construye CI)
@@ -331,7 +356,8 @@ colaran, esa separación se habría perdido en silencio.
 
 | Síntoma | Causa | Solución |
 |---|---|---|
-| `make: command not found` en Windows | No hay `make` en Windows | Usar `.\run.ps1 <tarea>`. El Makefile sigue siendo la referencia porque CI corre en Linux. |
+| `make: command not found` en Windows | No hay `make` en Windows | Usar `.\run <tarea>`. El Makefile sigue siendo la referencia porque CI corre en Linux. |
+| `running scripts is disabled on this system` / `UnauthorizedAccess` | ExecutionPolicy `Restricted`, que es el valor por defecto de Windows cliente | Usar `.\run` (el `.cmd`), no `.\run.ps1`. O `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` una vez. Ver el paso 3. |
 | `uv: command not found` justo tras instalar | El `PATH` cambió | Abrir una terminal nueva. |
 | `winget` falla al actualizar `uv` con `remove: Access is denied` y `0x8a150003` | Hay un proceso `uv run` vivo. `winget` pone el `uv.exe` en su propia carpeta de paquetes y Windows no borra un `.exe` en ejecución — el error no lo dice. Casi siempre es un `run.ps1 web` o `run.ps1 serve` olvidado | No hace falta actualizar: el `uv` que ya tienes sirve. Si igual lo quieres, cerrar el servidor (`Ctrl+C`, o `Get-Process uv \| Stop-Process`) y repetir. |
 | `python --version` dice 3.13 o 3.14 | Es tu Python del sistema y no se usa | Irrelevante. `pyproject.toml` pide `>=3.12,<3.13` y `uv` instala su propio 3.12 aislado, sin tocar el tuyo. |

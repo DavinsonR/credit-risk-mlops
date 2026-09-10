@@ -4,9 +4,16 @@
 # `make setup` en una máquina donde `make` no existe: instrucciones que no se
 # pueden ejecutar (docs/AUDIT.md, defecto 8).
 #
-#   .\run.ps1 setup
-#   .\run.ps1 train
-#   .\run.ps1 help
+# INVOCAR POR `run.cmd`, NO POR ESTE ARCHIVO:
+#
+#   .\run setup
+#   .\run train
+#   .\run help
+#
+# En un Windows por defecto la ExecutionPolicy es `Restricted` y llamar a este
+# .ps1 directamente falla con SecurityException antes de hacer nada. `run.cmd` no
+# está sujeto a esa política y le pasa un bypass acotado a esta invocación. La
+# explicación completa está en su cabecera y en docs/INSTALL.md.
 
 param([Parameter(Position = 0)][string]$Task = "help")
 
@@ -60,7 +67,7 @@ $Tasks = [ordered]@{
 
 if ($Task -eq "help" -or -not $Tasks.Contains($Task)) {
     if ($Task -ne "help") { Write-Host "Tarea desconocida: $Task`n" -ForegroundColor Red }
-    Write-Host "Uso: .\run.ps1 <tarea>`n"
+    Write-Host "Uso: .\run <tarea>    (Linux/macOS: make <tarea>)`n"
     foreach ($k in $Tasks.Keys) {
         Write-Host ("  {0,-14} {1}" -f $k, $Tasks[$k].desc)
     }

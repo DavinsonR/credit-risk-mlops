@@ -678,11 +678,13 @@ razonables y son falsas)_
 
 ---
 
-## Documentar la instalación — y los seis defectos que salieron al hacerlo
+## Documentar la instalación — y los siete defectos que salieron al hacerlo
 
 Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
-seis cosas rotas, tres de ellas serias, y ninguna se habría visto revisando la
-lógica del modelo.
+siete cosas rotas, tres de ellas serias, y ninguna se habría visto revisando la
+lógica del modelo. Seis salieron al escribir la guía; **la séptima salió al
+seguirla en una máquina limpia**, y es la que ninguna de las otras seis habría
+encontrado.
 
 ### 1. Las instrucciones del README no se podían ejecutar
 
@@ -764,15 +766,54 @@ Faltaba `hmda:disparate_impact`, que es justamente el que hoy **no** promueve el
 modelo de acceso (0.7639 contra un umbral de 0.80). El gate más interesante del
 repo era el que no estaba en la tabla.
 
+### 7. El primer comando de la guía no arrancaba en un Windows por defecto
+
+Lo encontró Davirson clonando el repo limpio en otra carpeta y siguiendo la guía
+al pie de la letra — que es la única forma de probar una guía de instalación.
+
+```
+.\run.ps1 : File ...\run.ps1 cannot be loaded because running scripts is
+disabled on this system.
+```
+
+La ExecutionPolicy por defecto en Windows cliente es `Restricted`: **ningún `.ps1`
+corre**. El entry point que escribí en la semana 7 para arreglar *"el README pide
+`make` en una máquina sin `make`"* tenía el mismo problema con otro nombre.
+
+Por qué no lo vi: `Get-ExecutionPolicy -List` en mi entorno da `Process = Bypass`.
+El scope de proceso estaba abierto, así que desde aquí **el defecto era invisible**
+— igual que los extras de CI en la semana 7. Tercera vez que aparece el mismo
+patrón, y las tres veces la diferencia la hizo ejecutar en el entorno del otro, no
+releer el código.
+
+`run.cmd`: un `.cmd` no está sujeto a la ExecutionPolicy y le pasa a `run.ps1` un
+bypass acotado a esa invocación. No cambia configuración del sistema ni de la
+cuenta, no persiste nada, y `PATHEXT` hace que `.\run setup` funcione tal cual.
+
+Queda dicho sin adornos en la cabecera del archivo: **esto rodea la
+ExecutionPolicy.** Microsoft la documenta como protección contra ejecución
+*accidental* de scripts, no como límite de seguridad, y aquí la ejecución no tiene
+nada de accidental. Para quien prefiera no rodearla, la guía trae la alternativa
+—`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`— marcada como lo que es: un
+cambio permanente en su cuenta, y por eso su decisión, no la mía.
+
 ### Lo que esto dice del proyecto
 
-Cinco de los seis defectos viven en la capa que nadie audita: instrucciones,
-scripts de arranque, hooks, permisos de archivo. El modelo tiene 8 gates, 123 tests
-y un reporte de validación; la instalación tenía un README que no se podía copiar y
-pegar, y la garantía de autoría dependía de dos ajustes locales de mi máquina.
+Seis de los siete defectos viven en la capa que nadie audita: instrucciones,
+scripts de arranque, hooks, permisos de archivo, políticas de ejecución. El modelo
+tiene 8 gates, 123 tests y un reporte de validación; la instalación tenía un README
+que no se podía copiar y pegar, un entry point que no arrancaba, y una garantía de
+autoría sostenida por dos ajustes locales de una sola máquina.
 
 El patrón se repite y ya es el del proyecto: **el defecto no estaba en lo que
 medía, estaba en lo que daba por medido.**
+
+Y tres de los siete —los extras de CI en la semana 7, el `grep` ausente, la
+ExecutionPolicy— tienen la misma forma exacta: mi entorno tenía algo configurado
+que el entorno de destino no tiene. Ninguno se cae leyendo el código. **Todos se
+caen ejecutando en la máquina del otro**, que es exactamente lo que este proyecto
+le exige a los modelos —validación out-of-time, no split aleatorio— y que hasta
+ahora no le estaba exigiendo a su propio tooling.
 
 _(escribir: por qué la documentación de instalación es un test de integración del
 proyecto y no una tarea de redacción)_

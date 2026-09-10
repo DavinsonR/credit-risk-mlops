@@ -39,12 +39,15 @@ las dependencias las instala el propio proyecto — no hace falta tener Python.
 **Windows** (no requiere `make`):
 
 ```powershell
-.\run.ps1 setup       # Python 3.12 + dependencias + hook de autoría
-.\run.ps1 test        # verifica la instalación sin descargar nada
-.\run.ps1 acquire     # descarga fuentes + verifica hashes (~860 MB)
-.\run.ps1 all         # train -> gates -> model card -> economía
-.\run.ps1 help        # todas las tareas
+.\run setup       # Python 3.12 + dependencias + hook de autoría
+.\run test        # verifica la instalación sin descargar nada
+.\run acquire     # descarga fuentes + verifica hashes (~860 MB)
+.\run all         # train -> gates -> model card -> economía
+.\run help        # todas las tareas
 ```
+
+`.\run` es `run.cmd`, no `run.ps1`: en un Windows por defecto la ExecutionPolicy
+es `Restricted` y el `.ps1` no arranca. El `.cmd` sí, y no cambia nada del sistema.
 
 **Linux / macOS** (lo que corre CI):
 
