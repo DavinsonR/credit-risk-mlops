@@ -678,13 +678,16 @@ razonables y son falsas)_
 
 ---
 
-## Documentar la instalación — y los siete defectos que salieron al hacerlo
+## Documentar la instalación — y los ocho defectos que salieron al hacerlo
 
 Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
-siete cosas rotas, tres de ellas serias, y ninguna se habría visto revisando la
-lógica del modelo. Seis salieron al escribir la guía; **la séptima salió al
-seguirla en una máquina limpia**, y es la que ninguna de las otras seis habría
-encontrado.
+ocho cosas rotas, cuatro de ellas serias, y ninguna se habría visto revisando la
+lógica del modelo.
+
+Seis salieron **escribiendo** la guía. Las dos últimas salieron **siguiéndola en
+una máquina limpia**, y son las peores de las ocho: un entry point que no
+arrancaba y una tubería que terminaba en verde con el entrenamiento roto. Ninguna
+de las seis primeras las habría encontrado.
 
 ### 1. Las instrucciones del README no se podían ejecutar
 
@@ -829,23 +832,90 @@ nada de accidental. Para quien prefiera no rodearla, la guía trae la alternativ
 —`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`— marcada como lo que es: un
 cambio permanente en su cuenta, y por eso su decisión, no la mía.
 
+### 8. `run all` terminó en verde con el entrenamiento roto
+
+El peor de los ocho, y el más fácil de no ver.
+
+Davirson corrió `.\run all` en el clon nuevo. `train` murió con
+`ModuleNotFoundError: No module named 'torch'` — y la tubería **siguió**:
+
+```
+ModuleNotFoundError: No module named 'torch'
+====================================================================
+GATES DE PROMOCION
+  PASA   auc_test    0.7005 >= 0.6894
+  ...
+APROBADO: 8 gates pasaron.
+```
+
+Los gates leen el `exports/metrics.json` commiteado, así que **pasaron sin que
+existiera un modelo nuevo**. La última línea de la salida declaraba aprobado un
+modelo que no se entrenó.
+
+Dos causas independientes, y las dos son mías.
+
+**a) `$ErrorActionPreference = "Stop"` no cubre comandos nativos.** Un scriptblock
+con varios `uv run ...` sigue después de que uno devuelva código distinto de cero,
+y el `exit $LASTEXITCODE` final reporta el del **último**. `all`, `lint` y `web`
+tenían el mismo encadenado. En `lint` el efecto era: `ruff check` en rojo seguido
+de `format` en verde → **exit 0**. CI no lo veía porque el Makefile pone cada
+comando en su línea y `make` sí aborta.
+
+Ahora hay un `Invoke-Step` que aborta con el nombre de la etapa y su código.
+
+**b) Un extra opcional que era obligatorio de hecho.** `train.py` importaba
+`torch` en la cabecera. Y como `train_economics`, `evaluation.stress` y
+`export.onnx` importan de ahí dos constantes —`PRODUCTION_CALIBRATOR` y `TARGET`—,
+**los cuatro** exigían PyTorch; tres de ellos por una dependencia que no usan en
+ningún momento. Import perezoso dentro de `build_models`, que es la única función
+que lo necesita.
+
+Cuando falta, ahora dice qué correr en vez de escupir un traceback. `train` falla
+en vez de saltarse el brazo neuronal en silencio, y eso es deliberado: la
+comparación publicada lo incluye, así que sin él no se reproduce
+`exports/metrics.json`.
+
+**Cómo salió:** siguiendo la guía. `setup` instala solo `dev`, y la guía mandaba a
+`all` justo después. El defecto estaba en la costura entre dos instrucciones que
+por separado eran correctas.
+
+`tests/test_run_aborta.py` y `tests/test_extras_opcionales.py`, 7 tests entre los
+dos. El primero mete un `uv` falso que siempre falla y verifica que `all` **no
+llegue a imprimir `APROBADO`**.
+
+Y una nota sobre cómo lo verifiqué, porque el primer intento no valía: simulé la
+ausencia de torch con `sys.modules["torch"] = None` y scipy reventó con un
+`AttributeError` que no ocurre cuando torch de verdad no está. La simulación
+mentía en la dirección peligrosa. Un finder que niega el módulo reproduce la
+ausencia real.
+
 ### Lo que esto dice del proyecto
 
-Seis de los siete defectos viven en la capa que nadie audita: instrucciones,
-scripts de arranque, hooks, permisos de archivo, políticas de ejecución. El modelo
-tiene 8 gates, 123 tests y un reporte de validación; la instalación tenía un README
-que no se podía copiar y pegar, un entry point que no arrancaba, y una garantía de
-autoría sostenida por dos ajustes locales de una sola máquina.
+Siete de los ocho defectos viven en la capa que nadie audita: instrucciones,
+scripts de arranque, hooks, permisos de archivo, políticas de ejecución,
+dependencias opcionales. El modelo tiene 8 gates, 130 tests y un reporte de
+validación; la instalación tenía un README que no se podía copiar y pegar, un
+entry point que no arrancaba, una garantía de autoría sostenida por dos ajustes
+locales de una sola máquina, y una tubería que declaraba `APROBADO` sin haber
+entrenado.
 
-El patrón se repite y ya es el del proyecto: **el defecto no estaba en lo que
-medía, estaba en lo que daba por medido.**
+**Tres de los ocho fallaban en silencio o en verde** —el hook sin `grep`, `lint`
+con `;`, `all` tras un `train` roto—. Ese es el patrón que el proyecto persigue en
+los modelos desde la semana 1 y que no se estaba aplicando a su propio tooling:
+*el defecto no está en lo que mide, está en lo que da por medido.*
 
-Y tres de los siete —los extras de CI en la semana 7, el `grep` ausente, la
-ExecutionPolicy— tienen la misma forma exacta: mi entorno tenía algo configurado
-que el entorno de destino no tiene. Ninguno se cae leyendo el código. **Todos se
-caen ejecutando en la máquina del otro**, que es exactamente lo que este proyecto
-le exige a los modelos —validación out-of-time, no split aleatorio— y que hasta
-ahora no le estaba exigiendo a su propio tooling.
+Y cuatro —los extras de CI en la semana 7, el `grep` ausente del PATH, la
+ExecutionPolicy, el `torch` que yo tenía instalado— tienen exactamente la misma
+forma: mi entorno tenía algo configurado que el entorno de destino no tiene.
+Ninguno se cae leyendo el código. **Todos se caen ejecutando en la máquina del
+otro**, que es literalmente lo que este proyecto le exige a sus modelos:
+validación out-of-time, nunca split aleatorio.
+
+Lo que cambió como método, y es lo que me llevo: ahora **reproduzco el entorno de
+destino en vez de asumirlo**. Un proceso hijo con `-ExecutionPolicy Restricted`,
+un `uv` falso que siempre falla, un finder que niega `torch`. Los tres arreglos
+que antes "verifiqué" mirando mi propia terminal ahora tienen un test que corre
+donde el defecto existía.
 
 _(escribir: por qué la documentación de instalación es un test de integración del
 proyecto y no una tarea de redacción)_

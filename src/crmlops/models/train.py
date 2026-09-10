@@ -26,7 +26,6 @@ from crmlops.governance.gates import config_fingerprint
 from crmlops.governance.integrity import code_fingerprint, save_predictions
 from crmlops.models.calibration import CALIBRATORS, fit_calibrator
 from crmlops.models.gbm import GBMChallenger
-from crmlops.models.neural import NeuralChallenger
 from crmlops.models.scorecard import WoEScorecard
 from crmlops.sources.contracts import validate_panel
 from crmlops.sources.loader import load_panel, split_out_of_time
@@ -44,6 +43,24 @@ PRODUCTION_MODEL = "lightgbm"
 
 
 def build_models(seed: int, spec) -> dict:
+    # IMPORT PEREZOSO, Y NO ES ESTILO. PyTorch es un extra opcional de 507 MB y lo
+    # necesita SOLO esta funcion. Con el import arriba, el modulo entero exigia
+    # torch -- y `train_economics`, `stress` y `export.onnx` importan de aqui dos
+    # constantes (PRODUCTION_CALIBRATOR, TARGET) sin tocar una red neuronal en
+    # ningun momento. Sin el extra, los cuatro reventaban con el mismo
+    # ModuleNotFoundError, tres de ellos por una dependencia que no usan.
+    try:
+        from crmlops.models.neural import NeuralChallenger
+    except ImportError as exc:
+        raise SystemExit(
+            "\nFalta PyTorch, que en este proyecto es un extra opcional.\n\n"
+            "El brazo de red neuronal es parte de la comparacion publicada, asi que\n"
+            "sin el no se pueden reproducir las metricas de exports/metrics.json.\n\n"
+            "  .\\run setup-neural            (Windows)\n"
+            "  uv sync --extra dev --extra neural\n\n"
+            f"detalle: {exc}"
+        ) from exc
+
     num, cat = list(spec.numeric), list(spec.categorical)
     return {
         "scorecard_woe": WoEScorecard(num, cat, random_state=seed),

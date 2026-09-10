@@ -23,13 +23,41 @@ param([Parameter(Position = 0)][string]$Task = "help")
 
 $ErrorActionPreference = "Stop"
 
+function Invoke-Step {
+    <#
+      Ejecuta una etapa y ABORTA si falla.
+
+      $ErrorActionPreference = "Stop" NO cubre los comandos nativos: un scriptblock
+      con varios `uv run ...` sigue adelante despues de que uno reviente, y el
+      `exit $LASTEXITCODE` del final devuelve el codigo del ULTIMO comando, no del
+      que se rompio.
+
+      Como se vio: `.\run all` con el entrenamiento reventando por falta de torch
+      imprimio igual "APROBADO: 8 gates pasaron" y termino en verde. Los gates leen
+      el exports/metrics.json commiteado, asi que pasaron sin que existiera un
+      modelo nuevo. Una tuberia que reporta exito cuando su primera etapa fallo es
+      peor que una que no reporta nada.
+    #>
+    param(
+        [Parameter(Mandatory)][string]$Etapa,
+        [Parameter(Mandatory)][scriptblock]$Cmd
+    )
+    Write-Host "--> $Etapa" -ForegroundColor DarkCyan
+    & $Cmd
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host ""
+        Write-Host "FALLO en '$Etapa' (codigo $LASTEXITCODE). La tarea se detiene aqui." -ForegroundColor Red
+        exit $LASTEXITCODE
+    }
+}
+
 $Tasks = [ordered]@{
     # El hook de autoria se apunta aqui y no a mano: .git/hooks no se clona, asi
     # que sin esta linea un clon nuevo queda sin la proteccion y el trailer de IA
     # solo lo veria CI, despues del push.
     "setup"        = @{ desc = "Entorno (Python 3.12), dependencias y hook de autoria"; cmd = {
-            uv python install 3.12
-            uv sync --extra dev
+            Invoke-Step "interprete 3.12" { uv python install 3.12 }
+            Invoke-Step "dependencias"    { uv sync --extra dev }
             if (Test-Path .git) {
                 git config core.hooksPath scripts/hooks
                 Write-Host "hook de autoria instalado (core.hooksPath=scripts/hooks)"
@@ -38,7 +66,10 @@ $Tasks = [ordered]@{
             }
         }
     }
-    "setup-neural" = @{ desc = "Igual que setup, mas PyTorch (~200 MB)"; cmd = { uv sync --extra dev --extra neural } }
+    # `train` NECESITA este extra: el brazo de red neuronal es parte de la
+    # comparacion publicada. `setup` no lo instala porque auditar el modelo --tests,
+    # lint y los 8 gates-- no requiere PyTorch, y son 507 MB en disco.
+    "setup-neural" = @{ desc = "Igual que setup, mas PyTorch (necesario para train)"; cmd = { uv sync --extra dev --extra neural } }
     "acquire"      = @{ desc = "Descubre y descarga las fuentes; escribe manifiesto SHA256"; cmd = { uv run python -m crmlops.sources.sba } }
     "verify"       = @{ desc = "Revalida los datos locales contra el manifiesto"; cmd = { uv run python -c "from crmlops.sources import sba; raise SystemExit(0 if sba.verify() else 1)" } }
     "signal-check" = @{ desc = "Gate de viabilidad: confirma poder discriminante"; cmd = { uv run python -m crmlops.evaluation.signal_check } }
@@ -56,15 +87,31 @@ $Tasks = [ordered]@{
     "onnx"         = @{ desc = "Exporta a ONNX y verifica paridad numerica"; cmd = { uv run python -m crmlops.export.onnx } }
     "llm-evals"    = @{ desc = "Avisos de adverse action: plantilla vs LLM"; cmd = { uv run python -m crmlops.llm.harness } }
     "serve"        = @{ desc = "Levanta la API de scoring en :8000"; cmd = { uv run uvicorn app:app --app-dir serving/api --port 8000 } }
-    "web"          = @{ desc = "Demo en el navegador (modelo en WASM) en :8899"; cmd = { uv run python serving/web/build.py; uv run python -m http.server 8899 --directory serving/web } }
+    "web"          = @{ desc = "Demo en el navegador (modelo en WASM) en :8899"; cmd = {
+            # Sin Invoke-Step, un build fallido servia los artefactos VIEJOS y la
+            # demo se veia bien mostrando un modelo que ya no existe.
+            Invoke-Step "build de la demo" { uv run python serving/web/build.py }
+            uv run python -m http.server 8899 --directory serving/web
+        }
+    }
     "reproduce"    = @{ desc = "Reentrena y ASSERTA metricas identicas a las commiteadas"; cmd = { uv run python -m crmlops.governance.reproduce } }
-    "lint"         = @{ desc = "ruff check + format check"; cmd = { uv run ruff check .; uv run ruff format --check . } }
+    # Los dos pasos por separado: con `;`, un `ruff check` en rojo seguido de un
+    # format en verde devolvia exit 0 y `.\run lint` mentia. CI no lo veia porque
+    # el Makefile pone cada comando en su propia linea y make si aborta.
+    "lint"         = @{ desc = "ruff check + format check"; cmd = {
+            Invoke-Step "ruff check"  { uv run ruff check . }
+            Invoke-Step "ruff format" { uv run ruff format --check . }
+        }
+    }
     "test"         = @{ desc = "pytest"; cmd = { uv run pytest -m "not data" -q } }
-    "all"          = @{ desc = "train -> gates -> card -> economics"; cmd = {
-            uv run python -m crmlops.models.train
-            uv run python -m crmlops.governance.gates
-            uv run python -m crmlops.governance.model_card
-            uv run python -m crmlops.models.train_economics
+    # El orden importa y el corte tambien: si `train` falla, NO se corren los
+    # gates. Leen exports/metrics.json commiteado, asi que pasarian igual y la
+    # tuberia terminaria en verde sin haber entrenado nada.
+    "all"          = @{ desc = "train -> gates -> card -> economics (aborta al primer fallo)"; cmd = {
+            Invoke-Step "train"      { uv run python -m crmlops.models.train }
+            Invoke-Step "gates"      { uv run python -m crmlops.governance.gates }
+            Invoke-Step "model card" { uv run python -m crmlops.governance.model_card }
+            Invoke-Step "economics"  { uv run python -m crmlops.models.train_economics }
         }
     }
 }

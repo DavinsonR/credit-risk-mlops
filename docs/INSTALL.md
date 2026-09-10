@@ -198,9 +198,22 @@ escribe `data/manifests/` con el SHA256 de cada archivo y lo commitea.
 Verificar y entrenar:
 
 ```powershell
-.\run verify     # revalida los hashes locales contra el manifiesto
-.\run all        # train -> gates -> model card -> economía
+.\run verify         # revalida los hashes locales contra el manifiesto
+.\run setup-neural   # PyTorch: train lo necesita (507 MB)
+.\run all            # train -> gates -> model card -> economía
 ```
+
+> **`train` exige el extra `neural`, y `setup` no lo instala.** No es un olvido:
+> auditar el modelo —tests, lint y los 8 gates— no necesita PyTorch, y son 507 MB.
+> Pero el brazo de red neuronal **sí** es parte de la comparación publicada, así
+> que sin él no se pueden reproducir las métricas de `exports/metrics.json`. Por
+> eso `train` falla en vez de saltárselo en silencio, y el mensaje trae el comando.
+
+> **`all` se detiene en la primera etapa que falle.** Importa porque los gates
+> leen el `exports/metrics.json` commiteado: si `train` revienta y la tubería
+> sigue, los gates pasan y la salida termina con `APROBADO: 8 gates pasaron` sin
+> que se haya entrenado nada. Pasó, está corregido, y lo cubre
+> `tests/test_run_aborta.py`.
 
 ### 6. HMDA — modelo de acceso y laboratorio de equidad (829 MB)
 
@@ -368,6 +381,7 @@ colaran, esa separación se habría perdido en silencio.
 | Acentos rotos en la consola | Codepage de Windows | `run.cmd` fija `PYTHONIOENCODING=utf-8`. Si invocas los módulos a mano, fíjala tú. |
 | `RuntimeError: No hay JDK` | PySpark sin JVM | `uv run python scripts/bootstrap_jdk.py` |
 | `ModuleNotFoundError: onnxruntime` / `fastapi` | Falta un extra | `uv sync --extra dev --extra onnx --extra serve` |
+| `No module named 'torch'` al correr `train` o `all` | El extra `neural` no viene en `setup` | `.\run setup-neural`. El mensaje de error ya trae el comando; si ves un traceback pelado, tu clon es anterior a la corrección: `git pull`. |
 | `verify` reporta hash distinto | Vintage nuevo de SBA | Esperado cada trimestre. Ver [ADR 0001](adr/0001-descubrimiento-de-urls-sba.md). |
 | Un test se salta con `data` | Requiere fuentes descargadas | Esperado en nivel 1. Correr `acquire` primero. |
 | El hook de autoría no bloquea nada | `core.hooksPath` sin apuntar, o el hook sin bit de ejecución (git lo ignora **en silencio**) | `setup` apunta el path; `tests/test_authorship_hook.py` verifica que el modo en el índice sea `100755`. Los dos casos existieron en este repo. |
