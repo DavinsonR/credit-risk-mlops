@@ -394,16 +394,26 @@ Eso me obligó a distinguir **tres** clases de exclusión, no una
    composición racial del barrio. Que el modelo no vea `derived_race` no cambia
    nada si recibe una variable que la aproxima. Es redlining.
 
-### Benchmark: 29.1x, con resultados idénticos
+### Benchmark: DuckDB gana por un factor que depende de la máquina
 
-| Motor | Tiempo | Filas | Grupos |
-|---|---|---|---|
-| **DuckDB** | **1.03s** | 62,375,170 | 6,801 |
-| PySpark | 30.13s | 62,375,170 | 6,801 |
+| Motor | Máquina A | Máquina B | Filas | Grupos |
+|---|---|---|---|---|
+| **DuckDB** | **1.03s** | **1.23s** | 62,375,170 | 6,801 |
+| PySpark | 30.13s | 17.61s | 62,375,170 | 6,801 |
+| | **29.3x** | **14.3x** | | |
 
-Los 6,801 grupos coinciden en las 5 métricas. Spark paga arranque de JVM,
-serialización y planificación distribuida; DuckDB no. La ventaja de Spark aparece
-cuando el dato no cabe en una máquina, no antes.
+Los 6,801 grupos coinciden en las 5 métricas, en las dos máquinas.
+
+**El multiplicador no viaja; la conclusión sí.** La primera versión de esta nota
+titulaba "29.1x" como si fuera una propiedad de los motores. Correrlo en un
+segundo equipo dio 14.3x: más del doble de diferencia, mismo código y mismos
+datos. Lo que varía es sobre todo el costo fijo de Spark —arranque de JVM,
+serialización, planificación—, que pesa distinto según CPU y disco.
+
+Así que el número que vale es cualitativo y ese sí se sostiene: **en un solo nodo,
+sobre 62M filas, DuckDB es entre 14 y 29 veces más rápido, y Spark paga un costo
+fijo que solo se amortiza cuando el dato no cabe en una máquina.** Citar "29.1x"
+a secas sería vender como constante algo que medí una vez en un equipo.
 
 ### La verificación de equivalencia se justificó antes de correr
 El primer intento reventó, y el motivo es exactamente lo que esa verificación
@@ -658,6 +668,11 @@ El harness medía el arranque en frío. Con `warm_up()`, qwen2.5:7b pasó de 0% 
 La decisión no cambia —la plantilla va a producción— pero el margen ya no es
 abismal y la razón es una sola: consistencia.
 
+> **Este 0.83 tampoco sobrevivió.** Correr el mismo harness en otro equipo dio
+> **0.33** para qwen2.5:7b. Ver la segunda revisión de
+> [ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md): arreglé un artefacto real
+> y publiqué en su lugar una medición puntual disfrazada de propiedad del modelo.
+
 ### Una pregunta que dejo abierta, sin inventarle respuesta
 Los híbridos resuelven la fidelidad y salen **menos consistentes que el modelo
 solo**. Mi hipótesis es que validar-y-caer introduce varianza en el borde: si una
@@ -678,16 +693,17 @@ razonables y son falsas)_
 
 ---
 
-## Documentar la instalación — y los nueve defectos que salieron al hacerlo
+## Documentar la instalación — y los diez defectos que salieron al hacerlo
 
 Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
-nueve cosas rotas, cuatro de ellas serias, y ninguna se habría visto revisando la
-lógica del modelo.
+diez cosas, cuatro de ellas serias, y ninguna se habría visto revisando la lógica
+del modelo.
 
-Seis salieron **escribiendo** la guía. Las tres últimas salieron **siguiéndola de
-principio a fin en una máquina limpia**, y entre ellas están las peores: un entry
-point que no arrancaba y una tubería que terminaba en verde con el entrenamiento
-roto. Ninguna de las seis primeras las habría encontrado.
+Seis salieron **escribiendo** la guía. Las cuatro últimas salieron **siguiéndola
+de principio a fin en una máquina limpia**, y entre ellas están las peores: un
+entry point que no arrancaba, una tubería que terminaba en verde con el
+entrenamiento roto, y dos números publicados que en otro equipo dan otra cosa.
+Ninguna de las seis primeras las habría encontrado.
 
 ### 1. Las instrucciones del README no se podían ejecutar
 
@@ -940,20 +956,72 @@ SHA256 del repo son de los datos fuente— y la paridad se verifica numéricamen
 cada export, no por hash. Si algún día hiciera falta esa garantía, habría que
 investigarla de verdad, no darla por hecha.
 
+### 10. La corrida completa en otra máquina: qué reprodujo y qué no
+
+Davirson clonó limpio y corrió **toda** la guía de punta a punta: `setup`,
+`acquire`, `all`, `hmda`, `disparity`, `hmda-train`, `benchmark`, `llm-evals`,
+`onnx`, `serve`, `web`. Es la única prueba que vale para un proyecto que se vende
+como auditable, y separó los resultados en dos grupos.
+
+**Reprodujo exacto, en un equipo que no es el mío:**
+
+| Qué | Publicado | Su corrida |
+|---|---|---|
+| AUC test (LightGBM) | 0.7005 | **0.7005** |
+| Margen sobre baseline | +0.0311 | **+0.0311** |
+| AUC del scorecard | 0.6694 | **0.6694** |
+| AUC HMDA (test FY2024) | 0.8847 | **0.8847** |
+| Disparate impact del modelo | 0.764 | **0.764** |
+| Filas HMDA | 62,375,170 | **62,375,170** |
+| Grupos del benchmark | 6,801 idénticos | **6,801 idénticos** |
+
+Esa columna es el proyecto entero funcionando: **las métricas del modelo viajan.**
+
+**No reprodujo:**
+
+| Qué | Publicado | Su corrida | Por qué importa |
+|---|---|---|---|
+| DuckDB vs PySpark | 29.3x | **14.3x** | Lo titulé como propiedad de los motores; es una medición de un equipo |
+| Consistencia qwen2.5:7b | 0.83 | **0.33** | Es la métrica sobre la que descansa la decisión del ADR 0009 |
+
+Los dos están corregidos arriba y en el ADR. El patrón es el mismo de siempre, y
+van tres capas distintas: primero el entorno de ejecución, después las
+advertencias que dejé de leer, ahora **los números que medí una vez y presenté
+como constantes**.
+
+La distinción que me llevo: hay métricas **deterministas por construcción** —las
+del modelo, con semilla fija y datos pinneados— y métricas **de desempeño o de
+inferencia local**, que dependen de la máquina. Las primeras se publican como
+valor; las segundas, como rango con el número de equipos donde se midieron.
+Promediarlas daría una cifra más presentable y menos cierta.
+
+**Y una tercera cosa, que salió de leer su salida con cuidado:** `run test` con
+solo el extra `dev` marcó **12 tests como saltados** —los de paridad de serving,
+que necesitan `onnx` y `serve`—. No es un defecto, es el diseño; pero la guía
+vendía el nivel 1 como "verifica el proyecto entero sin descargar nada". Con la
+suite de hoy son **117 de 131**: se saltan los 13 de paridad de serving más uno
+del export. Corregido en INSTALL.md, con el comando para correrlos todos.
+
 ### Lo que esto dice del proyecto
 
-Ocho de los nueve defectos viven en la capa que nadie audita: instrucciones,
-scripts de arranque, hooks, permisos de archivo, políticas de ejecución,
-dependencias opcionales, advertencias de consola. El modelo tiene 8 gates, 131
-tests y un reporte de validación; la instalación tenía un README que no se podía
-copiar y pegar, un entry point que no arrancaba, una garantía de autoría sostenida
-por dos ajustes locales de una sola máquina, una tubería que declaraba `APROBADO`
-sin haber entrenado, y una API cuya primera respuesta a un navegador era un 404.
+Ocho de los diez viven en la capa que nadie audita: instrucciones, scripts de
+arranque, hooks, permisos de archivo, políticas de ejecución, dependencias
+opcionales, advertencias de consola. El modelo tiene 8 gates, 131 tests y un
+reporte de validación; la instalación tenía un README que no se podía copiar y
+pegar, un entry point que no arrancaba, una garantía de autoría sostenida por dos
+ajustes locales de una sola máquina, una tubería que declaraba `APROBADO` sin
+haber entrenado, y una API cuya primera respuesta a un navegador era un 404.
 
-**Tres de los ocho fallaban en silencio o en verde** —el hook sin `grep`, `lint`
-con `;`, `all` tras un `train` roto—. Ese es el patrón que el proyecto persigue en
-los modelos desde la semana 1 y que no se estaba aplicando a su propio tooling:
-*el defecto no está en lo que mide, está en lo que da por medido.*
+**Tres fallaban en silencio o en verde** —el hook sin `grep`, `lint` con `;`,
+`all` tras un `train` roto—. Ese es el patrón que el proyecto persigue en los
+modelos desde la semana 1 y que no se estaba aplicando a su propio tooling: *el
+defecto no está en lo que mide, está en lo que da por medido.*
+
+Y los dos últimos son de otra clase, más incómoda: **números que medí una vez y
+publiqué como si fueran propiedades del sistema.** El 29.1x del benchmark y el
+0.83 de consistencia del LLM. Ninguno era falso; los dos eran una medición de un
+equipo presentada sin decirlo. Un revisor que corriera el repo y viera 14.3x
+tendría razón en desconfiar de todo lo demás.
 
 Y cuatro —los extras de CI en la semana 7, el `grep` ausente del PATH, la
 ExecutionPolicy, el `torch` que yo tenía instalado— tienen exactamente la misma

@@ -165,3 +165,58 @@ medición sería repetir el error que esta misma revisión corrige.
 Un eval con un solo modelo y un solo modo produjo dos conclusiones equivocadas que
 se leían perfectamente razonables. Ninguna se cayó por revisar el código: se
 cayeron al agregar brazos y al verificar el número que sostenía la conclusión.
+
+---
+
+# Segunda revisión — 2026-09-11, tras correr el harness en otra máquina
+
+La revisión anterior corrigió un número y publicó otro: **0.83 de consistencia
+para qwen2.5:7b.** Correr el mismo harness, mismo commit, mismos modelos recién
+descargados, en un equipo distinto, dio **0.33**.
+
+## Los dos runs, lado a lado
+
+| Brazo | Fidelidad A | Fidelidad B | Consistencia A | Consistencia B | Pasa A | Pasa B |
+|---|---|---|---|---|---|---|
+| **plantilla** | 1.00 | 1.00 | **1.00** | **1.00** | **100%** | **100%** |
+| qwen2.5:7b | 1.00 | 1.00 | 0.83 | **0.33** | 83% | **33%** |
+| qwen2.5:7b (híbrido) | 1.00 | 1.00 | 0.50 | **0.67** | 50% | **67%** |
+| llama3.2:3b (híbrido) | 1.00 | 1.00 | 0.33 | 0.33 | 33% | 33% |
+| llama3.2:3b | 0.50 | 0.50 | 0.50 | 0.50 | 0% | 0% |
+
+**Fidelidad y cumplimiento son estables entre máquinas. La consistencia no.** Y la
+consistencia es justamente la métrica sobre la que descansa la decisión.
+
+## Qué estaba mal en mi afirmación
+
+`warm_up()` arregló un artefacto real —la primera generación tras cargar el modelo
+no es determinista— y eso sigue siendo cierto. Lo que no era cierto es lo que
+escribí después: presenté **0.83 como una propiedad de qwen2.5:7b**, cuando era
+una medición puntual en un equipo.
+
+Temperatura 0, semilla fija y calentamiento **no alcanzan** para hacer determinista
+la inferencia local entre máquinas. Influyen cosas fuera del harness: la variante
+cuantizada que resuelve Ollama, el número de hilos, el reparto CPU/GPU, el estado
+de la caché de contexto. No lo investigué; lo que sí puedo afirmar es lo que se
+observó.
+
+## La decisión sale reforzada, no debilitada
+
+Entre los dos runs, **el único brazo que dio el mismo resultado en ambas máquinas
+es la plantilla: 1.00 y 100%, dos veces.** Todos los demás se movieron.
+
+Para un documento cuya obligatoriedad es legal, "el aviso depende del equipo donde
+corrió el modelo" es peor que el 0.83 original. El argumento ya no es *"0.83 no es
+1.00"*: es que **la consistencia de un LLM local no es reproducible**, y un aviso
+de adverse action tiene que serlo.
+
+## Cómo queda el número publicado
+
+No se publica un valor único de consistencia para los brazos con LLM. Se publica
+el rango observado y el número de equipos donde se midió. Un promedio de dos
+máquinas daría una cifra más presentable y menos cierta.
+
+Esto vale para todo el proyecto: las métricas del modelo **sí** reproducen —el
+mismo commit, en el clon nuevo de otro equipo, dio AUC test 0.7005 y margen
++0.0311, idénticos a los publicados—. Las del LLM, no. Es una diferencia de
+naturaleza entre los dos artefactos y merece decirse en vez de promediarse.

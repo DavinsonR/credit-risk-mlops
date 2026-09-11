@@ -168,6 +168,19 @@ problema, no una variación aceptable.
 Los tests marcados `data` se saltan solos porque requieren las fuentes. Es
 esperado, y el reporte dice cuáles y por qué.
 
+> **En el nivel 1 se saltan 14 de los 131 tests**, y conviene saber cuáles: los 13
+> de paridad entre las tres vías de serving más uno del export, que necesitan los
+> extras `onnx` y `serve`. Verás una fila de `s` al final de la salida. Para correr
+> la suite completa —que es lo que hace CI—:
+>
+> ```powershell
+> uv sync --extra dev --extra onnx --extra serve
+> .\run test
+> ```
+>
+> Los 117 restantes cubren gates, integridad, fuga, contratos, equidad, el harness
+> de avisos, el hook de autoría y el corte de la tubería.
+
 ---
 
 ## Nivel 2 — Con datos reales
