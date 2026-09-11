@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -31,6 +31,9 @@ train:  ## Entrena baseline + retadores; escribe exports/metrics.json
 
 economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
 	$(UV) run python -m crmlops.models.train_economics
+
+maturity:  ## Que se puede monitorear: madurez de la etiqueta por cosecha
+	$(UV) run python -m crmlops.monitoring.maturity
 
 gates:  ## Gates de promocion. Falla (exit 1) si el modelo no cumple
 	$(UV) run python -m crmlops.governance.gates

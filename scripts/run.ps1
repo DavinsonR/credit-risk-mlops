@@ -77,6 +77,7 @@ $Tasks = [ordered]@{
     "train"        = @{ desc = "Entrena baseline + retadores; escribe exports/metrics.json"; cmd = { uv run python -m crmlops.models.train } }
     "economics"    = @{ desc = "Traduce el modelo a dolares: perdida evitada y corte"; cmd = { uv run python -m crmlops.models.train_economics } }
     "stress"       = @{ desc = "Aplica el modelo a cohortes fuera de su regimen"; cmd = { uv run python -m crmlops.evaluation.stress } }
+    "maturity"     = @{ desc = "Que se puede monitorear: madurez de la etiqueta por cosecha"; cmd = { uv run python -m crmlops.monitoring.maturity } }
     "gates"        = @{ desc = "Gates de promocion. Falla si el modelo no cumple"; cmd = { uv run python -m crmlops.governance.gates } }
     "card"         = @{ desc = "Regenera reports/MODEL_CARD.md"; cmd = { uv run python -m crmlops.governance.model_card } }
     "validation"   = @{ desc = "Regenera reports/VALIDATION_REPORT.md (SR 11-7 + Anexo IV)"; cmd = { uv run python -m crmlops.governance.validation_report } }
