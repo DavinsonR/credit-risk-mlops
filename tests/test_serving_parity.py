@@ -201,3 +201,20 @@ def test_el_servicio_rechaza_montos_invalidos(serving_app, solicitud):
     c = TestClient(serving_app.app)
     assert c.post("/score", json={**solicitud, "gross_approval": -1}).status_code == 422
     assert c.post("/score", json={**solicitud, "initial_rate": 200}).status_code == 422
+
+
+def test_la_raiz_orienta_en_vez_de_devolver_404(serving_app):
+    """Abrir http://localhost:8000 es lo primero que hace cualquiera.
+
+    Devolvia 404: el primer contacto con el servicio era un error, y nada decia
+    que /docs existe.
+    """
+    from fastapi.testclient import TestClient
+
+    r = TestClient(serving_app.app).get("/")
+    assert r.status_code == 200
+    cuerpo = r.json()
+    assert cuerpo["endpoints"]["docs"] == "/docs"
+    assert "score" in cuerpo["endpoints"]
+    # El aviso de uso viaja con el servicio, no solo en el README.
+    assert "decision automatica" in cuerpo["aviso"]

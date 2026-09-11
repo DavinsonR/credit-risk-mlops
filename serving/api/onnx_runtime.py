@@ -13,11 +13,18 @@ from __future__ import annotations
 import numpy as np
 
 
+def probability_output(session) -> str:
+    """Nombre de la salida de probabilidades. El grafo trae dos y solo se usa una."""
+    for out in session.get_outputs():
+        if len(out.shape) == 2:
+            return out.name
+    raise RuntimeError("No se hallo la salida de probabilidades en el grafo ONNX")
+
+
 def onnx_predict(session, X: np.ndarray) -> np.ndarray:
+    # Solo la salida de probabilidades: `label` viene declarada con forma [1] y
+    # onnxruntime avisa sobre ella en cualquier lote mayor que uno. Ver el
+    # comentario largo en crmlops/export/onnx.py.
     name = session.get_inputs()[0].name
-    outputs = session.run(None, {name: X.astype("float32")})
-    for out in outputs:
-        arr = np.asarray(out)
-        if arr.ndim == 2 and arr.shape[1] >= 2:
-            return arr[:, 1]
-    raise RuntimeError("No se hallo el tensor de probabilidades en la salida ONNX")
+    (probs,) = session.run([probability_output(session)], {name: X.astype("float32")})
+    return np.asarray(probs)[:, 1]

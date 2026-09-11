@@ -355,17 +355,29 @@ Demo en el navegador, con el modelo corriendo en WASM y sin backend:
 .\run web       # http://localhost:8899
 ```
 
-### Docker (solo si quieres la imagen que construye CI)
+### Docker — opcional de verdad, no hace falta instalarlo
+
+**No lo instales solo por este repo.** GitHub Actions construye la imagen y la
+prueba de punta a punta en cada push, así que la capacidad está verificada en
+público sin que nadie instale nada. Si no tienes Docker, `docker: command not
+found` es la respuesta esperada, no un problema de instalación.
+
+Y CI verifica bastante más que "construye":
+
+| Paso en `ci.yml` | Qué prueba |
+|---|---|
+| `docker build` | La imagen se arma desde cero |
+| Importar `lightgbm`, `pandas`, `sklearn`, `torch`, `pyspark` **y esperar que falle** | El serving no arrastra el entorno de entrenamiento. Es la razón de exportar a ONNX; si uno de esos se colara, la separación se habría perdido en silencio |
+| `curl` a `/health` y `/score` | El contenedor responde de verdad |
+| Asserts sobre la respuesta | `0 < PD < 1`, banda válida, y que la pérdida SBA + banco sume el total |
+
+Si aun así lo quieres local: Docker Desktop es gratis para uso personal
+(la licencia paga aplica a empresas grandes), y entonces:
 
 ```powershell
 docker build -f serving/api/Dockerfile -t crmlops-serving .
 docker run -p 8000:8000 crmlops-serving
 ```
-
-CI verifica algo más que "construye": comprueba que la imagen **no** traiga
-`lightgbm`, `pandas`, `sklearn`, `torch` ni `pyspark`. La razón de exportar a ONNX
-es que el serving no reproduzca el entorno de entrenamiento; si esos paquetes se
-colaran, esa separación se habría perdido en silencio.
 
 ---
 
@@ -379,9 +391,12 @@ colaran, esa separación se habría perdido en silencio.
 | `winget` falla al actualizar `uv` con `remove: Access is denied` y `0x8a150003` | Hay un proceso `uv run` vivo. `winget` pone el `uv.exe` en su propia carpeta de paquetes y Windows no borra un `.exe` en ejecución — el error no lo dice. Casi siempre es un `run web` o `run serve` olvidado | No hace falta actualizar: el `uv` que ya tienes sirve. Si igual lo quieres, cerrar el servidor (`Ctrl+C`, o `Get-Process uv \| Stop-Process`) y repetir. |
 | `python --version` dice 3.13 o 3.14 | Es tu Python del sistema y no se usa | Irrelevante. `pyproject.toml` pide `>=3.12,<3.13` y `uv` instala su propio 3.12 aislado, sin tocar el tuyo. |
 | Acentos rotos en la consola | Codepage de Windows | `run.cmd` fija `PYTHONIOENCODING=utf-8`. Si invocas los módulos a mano, fíjala tú. |
+| `FutureWarning: PySpark does not yet fully support pandas >= 3.0.0` en tareas que no usan Spark | La emite **MLflow**, que importa `pyspark` si lo encuentra instalado. Verificado con un trazador de imports: el código del proyecto solo toca PySpark en `features/benchmark.py` | Inofensivo. Solo aparece si instalaste el extra `spark`; en CI no sale porque ahí no se instala. |
 | `RuntimeError: No hay JDK` | PySpark sin JVM | `uv run python scripts/bootstrap_jdk.py` |
 | `ModuleNotFoundError: onnxruntime` / `fastapi` | Falta un extra | `uv sync --extra dev --extra onnx --extra serve` |
 | `No module named 'torch'` al correr `train` o `all` | El extra `neural` no viene en `setup` | `.\run setup-neural`. El mensaje de error ya trae el comando; si ves un traceback pelado, tu clon es anterior a la corrección: `git pull`. |
+| `docker: command not found` | Docker no está instalado | **Esperado y sin consecuencias.** CI construye y prueba la imagen en cada push; no hace falta instalarlo. Ver la sección de Docker. |
+| `Terminate batch job (Y/N)?` al parar `serve` o `web` con Ctrl+C | `run.cmd` es un batch y cmd.exe intercepta el Ctrl+C. No se puede suprimir desde el propio `.cmd` | **Responde `Y`.** Con `N` el servidor queda vivo en segundo plano, y un `uv` corriendo llega a bloquear cosas tan poco relacionadas como `winget upgrade uv`. `run` avisa antes de arrancar esas dos tareas. |
 | `verify` reporta hash distinto | Vintage nuevo de SBA | Esperado cada trimestre. Ver [ADR 0001](adr/0001-descubrimiento-de-urls-sba.md). |
 | Un test se salta con `data` | Requiere fuentes descargadas | Esperado en nivel 1. Correr `acquire` primero. |
 | El hook de autoría no bloquea nada | `core.hooksPath` sin apuntar, o el hook sin bit de ejecución (git lo ignora **en silencio**) | `setup` apunta el path; `tests/test_authorship_hook.py` verifica que el modo en el índice sea `100755`. Los dos casos existieron en este repo. |

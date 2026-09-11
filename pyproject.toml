@@ -16,7 +16,10 @@ dependencies = [
     "pyyaml>=6.0",
     "pandera>=0.20",
     "scikit-learn>=1.5",
-    "lightgbm>=4.5",
+    # >=4.7 y no >=4.5: el codigo usa eval_X/eval_y, que 4.7 introdujo al deprecar
+    # eval_set. Con 4.6 el entrenamiento falla con TypeError, asi que el piso tiene
+    # que decirlo en vez de dejarlo fallar en la maquina de otro.
+    "lightgbm>=4.7",
     "scipy>=1.13",
     "optbinning>=0.21.0",
     "mlflow>=3.16.0",

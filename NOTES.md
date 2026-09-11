@@ -678,16 +678,16 @@ razonables y son falsas)_
 
 ---
 
-## Documentar la instalación — y los ocho defectos que salieron al hacerlo
+## Documentar la instalación — y los nueve defectos que salieron al hacerlo
 
 Escribir [docs/INSTALL.md](docs/INSTALL.md) no era trabajo de modelado. Encontró
-ocho cosas rotas, cuatro de ellas serias, y ninguna se habría visto revisando la
+nueve cosas rotas, cuatro de ellas serias, y ninguna se habría visto revisando la
 lógica del modelo.
 
-Seis salieron **escribiendo** la guía. Las dos últimas salieron **siguiéndola en
-una máquina limpia**, y son las peores de las ocho: un entry point que no
-arrancaba y una tubería que terminaba en verde con el entrenamiento roto. Ninguna
-de las seis primeras las habría encontrado.
+Seis salieron **escribiendo** la guía. Las tres últimas salieron **siguiéndola de
+principio a fin en una máquina limpia**, y entre ellas están las peores: un entry
+point que no arrancaba y una tubería que terminaba en verde con el entrenamiento
+roto. Ninguna de las seis primeras las habría encontrado.
 
 ### 1. Las instrucciones del README no se podían ejecutar
 
@@ -889,15 +889,66 @@ ausencia de torch con `sys.modules["torch"] = None` y scipy reventó con un
 mentía en la dirección peligrosa. Un finder que niega el módulo reproduce la
 ausencia real.
 
+### 9. Las advertencias que había aprendido a ignorar
+
+Recorrer la guía hasta el final no rompió nada más, pero dejó a la vista cuatro
+avisos que salían en cada corrida y que yo ya no leía. Ese es justamente el
+problema: **una advertencia que hay que ignorar tapa a la que no había que
+ignorar.**
+
+| Aviso | Qué era de verdad | Qué se hizo |
+|---|---|---|
+| `Expected shape from model of {1} does not match actual shape of {20000} for output label` | `onnxmltools` declara la salida `label` con forma `[1]` en vez de `[None]`. Nunca se lee —el umbral es económico y lo pone el consumidor— pero `session.run(None, ...)` la pedía igual | Pedir **solo** `probabilities`. La advertencia desaparece y salía en el comando cuyo trabajo es descartar problemas de paridad |
+| `The argument 'eval_set' is deprecated` | LightGBM 4.7 lo deprecó. Iba a romper, no solo a avisar | `eval_X`/`eval_y` en los dos sitios, y el piso de `pyproject` sube a `>=4.7` |
+| `X does not have valid feature names` | Correcto y **deliberado**: la paridad le pasa a LightGBM la misma matriz posicional que al grafo, porque comparar contra el DataFrame mediría dos pipelines distintos | Silenciado ese mensaje, solo en esa llamada, con el porqué escrito al lado |
+| `PySpark does not yet fully support pandas >= 3.0.0` | No es del proyecto: la emite **MLflow**, que importa `pyspark` si lo encuentra. Verificado con un trazador de imports | Documentado. No se toca lo que no es nuestro |
+
+Y un 404 que no era un aviso sino la primera impresión: abrir
+`http://localhost:8000` —lo primero que hace cualquiera— devolvía **404** sin
+pista de que `/docs` existe. Ahora la raíz responde con los endpoints y con el
+aviso de uso, que así viaja con el servicio en vez de vivir solo en el README.
+
+#### El gate de integridad hizo su trabajo sobre mí
+
+Cambiar `gbm.py` movió el `code_fingerprint`, y el gate `integridad` compara el
+registrado contra el actual: *"metricas producidas por codigo X, actual Y:
+reentrenar"*. No hay forma de tocar el entrenamiento y dejar las métricas viejas
+publicadas sin que CI lo cante.
+
+Así que reentrené con `reproduce`, que es el mecanismo del proyecto para esto:
+
+```
+REPRODUCIBLE: 3 modelos, 6 metricas cada uno, identicas hasta 0.0001.
+```
+
+El diff de `exports/metrics.json` lo confirma mejor que el mensaje: **cambiaron
+`segundos` y el fingerprint, y nada más.** AUC, Brier, ECE y PSI de los tres
+modelos, idénticos hasta el último dígito. El cambio de API de LightGBM era
+semánticamente nulo, y ahora eso está demostrado en vez de supuesto.
+
+#### Un límite que encontré y no voy a vender como virtud
+
+Re-exportar produce un `model.onnx` con **bytes distintos**. Lo verifiqué antes de
+asumir nada: los 5 nodos del grafo son idénticos y las predicciones coinciden
+**bit a bit** sobre 20.000 filas. La diferencia vive en la serialización, fuera de
+los nodos.
+
+O sea: **el modelo es reproducible; el archivo no es hash-estable.** Es una
+distinción que importa en un proyecto que se vende como auditable, y por eso la
+escribo: en ningún lado se afirma que el artefacto ONNX tenga hash estable —los
+SHA256 del repo son de los datos fuente— y la paridad se verifica numéricamente en
+cada export, no por hash. Si algún día hiciera falta esa garantía, habría que
+investigarla de verdad, no darla por hecha.
+
 ### Lo que esto dice del proyecto
 
-Siete de los ocho defectos viven en la capa que nadie audita: instrucciones,
+Ocho de los nueve defectos viven en la capa que nadie audita: instrucciones,
 scripts de arranque, hooks, permisos de archivo, políticas de ejecución,
-dependencias opcionales. El modelo tiene 8 gates, 130 tests y un reporte de
-validación; la instalación tenía un README que no se podía copiar y pegar, un
-entry point que no arrancaba, una garantía de autoría sostenida por dos ajustes
-locales de una sola máquina, y una tubería que declaraba `APROBADO` sin haber
-entrenado.
+dependencias opcionales, advertencias de consola. El modelo tiene 8 gates, 131
+tests y un reporte de validación; la instalación tenía un README que no se podía
+copiar y pegar, un entry point que no arrancaba, una garantía de autoría sostenida
+por dos ajustes locales de una sola máquina, una tubería que declaraba `APROBADO`
+sin haber entrenado, y una API cuya primera respuesta a un navegador era un 404.
 
 **Tres de los ocho fallaban en silencio o en verde** —el hook sin `grep`, `lint`
 con `;`, `all` tras un `train` roto—. Ese es el patrón que el proyecto persigue en

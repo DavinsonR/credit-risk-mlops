@@ -109,7 +109,8 @@ def main() -> int:
     model.fit(
         Xtr,
         tr[TARGET],
-        eval_set=[(Xva, va[TARGET])],
+        eval_X=Xva,  # eval_set quedó deprecado en LightGBM 4.7
+        eval_y=va[TARGET],
         eval_metric="auc",
         callbacks=[lgb.early_stopping(50, verbose=False)],
     )

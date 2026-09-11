@@ -363,7 +363,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.1" },
     { name = "fastapi", marker = "extra == 'serve'", specifier = ">=0.141.1" },
     { name = "httpx", marker = "extra == 'serve'", specifier = ">=0.28.1" },
-    { name = "lightgbm", specifier = ">=4.5" },
+    { name = "lightgbm", specifier = ">=4.7" },
     { name = "mlflow", specifier = ">=3.16.0" },
     { name = "numpy", specifier = ">=1.26" },
     { name = "onnxmltools", marker = "extra == 'onnx'", specifier = ">=1.16.0" },

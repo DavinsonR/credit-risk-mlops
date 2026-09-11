@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import json
 import sys
+import warnings
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -121,18 +122,32 @@ def to_onnx(model, n_features: int):
     )
 
 
+def probability_output(session) -> str:
+    """Nombre de la salida de probabilidades. El grafo trae dos y solo se usa una.
+
+    `label` (la clase predicha, 1D) nunca se lee: la decision de corte la toma el
+    consumidor con su propio umbral economico, no el grafo.
+    """
+    for out in session.get_outputs():
+        if len(out.shape) == 2:
+            return out.name
+    encontradas = [(o.name, o.shape) for o in session.get_outputs()]
+    raise RuntimeError(f"No se hallo la salida de probabilidades en {encontradas}")
+
+
 def onnx_predict(session, X: np.ndarray) -> np.ndarray:
     """Probabilidad de la clase positiva desde una sesion de onnxruntime."""
     name = session.get_inputs()[0].name
-    outputs = session.run(None, {name: X.astype("float32")})
-    # Salida tipica: [label, probabilidades]. Se busca el tensor 2D.
-    for out in outputs:
-        arr = np.asarray(out)
-        if arr.ndim == 2 and arr.shape[1] >= 2:
-            return arr[:, 1]
-    raise RuntimeError(
-        f"No se hallo el tensor de probabilidades en {[np.shape(o) for o in outputs]}"
-    )
+    # Se pide SOLO la salida de probabilidades, no `None` (que las pide todas).
+    # onnxmltools declara `label` con forma [1] en vez de [None], asi que
+    # onnxruntime avisaba en cada lote grande:
+    #   Expected shape from model of {1} does not match actual shape of {20000}
+    # Era inofensivo --nunca se leia `label`-- pero salia en cada `run onnx` y
+    # parecia un problema de paridad, que es justo lo que ese comando existe para
+    # descartar. Una advertencia que hay que aprender a ignorar termina tapando a
+    # la que no habia que ignorar.
+    (probs,) = session.run([probability_output(session)], {name: X.astype("float32")})
+    return np.asarray(probs)[:, 1]
 
 
 def verify_parity(
@@ -148,7 +163,15 @@ def verify_parity(
     # LightGBM recibe el MISMO tensor codificado, no el DataFrame original: si se
     # le pasara el DataFrame, se compararian dos pipelines distintos y la prueba
     # dejaria de medir la fidelidad del grafo.
-    p_lgbm = model.predict_proba(X)[:, 1]
+    #
+    # Por eso mismo sklearn avisa "X does not have valid feature names": el modelo
+    # se ajusto con nombres y aqui entra una matriz posicional. El aviso es
+    # correcto y la situacion es deliberada, asi que se silencia SOLO este mensaje
+    # y SOLO en esta llamada. Dejarlo visible entrenaria a ignorar la salida de
+    # `run onnx`, que es precisamente donde hay que mirar si la paridad falla.
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="X does not have valid feature names")
+        p_lgbm = model.predict_proba(X)[:, 1]
     return float(np.max(np.abs(p_onnx - p_lgbm))), len(df)
 
 

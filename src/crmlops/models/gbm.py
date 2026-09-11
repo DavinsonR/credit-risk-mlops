@@ -55,10 +55,15 @@ class GBMChallenger:
     def fit(self, X: pd.DataFrame, y: pd.Series, X_valid: pd.DataFrame, y_valid: pd.Series):
         """Early stopping sobre VALIDACION, que es la cosecha siguiente."""
         self.cat_dtypes_ = {c: self._prep(X)[c].dtype for c in self.categorical}
+        # eval_X/eval_y y no eval_set: LightGBM 4.7 deprecó el segundo y avisaba en
+        # cada entrenamiento. Es un conjunto de validación, no una lista, así que la
+        # forma nueva dice mejor lo que pasa. Verificado con `reproduce`: las
+        # métricas publicadas no se mueven.
         self.model.fit(
             self._prep(X),
             y,
-            eval_set=[(self._align(X_valid), y_valid)],
+            eval_X=self._align(X_valid),
+            eval_y=y_valid,
             eval_metric="auc",
             callbacks=[lgb.early_stopping(100, verbose=False)],
         )

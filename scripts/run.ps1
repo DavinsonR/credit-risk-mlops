@@ -130,5 +130,16 @@ $env:PYTHONIOENCODING = "utf-8"
 $env:MLFLOW_DISABLE_AGENT_HINT = "1"
 
 Write-Host "==> $Task" -ForegroundColor Cyan
+
+# Tareas que se quedan corriendo hasta que las paras a mano. Al invocarlas por
+# `run.cmd`, cmd.exe intercepta el Ctrl+C y pregunta "Terminate batch job (Y/N)?".
+# Responder N deja el servidor vivo en segundo plano, y un `uv` vivo bloquea cosas
+# tan poco relacionadas como una actualizacion de uv por winget --paso, y el error
+# que da winget no menciona ni el proceso ni el puerto--. Asi que se avisa antes.
+if ($Task -in @("serve", "web")) {
+    Write-Host "    Ctrl+C para parar. Si cmd pregunta 'Terminate batch job (Y/N)?', responde Y:" -ForegroundColor DarkYellow
+    Write-Host "    con N el servidor queda corriendo en segundo plano.`n" -ForegroundColor DarkYellow
+}
+
 & $Tasks[$Task].cmd
 exit $LASTEXITCODE

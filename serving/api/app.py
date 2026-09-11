@@ -166,6 +166,24 @@ app = FastAPI(
 )
 
 
+@app.get("/")
+def index() -> dict:
+    """Indice del servicio.
+
+    Existe porque abrir http://localhost:8000 en el navegador --lo primero que
+    hace cualquiera-- devolvia 404 y ninguna pista de que /docs existe. Un
+    servicio cuyo primer contacto es un error parece roto aunque funcione.
+    """
+    return {
+        "service": "credit-risk-mlops",
+        "endpoints": {"docs": "/docs", "health": "/health", "score": "POST /score"},
+        "aviso": (
+            "No es una decision automatica de credito, es una entrada a una "
+            "decision humana. Ver reports/VALIDATION_REPORT.md."
+        ),
+    }
+
+
 @app.get("/health")
 def health() -> dict:
     try:

@@ -59,12 +59,12 @@ def encode(payload: dict, contract: dict) -> np.ndarray:
 
 def score(payload: dict) -> dict:
     session, contract = _load()
-    outputs = session.run(None, {session.get_inputs()[0].name: encode(payload, contract)})
-    raw = next(
-        float(np.asarray(o)[0, 1])
-        for o in outputs
-        if np.asarray(o).ndim == 2 and np.asarray(o).shape[1] >= 2
-    )
+    # Solo la salida de probabilidades. `label` viene declarada con forma [1] y
+    # onnxruntime avisa sobre ella; ademas aqui no se usa, porque el umbral es
+    # economico y lo pone el consumidor.
+    salida = next(o.name for o in session.get_outputs() if len(o.shape) == 2)
+    (probs,) = session.run([salida], {session.get_inputs()[0].name: encode(payload, contract)})
+    raw = float(np.asarray(probs)[0, 1])
 
     p = min(max(raw, 1e-6), 1 - 1e-6)
     shift = float(contract.get("calibrator_shift", 0.0))
