@@ -64,6 +64,30 @@ make train && make gates && make card
 Paso a paso completo —extras opcionales, LLM local, PySpark, Docker, y qué debe
 imprimir cada comando— en **[docs/INSTALL.md](docs/INSTALL.md)**.
 
+## Inferencia causal
+
+El modelo responde *"¿quién va a incumplir?"*. La palanca que la SBA controla de
+verdad exige otra pregunta: *"¿qué pasa si cambiamos el % de garantía?"* — porque
+**la SBA no origina préstamos, garantiza**.
+
+`run causal` la responde, y la respuesta es que **no se puede responder con estos
+datos**. Tres diagnósticos sobre 1.398.416 préstamos:
+
+| Diagnóstico | Medición | Consecuencia |
+|---|---|---|
+| ¿El tratamiento tiene variación propia? | **R² = 0.9145** sobre celdas (método × tramo de $10k) | Sin solapamiento: DML y causal forests quedan sin variación que explotar |
+| ¿Sirve un RD en el umbral de $150.000? | **83.1%** de la ventana ±$5k está *exactamente* en $150.000 | Densidad destruida: la asignación no es local-aleatoria |
+| ¿El gradiente crudo es composición? | **+7.76 pp** crudo → **+4.79 pp** dentro del mismo tramo de tamaño | Queda un residual, y su signo es el que predice la **selección adversa** |
+
+**No se publica un efecto.** Un estimador aplicado donde sus supuestos no se cumplen
+produce un número, no una estimación. Lo que se publica es la no-identificación, con
+sus tres mediciones y la vía alternativa nombrada — ver
+[ADR 0013](docs/adr/0013-el-efecto-de-la-garantia-no-esta-identificado.md).
+
+Esto también nombra el supuesto del titular del proyecto: los **$276.3M evitados** se
+calculan rankeando por PD predicha y suponiendo que rechazar elimina la pérdida. Son
+dos supuestos causales dentro de un número presentado como predicción.
+
 ## Monitoreo
 
 En crédito la etiqueta tarda **51 meses medianos** en existir, así que el monitoreo

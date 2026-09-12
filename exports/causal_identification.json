@@ -1,0 +1,77 @@
+{
+  "tratamiento": "sba_guaranteed / gross_approval",
+  "resultado": "charge-off (solo prestamos resueltos)",
+  "umbral_candidato_usd": 150000,
+  "determinacion": {
+    "n": 1398416,
+    "celdas": 3015,
+    "r2": 0.9145,
+    "niveles_distintos": 3832,
+    "masa_en_cuatro_niveles": 91.02,
+    "identificable": false
+  },
+  "densidad": {
+    "umbral": 150000,
+    "n_exacto": 52770,
+    "por_ventana": [
+      {
+        "ventana_usd": 5000,
+        "n": 63484,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 83.12
+      },
+      {
+        "ventana_usd": 10000,
+        "n": 78432,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 67.28
+      },
+      {
+        "ventana_usd": 25000,
+        "n": 126449,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 41.73
+      },
+      {
+        "ventana_usd": 50000,
+        "n": 284988,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 18.52
+      }
+    ],
+    "rd_explotable": false
+  },
+  "gradiente": {
+    "crudo_pp": 7.76,
+    "dentro_de_tramo_pp": 4.79,
+    "n_comparable": 112526,
+    "por_tramo": [
+      {
+        "monto_desde": 100000,
+        "n_bajo": 10900.0,
+        "n_alto": 25211.0,
+        "tasa_bajo": 11.9,
+        "tasa_alto": 15.86,
+        "diferencia_pp": 3.96
+      },
+      {
+        "monto_desde": 125000,
+        "n_bajo": 10497.0,
+        "n_alto": 18535.0,
+        "tasa_bajo": 13.34,
+        "tasa_alto": 17.7,
+        "diferencia_pp": 4.36
+      },
+      {
+        "monto_desde": 150000,
+        "n_bajo": 20786.0,
+        "n_alto": 26597.0,
+        "tasa_bajo": 14.33,
+        "tasa_alto": 20.02,
+        "diferencia_pp": 5.69
+      }
+    ],
+    "explicado_por_tamano": 0.3827
+  },
+  "veredicto": "no_identificado"
+}

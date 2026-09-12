@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
+﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -32,6 +32,9 @@ train:  ## Entrena baseline + retadores; escribe exports/metrics.json
 economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
 	$(UV) run python -m crmlops.models.train_economics
 
+causal:  ## Identificacion causal: se puede estimar el efecto de la garantia?
+	$(UV) run python -m crmlops.causal.identification
+
 maturity:  ## Que se puede monitorear: madurez de la etiqueta por cosecha
 	$(UV) run python -m crmlops.monitoring.maturity
 
@@ -52,7 +55,7 @@ gates:  ## Gates de promocion. Falla (exit 1) si el modelo no cumple
 card:  ## Regenera reports/MODEL_CARD.md desde la ultima corrida
 	$(UV) run python -m crmlops.governance.model_card
 
-validation:  ## Regenera el reporte de validacion (SR 11-7 + EU AI Act Anexo IV)
+validation:  ## Regenera el reporte de validacion (SR 26-2 + EU AI Act Anexo IV)
 	$(UV) run python -m crmlops.governance.validation_report
 
 hmda:  ## Descarga HMDA por estado-anio y verifica contra conteos oficiales
