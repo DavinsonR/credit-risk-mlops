@@ -16,5 +16,7 @@
     "RAZA": -0.001675555583660504,
     "ETNIA": 0.008339023475697482,
     "SEXO": 0.030796379545837804
-  }
+  },
+  "promoted": false,
+  "promotion_blocked_by": "disparate_impact_ratio 0.764 < 0.8"
 }

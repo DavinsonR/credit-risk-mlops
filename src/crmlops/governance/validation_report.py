@@ -24,7 +24,6 @@ from pathlib import Path
 
 from crmlops.config import load_config, repo_root, resolve_path
 from crmlops.governance.gates import evaluate, evaluate_fairness
-from crmlops.governance.integrity import code_fingerprint
 
 
 def _load(name: str) -> dict | None:
@@ -43,7 +42,11 @@ def _gates_section(cfg: dict) -> str:
     for r in evaluate(cfg=cfg) + evaluate_fairness(cfg):
         valor = "n/a" if r.value is None else f"{r.value:.4f}"
         op = "≥" if r.direction == "min" else "≤"
-        filas.append((f"`{r.name}`", valor, f"{op} {r.threshold}", "PASA" if r.passed else "FALLA"))
+        # `r.veredicto` y no `r.passed`: para el gate de equidad, `passed` significa
+        # "el build no se rompe" y no "el modelo cumple". Con `passed` este documento
+        # imprimia `hmda:disparate_impact | 0.7639 | >= 0.8 | PASA` en la seccion 3.1
+        # y "No apto -- promocion bloqueada" en la seccion 5, del mismo gate.
+        filas.append((f"`{r.name}`", valor, f"{op} {r.threshold}", r.veredicto))
     return _tabla(filas, ("Gate", "Valor", "Umbral", "Resultado"))
 
 
@@ -66,7 +69,14 @@ def build(cfg: dict | None = None) -> str:
 > **No editar a mano**: se regenera en cada corrida.
 >
 > Vintage de datos `{sba["vintage"]}` · configuración `{sba["config_fingerprint"]}` ·
-> código `{code_fingerprint()}`
+> código `{sba["code_fingerprint"]}`
+>
+> Los tres identificadores salen de `exports/metrics.json`: son la procedencia de
+> los números que este reporte describe. La versión anterior calculaba el de código
+> **en vivo**, así que el reporte declaraba el código del momento en que se generó
+> y no el que produjo las métricas — y al primer cambio en el modelado los dos
+> dejaban de coincidir sin que nada avisara. El gate `reportes_al_dia` ahora lo
+> verifica.
 
 Estructura según **SR 11-7** (Federal Reserve, *Guidance on Model Risk
 Management*). El mapeo al **Anexo IV del Reglamento de IA de la UE** está en la

@@ -35,7 +35,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import asdict, dataclass, field
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from pathlib import Path
 
 import duckdb
@@ -107,9 +107,25 @@ class ReferenceProfile:
     score: ScoreProfile | None = None
 
     def to_json(self, path: Path | None = None) -> Path:
+        """Serializa con los infinitos como `null`.
+
+        `json.dumps(float("inf"))` escribe `Infinity`, que NO es JSON valido:
+        `JSON.parse` lanza en cualquier navegador. El perfil se commitea y es
+        candidato a alimentar la vitrina, asi que un archivo que solo Python puede
+        leer no sirve. Un test de la semana 9 dejaba escrito el riesgo ("si algun dia
+        el perfil lo consumiera otro lenguaje habria que cambiarlo"); aqui se cambia.
+
+        `allow_nan=False` hace que cualquier no-finito que se cuele reviente al
+        escribir en vez de producir un archivo silenciosamente invalido.
+        """
         path = path or (repo_root() / PROFILE_PATH)
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(asdict(self), indent=2), encoding="utf-8")
+        crudo = asdict(self)
+        for p in crudo.get("numeric", {}).values():
+            p["edges"] = _edges_a_json(p["edges"])
+        if crudo.get("score"):
+            crudo["score"]["edges"] = _edges_a_json(crudo["score"]["edges"])
+        path.write_text(json.dumps(crudo, indent=2, allow_nan=False), encoding="utf-8")
         return path
 
     @classmethod
@@ -121,16 +137,40 @@ class ReferenceProfile:
                 "  uv run python -m crmlops.monitoring.drift --build"
             )
         d = json.loads(path.read_text(encoding="utf-8"))
+        numeric = {}
+        for k, v in d.get("numeric", {}).items():
+            v = {**v, "edges": _edges_desde_json(v["edges"])}
+            numeric[k] = NumericProfile(**v)
+        score = None
+        if d.get("score"):
+            s = {**d["score"], "edges": _edges_desde_json(d["score"]["edges"])}
+            score = ScoreProfile(**s)
         return cls(
             created_at=d["created_at"],
             as_of=d["as_of"],
             config_fingerprint=d["config_fingerprint"],
             train_window=d["train_window"],
             n=d["n"],
-            numeric={k: NumericProfile(**v) for k, v in d.get("numeric", {}).items()},
+            numeric=numeric,
             categorical={k: CategoricalProfile(**v) for k, v in d.get("categorical", {}).items()},
-            score=ScoreProfile(**d["score"]) if d.get("score") else None,
+            score=score,
         )
+
+
+def _edges_a_json(edges: list[float]) -> list[float | None]:
+    """Los infinitos van como `null`: `Infinity` no es JSON valido."""
+    return [None if not np.isfinite(e) else float(e) for e in edges]
+
+
+def _edges_desde_json(edges: list[float | None]) -> list[float]:
+    """`null` vuelve a ser +-inf segun su posicion.
+
+    Los cortes estan ordenados, asi que el `null` inicial es -inf y el final +inf.
+    """
+    n = len(edges)
+    return [
+        (-np.inf if i == 0 else np.inf) if e is None else float(e) for i, e in enumerate(edges)
+    ][:n]
 
 
 def _proportions(values: np.ndarray, edges: np.ndarray) -> list[float]:
@@ -152,21 +192,45 @@ def _edges_from(values: np.ndarray) -> np.ndarray:
     return edges
 
 
+SIN_VINTAGE = "sin vintage"
+
+
 def build_reference(
     df: pd.DataFrame,
     spec: FeatureSpec,
     scores: np.ndarray | None = None,
     cfg: dict | None = None,
+    *,
+    as_of: date | str | None = None,
 ) -> ReferenceProfile:
-    """Construye el perfil desde la poblacion de entrenamiento."""
+    """Construye el perfil desde la poblacion de entrenamiento.
+
+    `as_of` es la fecha de corte del vintage: metadato de procedencia que identifica
+    con que datos se construyo el perfil. SE PASA EXPLICITAMENTE y no se lee de los
+    CSV aqui.
+
+    La primera version llamaba a `as_of_date()` adentro, que abre los CSV crudos. El
+    efecto: construir un perfil desde un DataFrame en memoria exigia 861 MB en
+    disco, y cinco tests escritos con datos SINTETICOS --para que corrieran en
+    CI-- fallaban en cualquier clon sin los datos. Lo encontro
+    `scripts/ci_local.py` antes de que llegara a CI, que es para lo que existe.
+
+    Sin `as_of`, el perfil queda marcado como "sin vintage": es cierto y es visible,
+    en vez de adivinar una fecha.
+    """
     from crmlops.governance.gates import config_fingerprint
 
     cfg = cfg or load_config()
     tr = cfg["splits"]["train"]
 
+    if as_of is None:
+        marca = SIN_VINTAGE
+    else:
+        marca = as_of.isoformat() if isinstance(as_of, date) else str(as_of)
+
     perfil = ReferenceProfile(
         created_at=datetime.now(UTC).isoformat(timespec="seconds"),
-        as_of=as_of_date().isoformat(),
+        as_of=marca,
         config_fingerprint=config_fingerprint(cfg),
         train_window=[tr["start"], tr["end"]],
         n=len(df),
@@ -425,7 +489,7 @@ def _build(cfg: dict, spec: FeatureSpec) -> Path:
     tr = cfg["splits"]["train"]
     panel = load_panel(cfg)
     entrenamiento = panel[panel["approval_fy"].between(tr["start"], tr["end"])]
-    perfil = build_reference(entrenamiento, spec, reference_scores(), cfg)
+    perfil = build_reference(entrenamiento, spec, reference_scores(), cfg, as_of=as_of_date())
     ruta = perfil.to_json()
     print(f"Perfil de referencia: {len(entrenamiento):,} filas de FY{tr['start']}-{tr['end']}")
     print(
@@ -471,8 +535,20 @@ def main(argv: list[str] | None = None) -> int:
 
     from crmlops.governance.gates import config_fingerprint
 
-    if perfil.config_fingerprint != config_fingerprint(cfg):
-        print("\n  AVISO: el perfil se construyo con otro config. Regenerar con --build.")
+    actual = config_fingerprint(cfg)
+    if perfil.config_fingerprint != actual:
+        # ANTES ESTO ERA UN AVISO, y por eso se commitearon un drift.json y un
+        # DRIFT_REPORT.md salidos de un perfil rancio: el perfil se habia construido
+        # con `not_booked_statuses` dentro de `exclusions`, que entra al fingerprint.
+        # Un reporte de deriva medido contra la referencia equivocada es peor que no
+        # tener reporte, porque se publica igual.
+        print()
+        print("=" * 92)
+        print("BLOQUEADO: el perfil de referencia no corresponde al config actual.")
+        print(f"  perfil {perfil.config_fingerprint}   config {actual}")
+        print("  Regenerar con:  uv run python -m crmlops.monitoring.drift --build")
+        print("=" * 92)
+        return 1
 
     filas: list[dict] = []
     secciones: list[str] = []

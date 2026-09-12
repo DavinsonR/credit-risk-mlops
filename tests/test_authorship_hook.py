@@ -92,13 +92,36 @@ def run_hook(
     )
 
 
-def test_el_hook_existe_y_es_el_que_git_usa():
+def test_el_hook_existe():
+    """Propiedad del REPO: vale en cualquier copia, con setup o sin el."""
     assert HOOK.is_file(), f"falta {HOOK}"
+
+
+def test_core_hooksPath_apunta_al_hook():
+    """Propiedad de la COPIA LOCAL, no del repo: solo es cierta despues de `setup`.
+
+    ESTE TEST TUVO CI EN ROJO DESDE LA SEMANA 8 y no me di cuenta. Falla en
+    cualquier clon que no haya corrido `setup`, que es exactamente lo que hace CI en
+    cada push. Mientras tanto reporte "lint verde, N tests" en cinco mensajes de
+    commit, mirando solo mi propia maquina -- donde `core.hooksPath` estaba
+    configurado a mano desde la semana 1.
+
+    Sexta vez del mismo patron en este proyecto: mi entorno tenia algo que el
+    entorno de destino no tiene. Y esta vez el defecto estaba en el test, no en el
+    codigo.
+
+    El arreglo no fue saltarlo: `ci.yml` ahora corre la linea de `setup` que apunta
+    el hook, asi que la propiedad se verifica donde se verifica todo lo demas. Si
+    esto falla en tu clon, la respuesta esta en el mensaje: te falta `setup`.
+    """
     configurado = subprocess.run(
         ["git", "config", "core.hooksPath"], cwd=REPO, capture_output=True, text=True
     ).stdout.strip()
     assert configurado == "scripts/hooks", (
-        f"core.hooksPath es {configurado!r}; correr `make setup` o `.\\run.ps1 setup`"
+        f"core.hooksPath es {configurado!r} y deberia ser 'scripts/hooks'.\n"
+        "En un clon nuevo: correr `.\\run setup` (Windows) o `make setup`.\n"
+        "Sin eso, git ignora el hook de autoria y un trailer de IA solo se veria "
+        "en CI, despues del push."
     )
 
 

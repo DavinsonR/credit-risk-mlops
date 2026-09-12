@@ -32,6 +32,16 @@ jobs:
         # No se instalan neural ni spark: PyTorch y la JVM no hacen falta aqui.
         run: uv sync --extra dev --extra onnx --extra serve
 
+      # La parte de `make setup` que configura el repo, no el entorno. Los tests de
+      # autoria verifican el estado CONFIGURADO --core.hooksPath apuntando al hook--
+      # y .git/hooks no se clona, asi que sin esta linea la suite falla en CI y pasa
+      # en local. Paso exactamente lo contrario de lo que uno esperaria: CI llevaba
+      # rojo desde la semana 8 por un test que solo era verde en mi maquina.
+      - name: Configurar el hook de autoria (equivalente a `make setup`)
+        run: |
+          git config core.hooksPath scripts/hooks
+          test "$(git config core.hooksPath)" = "scripts/hooks"
+
       - name: Lint (ruff)
         run: |
           uv run ruff check .

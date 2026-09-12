@@ -30,15 +30,54 @@ from crmlops.governance.integrity import check as integrity_check
 
 @dataclass
 class GateResult:
+    """Resultado de un gate. DOS HECHOS DISTINTOS, y confundirlos costo caro.
+
+    `passed`        el BUILD pasa: el control funciono y no hay nada que bloquear.
+    `threshold_met` el MODELO cumple el umbral.
+
+    Para casi todos los gates coinciden. Para el de equidad NO: un modelo con
+    disparate impact 0.7639 no cumple el umbral de 0.80, y sin embargo el build
+    pasa porque el modelo esta marcado `promoted: false` -- se midio, se documento
+    y no se despliega. Eso es el sistema funcionando.
+
+    El problema fue tener un solo campo llamado `passed` para las dos cosas:
+    `reports/VALIDATION_REPORT.md` imprimia `hmda:disparate_impact | 0.7639 | >= 0.8
+    | PASA` en su seccion 3.1 y "No apto -- promocion bloqueada" en la seccion 5,
+    del mismo gate y en el mismo documento. Un validador que lee eso concluye que el
+    reporte no es confiable, y tiene razon.
+
+    Cualquier consumidor que quiera decir "el modelo cumple" tiene que leer
+    `threshold_met`. `passed` solo responde "¿rompe el build?".
+    """
+
     name: str
     value: float | None
     threshold: float
     direction: str  # "min" | "max"
     passed: bool
     detail: str = ""
+    threshold_met: bool | None = None
+
+    def __post_init__(self) -> None:
+        if self.threshold_met is None:
+            self.threshold_met = self.passed
+
+    @property
+    def veredicto(self) -> str:
+        """Lo que hay que imprimir en un documento, sin ambiguedad."""
+        if not self.passed:
+            return "FALLA"
+        if not self.threshold_met:
+            return "NO CUMPLE (build ok: no se promueve)"
+        return "PASA"
 
     def render(self) -> str:
-        mark = "PASA " if self.passed else "FALLA"
+        if not self.passed:
+            mark = "FALLA"
+        elif not self.threshold_met:
+            mark = "MIDE "  # el control corrio; el modelo no cumple
+        else:
+            mark = "PASA "
         shown = "n/a" if self.value is None else f"{self.value:.4f}"
         op = ">=" if self.direction == "min" else "<="
         extra = f"  {self.detail}" if self.detail else ""
@@ -208,6 +247,22 @@ def evaluate_fairness(cfg: dict | None = None, path: Path | None = None) -> list
     if not cumple and not promovido:
         detalle += "  -> NO promovido, gate cumpliendo su funcion"
 
+    if "promoted" not in data:
+        # El control descansaba en un campo que nunca se escribia: `.get("promoted",
+        # False)` hacia que el gate pasara por DEFECTO y no por diseno. Si alguien
+        # promoviera el modelo sin escribir la bandera, el gate seguiria en verde.
+        return [
+            GateResult(
+                "hmda:disparate_impact",
+                dir_ratio,
+                thr,
+                "min",
+                passed=False,
+                detail="hmda_metrics.json no declara `promoted`: el gate no puede decidir",
+                threshold_met=cumple,
+            )
+        ]
+
     return [
         GateResult(
             "hmda:disparate_impact",
@@ -217,13 +272,73 @@ def evaluate_fairness(cfg: dict | None = None, path: Path | None = None) -> list
             # Solo falla el build si se pretende promover algo que no cumple.
             passed=cumple or not promovido,
             detail=detalle,
+            # Y por separado: el MODELO cumple o no, sin importar si se promueve.
+            threshold_met=cumple,
         )
     ]
 
 
+def evaluate_reports(cfg: dict | None = None, root: Path | None = None) -> list[GateResult]:
+    """Los documentos de gobierno tienen que describir las metricas publicadas.
+
+    POR QUE ESTE GATE EXISTE. `reports/MODEL_CARD.md` estuvo congelado desde la
+    semana 4: declaraba un commit de entonces y listaba 7 gates cuando ya habia 8
+    --faltaba el de equidad, el unico que el modelo no cumple--. Y
+    `reports/VALIDATION_REPORT.md` traia una huella de codigo que no era la de
+    `metrics.json`, porque se calculaba en vivo al generar el documento.
+
+    Nada avisaba. Los dos archivos son el producto estrella del proyecto: lo primero
+    que abre un validador. Un reporte rancio es peor que no tener reporte, porque se
+    cita.
+
+    El gate es barato: los documentos estampan la huella de codigo de metrics.json y
+    aqui se compara. Si difiere, hay que regenerarlos.
+    """
+    cfg = cfg or load_config()
+    root = root or repo_root()
+    metrics_path = root / "exports" / "metrics.json"
+    if not metrics_path.exists():
+        return []
+
+    esperada = json.loads(metrics_path.read_text(encoding="utf-8")).get("code_fingerprint")
+    if not esperada:
+        return []
+
+    out: list[GateResult] = []
+    for nombre in ("MODEL_CARD.md", "VALIDATION_REPORT.md"):
+        ruta = root / "reports" / nombre
+        if not ruta.exists():
+            out.append(
+                GateResult(
+                    f"reporte:{nombre}",
+                    None,
+                    0,
+                    "min",
+                    passed=False,
+                    detail=f"falta {ruta.relative_to(root).as_posix()}: correr card y validation",
+                )
+            )
+            continue
+        texto = ruta.read_text(encoding="utf-8")
+        al_dia = esperada in texto
+        out.append(
+            GateResult(
+                f"reporte:{nombre}",
+                None,
+                0,
+                "min",
+                passed=al_dia,
+                detail=""
+                if al_dia
+                else f"no menciona la huella {esperada} de metrics.json: esta rancio, regenerar",
+            )
+        )
+    return out
+
+
 def main() -> int:
     cfg = load_config()
-    results = evaluate(cfg=cfg) + evaluate_fairness(cfg)
+    results = evaluate(cfg=cfg) + evaluate_fairness(cfg) + evaluate_reports(cfg)
 
     print("=" * 84)
     print("GATES DE PROMOCION")

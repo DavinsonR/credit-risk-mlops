@@ -114,6 +114,9 @@ $Tasks = [ordered]@{
         }
     }
     "test"         = @{ desc = "pytest"; cmd = { uv run pytest -m "not data" -q } }
+    # Reproduce las condiciones de CI en un clon limpio, sin setup y con solo los
+    # extras de ci.yml. Existe porque seis veces un cambio paso aqui y fallo alla.
+    "ci-local"     = @{ desc = "Corre lo que corre CI, en un clon limpio del HEAD"; cmd = { uv run python scripts/ci_local.py } }
     # El orden importa y el corte tambien: si `train` falla, NO se corren los
     # gates. Leen exports/metrics.json commiteado, asi que pasarian igual y la
     # tuberia terminaria en verde sin haber entrenado nada.

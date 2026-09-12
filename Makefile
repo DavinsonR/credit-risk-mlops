@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -89,6 +89,9 @@ audit:  ## Auditoria de contaminacion post-originacion sobre los candidatos
 lint:  ## ruff check + format check
 	$(UV) run ruff check .
 	$(UV) run ruff format --check .
+
+ci-local:  ## Corre lo que corre CI, en un clon limpio del HEAD y sin setup
+	$(UV) run python scripts/ci_local.py
 
 test:  ## pytest (excluye tests que requieren datos adquiridos)
 	$(UV) run pytest -m "not data"

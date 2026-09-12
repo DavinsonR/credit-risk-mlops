@@ -34,7 +34,8 @@ TEMPLATE = """# Model Card - {model_name}
 | Semilla | {seed} |
 | Vintage de datos | `{vintage}` |
 | Huella de configuracion | `{fingerprint}` |
-| Version del codigo | `{git_sha}` |
+| Huella del codigo de modelado | `{code_fingerprint}` |
+| Commit al generar | `{git_sha}` |
 
 ## 2. Uso previsto
 
@@ -154,14 +155,25 @@ def _metrics_table(models: list[dict], production: str) -> str:
 
 
 def _gates_table(cfg: dict) -> str:
-    from crmlops.governance.gates import evaluate
+    """Todos los gates, incluido el de equidad.
+
+    DOS DEFECTOS ARREGLADOS AQUI, y los dos se veian en el documento publicado:
+
+    1. Solo se llamaba a `evaluate()`, no a `evaluate_fairness()`. El model card
+       listaba 7 gates cuando hay 8, y el que faltaba era justamente el unico que el
+       modelo no cumple. El documento que un validador lee primero omitia el
+       hallazgo mas incomodo del proyecto.
+    2. Se imprimia "PASA" a partir de `r.passed`, que para el gate de equidad
+       significa "el build no se rompe", no "el modelo cumple". Ahora se usa
+       `r.veredicto`, que distingue las dos cosas.
+    """
+    from crmlops.governance.gates import evaluate, evaluate_fairness
 
     rows = ["| Gate | Valor | Umbral | Resultado |", "|---|---|---|---|"]
-    for r in evaluate(cfg=cfg):
+    for r in [*evaluate(cfg=cfg), *evaluate_fairness(cfg)]:
         val = "n/a" if r.value is None else f"{r.value:.4f}"
         op = ">=" if r.direction == "min" else "<="
-        estado = "PASA" if r.passed else "FALLA"
-        rows.append(f"| `{r.name}` | {val} | {op} {r.threshold} | {estado} |")
+        rows.append(f"| `{r.name}` | {val} | {op} {r.threshold} | {r.veredicto} |")
     return "\n".join(rows)
 
 
@@ -189,6 +201,11 @@ def generate(out_path: Path | None = None) -> Path:
         seed=data["seed"],
         vintage=data["vintage"],
         fingerprint=data["config_fingerprint"],
+        # De metrics.json, no calculado en vivo: identifica el codigo que produjo
+        # ESTOS numeros. El commit es aparte y responde otra pregunta ("cuando se
+        # generó el documento"), que es lo que antes se etiquetaba como "version del
+        # codigo" y llevaba a cruzarlo con el fingerprint como si fueran lo mismo.
+        code_fingerprint=data["code_fingerprint"],
         git_sha=_git_sha(),
         train_from=sp["train"][0],
         train_to=sp["train"][1],

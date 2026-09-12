@@ -1,10 +1,17 @@
 # Reporte de Validación de Modelos
 
-> Generado por `crmlops.governance.validation_report` el 2026-09-09 22:31 UTC.
+> Generado por `crmlops.governance.validation_report` el 2026-09-12 05:12 UTC.
 > **No editar a mano**: se regenera en cada corrida.
 >
 > Vintage de datos `260630` · configuración `969867602d1192cc` ·
-> código `46391734fe8cf0f8`
+> código `7feae6905ddae543`
+>
+> Los tres identificadores salen de `exports/metrics.json`: son la procedencia de
+> los números que este reporte describe. La versión anterior calculaba el de código
+> **en vivo**, así que el reporte declaraba el código del momento en que se generó
+> y no el que produjo las métricas — y al primer cambio en el modelado los dos
+> dejaban de coincidir sin que nada avisara. El gate `reportes_al_dia` ahora lo
+> verifica.
 
 Estructura según **SR 11-7** (Federal Reserve, *Guidance on Model Risk
 Management*). El mapeo al **Anexo IV del Reglamento de IA de la UE** está en la
@@ -139,7 +146,7 @@ exigen explicación; no prueban discriminación.
 | `brier_test` | 0.0828 | ≤ 0.0868 | PASA |
 | `ece_test` | 0.0107 | ≤ 0.02 | PASA |
 | `margen_sobre_baseline` | 0.0311 | ≥ 0.02 | PASA |
-| `hmda:disparate_impact` | 0.7639 | ≥ 0.8 | PASA |
+| `hmda:disparate_impact` | 0.7639 | ≥ 0.8 | NO CUMPLE (build ok: no se promueve) |
 
 Cada umbral tiene su derivación escrita en `config.yaml`. Ninguno se eligió porque
 el modelo lo pasara: el de Brier, por ejemplo, sale del predictor sin habilidad

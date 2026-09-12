@@ -23,6 +23,7 @@ from crmlops.evaluation.metrics import stability
 from crmlops.features.spec import FeatureSpec
 from crmlops.monitoring.drift import (
     MIN_SUPPORT,
+    SIN_VINTAGE,
     CategoricalProfile,
     DriftResult,
     ReferenceProfile,
@@ -155,11 +156,13 @@ def test_el_orden_pone_primero_el_vocabulario(spec, referencia):
 
 
 def test_el_perfil_sobrevive_el_viaje_por_json(spec, referencia, tmp_path):
-    """Los cortes extremos son +-inf y json los escribe como Infinity.
+    """Los cortes extremos son +-inf y en el JSON van como `null`.
 
-    Es JSON no estandar. Python lo lee sin problema y por eso se usa, pero si algun
-    dia el perfil lo consumiera otro lenguaje habria que cambiarlo. El test fija que
-    hoy funciona, para que la ruptura se vea aqui y no en un reporte.
+    La primera version de este test asertaba lo contrario --que el archivo traia
+    `Infinity`-- y dejaba escrito el riesgo: "si algun dia el perfil lo consumiera
+    otro lenguaje habria que cambiarlo". Ese dia llego: el perfil se commitea y
+    alimenta la vitrina, y `JSON.parse` lanza con `Infinity`. Asi que el test estaba
+    fijando el defecto, y ahora fija el arreglo.
     """
     rng = np.random.default_rng(SEMILLA + 4)
     scores = rng.beta(2, 20, size=5_000)
@@ -167,7 +170,7 @@ def test_el_perfil_sobrevive_el_viaje_por_json(spec, referencia, tmp_path):
     ruta = original.to_json(tmp_path / "perfil.json")
 
     crudo = json.loads(ruta.read_text(encoding="utf-8"))
-    assert crudo["numeric"]["monto"]["edges"][0] == float("-inf")
+    assert crudo["numeric"]["monto"]["edges"][0] is None, "los infinitos van como null"
 
     vuelto = ReferenceProfile.from_json(ruta)
     assert vuelto.numeric["monto"].edges == original.numeric["monto"].edges
@@ -184,3 +187,58 @@ def test_el_perfil_sobrevive_el_viaje_por_json(spec, referencia, tmp_path):
 def test_un_perfil_ausente_dice_como_generarlo(tmp_path):
     with pytest.raises(FileNotFoundError, match="--build"):
         ReferenceProfile.from_json(tmp_path / "no_existe.json")
+
+
+def test_construir_un_perfil_no_exige_tener_los_datos_crudos(spec, referencia):
+    """El defecto que `scripts/ci_local.py` encontro en su primera corrida.
+
+    `build_reference` llamaba a `as_of_date()` adentro, que abre los 861 MB de CSV.
+    Resultado: cinco tests con datos SINTETICOS --escritos precisamente para correr
+    en CI-- fallaban con IOException en cualquier clon sin los datos. Pasaban aqui
+    porque yo tengo los datos. Sexta vez del mismo patron.
+
+    Este test fija la propiedad: un perfil se construye desde un DataFrame y nada
+    mas. Si vuelve a exigir disco, falla aqui.
+    """
+    perfil = build_reference(referencia, spec)
+    assert perfil.as_of == SIN_VINTAGE, "sin vintage se declara, no se adivina"
+    assert perfil.n == len(referencia)
+    assert perfil.numeric and perfil.categorical
+
+
+def test_el_vintage_se_registra_cuando_se_pasa(spec, referencia):
+    from datetime import date
+
+    perfil = build_reference(referencia, spec, as_of=date(2026, 6, 30))
+    assert perfil.as_of == "2026-06-30"
+
+
+def test_el_perfil_es_JSON_valido_para_cualquier_lenguaje(spec, referencia, tmp_path):
+    """`Infinity` no es JSON: `JSON.parse` lanza.
+
+    El perfil se commitea y alimenta la vitrina, asi que un archivo que solo Python
+    puede leer no sirve. La version anterior escribia 14 tokens `Infinity`. Un test
+    de la semana 9 dejaba el riesgo por escrito; este lo cierra.
+    """
+    rng = np.random.default_rng(SEMILLA + 5)
+    perfil = build_reference(referencia, spec, scores=rng.beta(2, 20, size=3_000))
+    ruta = perfil.to_json(tmp_path / "perfil.json")
+    texto = ruta.read_text(encoding="utf-8")
+
+    assert "Infinity" not in texto and "NaN" not in texto
+
+    # `parse_constant` es lo que usa json para Infinity/NaN: si se invoca, el
+    # archivo no era JSON estandar.
+    def prohibido(valor):  # pragma: no cover - solo corre si el archivo es invalido
+        raise AssertionError(f"el JSON trae la constante no estandar {valor!r}")
+
+    json.loads(texto, parse_constant=prohibido)
+
+    # Y los cortes infinitos vuelven a serlo al leer.
+    vuelto = ReferenceProfile.from_json(ruta)
+    for nombre, p in vuelto.numeric.items():
+        assert p.edges[0] == float("-inf"), nombre
+        assert p.edges[-1] == float("inf"), nombre
+    assert psi_numeric(vuelto.numeric["monto"], referencia["monto"].to_numpy()) == pytest.approx(
+        0.0, abs=1e-9
+    )

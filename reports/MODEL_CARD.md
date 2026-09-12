@@ -1,6 +1,6 @@
 # Model Card - lightgbm
 
-> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-09 17:04 UTC.
+> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-12 05:12 UTC.
 > **No editar a mano**: se regenera en cada entrenamiento.
 
 ## 1. Detalles del modelo
@@ -14,7 +14,8 @@
 | Semilla | 42 |
 | Vintage de datos | `260630` |
 | Huella de configuracion | `969867602d1192cc` |
-| Version del codigo | `7ff9a077dd5a` |
+| Huella del codigo de modelado | `7feae6905ddae543` |
+| Commit al generar | `695416c29395` |
 
 ## 2. Uso previsto
 
@@ -85,6 +86,7 @@ test. Se usa ajuste de intercepto: monotono, no puede alterar el ranking.
 | `brier_test` | 0.0828 | <= 0.0868 | PASA |
 | `ece_test` | 0.0107 | <= 0.02 | PASA |
 | `margen_sobre_baseline` | 0.0311 | >= 0.02 | PASA |
+| `hmda:disparate_impact` | 0.7639 | >= 0.8 | NO CUMPLE (build ok: no se promueve) |
 
 Un modelo que no pasa estos gates no se promueve. El gate de coherencia verifica
 que estas metricas correspondan al `config.yaml` actual, para que nadie cambie el

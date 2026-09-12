@@ -1,7 +1,7 @@
 {
-  "created_at": "2026-09-12T01:50:12+00:00",
+  "created_at": "2026-09-12T05:12:09+00:00",
   "as_of": "2026-06-30",
-  "config_fingerprint": "a546f40778b642d8",
+  "config_fingerprint": "969867602d1192cc",
   "train_window": [
     2011,
     2015
@@ -11,7 +11,7 @@
     "gross_approval": {
       "name": "gross_approval",
       "edges": [
-        -Infinity,
+        null,
         20000.0,
         25000.0,
         50000.0,
@@ -21,7 +21,7 @@
         275000.0,
         450000.0,
         935100.0,
-        Infinity
+        null
       ],
       "proportions": [
         0.0997880770293928,
@@ -41,7 +41,7 @@
     "sba_guaranteed": {
       "name": "sba_guaranteed",
       "edges": [
-        -Infinity,
+        null,
         10000.0,
         15000.0,
         25000.0,
@@ -51,7 +51,7 @@
         186300.0,
         337500.0,
         712500.0,
-        Infinity
+        null
       ],
       "proportions": [
         0.095176448908136,
@@ -71,7 +71,7 @@
     "initial_rate": {
       "name": "initial_rate",
       "edges": [
-        -Infinity,
+        null,
         4.75,
         5.25,
         5.5,
@@ -80,7 +80,7 @@
         6.25,
         7.25,
         8.35,
-        Infinity
+        null
       ],
       "proportions": [
         0.08168709112687736,
@@ -99,7 +99,7 @@
     "jobs_supported": {
       "name": "jobs_supported",
       "edges": [
-        -Infinity,
+        null,
         1.0,
         2.0,
         3.0,
@@ -108,7 +108,7 @@
         10.0,
         15.0,
         27.0,
-        Infinity
+        null
       ],
       "proportions": [
         0.15839859946558554,
@@ -127,11 +127,11 @@
     "guarantee_pct": {
       "name": "guarantee_pct",
       "edges": [
-        -Infinity,
+        null,
         0.5,
         0.75,
         0.85,
-        Infinity
+        null
       ],
       "proportions": [
         0.0004422740256150373,
@@ -145,7 +145,7 @@
     "log_gross_approval": {
       "name": "log_gross_approval",
       "edges": [
-        -Infinity,
+        null,
         9.903487552536127,
         10.126631103850338,
         10.819778284410283,
@@ -155,7 +155,7 @@
         12.524526376648708,
         13.017002861746503,
         13.748408754423538,
-        Infinity
+        null
       ],
       "proportions": [
         0.0997880770293928,
@@ -493,7 +493,7 @@
   },
   "score": {
     "edges": [
-      -Infinity,
+      null,
       0.03691648542881012,
       0.05005772709846497,
       0.061711268872022634,
@@ -503,7 +503,7 @@
       0.11049972921609878,
       0.1293713003396988,
       0.15931263267993928,
-      Infinity
+      null
     ],
     "proportions": [
       0.10000783760482797,
