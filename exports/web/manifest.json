@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "vintage": "260630",
+  "config_fingerprint": "969867602d1192cc",
+  "code_fingerprint": "0f1f958efacecb47",
+  "archivos": {
+    "resumen": {
+      "bytes": 543,
+      "fuentes": [
+        "exports/headline_economics.json",
+        "exports/hmda_metrics.json",
+        "exports/metrics.json"
+      ]
+    },
+    "modelos": {
+      "bytes": 798,
+      "fuentes": [
+        "exports/metrics.json"
+      ]
+    },
+    "economia": {
+      "bytes": 631,
+      "fuentes": [
+        "exports/headline_economics.json"
+      ]
+    },
+    "equidad": {
+      "bytes": 387,
+      "fuentes": [
+        "exports/hmda_metrics.json"
+      ]
+    },
+    "monitoreo": {
+      "bytes": 14391,
+      "fuentes": [
+        "exports/drift.json",
+        "exports/maturity.json",
+        "exports/retrain_decision.json"
+      ]
+    },
+    "causal": {
+      "bytes": 788,
+      "fuentes": [
+        "exports/causal_identification.json"
+      ]
+    }
+  }
+}

@@ -67,6 +67,12 @@ jobs:
       - name: Gates de promocion del modelo
         run: uv run python -m crmlops.governance.gates
 
+      # Publicar es aguas abajo de promover: este paso va DESPUES de los gates. El
+      # bundle no recalcula nada, asi que lo unico que puede pasarle es quedar
+      # desincronizado de sus fuentes -- y eso es exactamente lo que se verifica.
+      - name: Bundle web coherente con sus fuentes
+        run: uv run python -m crmlops.export.web --check
+
       - name: Verificar autoria sin atribucion a IA
         run: |
           if git log --format='%B' -50 | grep -iE 'co-authored-by:.*(claude|anthropic|copilot)'; then

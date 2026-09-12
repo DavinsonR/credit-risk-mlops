@@ -78,6 +78,9 @@ $Tasks = [ordered]@{
     "economics"    = @{ desc = "Traduce el modelo a dolares: perdida evitada y corte"; cmd = { uv run python -m crmlops.models.train_economics } }
     "stress"       = @{ desc = "Aplica el modelo a cohortes fuera de su regimen"; cmd = { uv run python -m crmlops.evaluation.stress } }
     "causal"       = @{ desc = "Identificacion causal: se puede estimar el efecto de la garantia?"; cmd = { uv run python -m crmlops.causal.identification } }
+    # `web-exports` y no `web`: `web` ya es la demo WASM en el navegador.
+    "web-exports"  = @{ desc = "Bundle JSON para el sitio, desde los exports existentes"; cmd = { uv run python -m crmlops.export.web } }
+    "web-check"    = @{ desc = "Verifica que el bundle coincida con sus fuentes, sin escribir"; cmd = { uv run python -m crmlops.export.web --check } }
     "maturity"     = @{ desc = "Que se puede monitorear: madurez de la etiqueta por cosecha"; cmd = { uv run python -m crmlops.monitoring.maturity } }
     "drift"        = @{ desc = "Deriva de poblacion contra el perfil de referencia"; cmd = { uv run python -m crmlops.monitoring.drift } }
     "drift-build"  = @{ desc = "Regenera el perfil de referencia commiteado"; cmd = { uv run python -m crmlops.monitoring.drift --build } }

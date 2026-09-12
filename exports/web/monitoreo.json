@@ -1,0 +1,887 @@
+{
+  "schema_version": 1,
+  "deriva": {
+    "fuente": "exports/drift.json",
+    "as_of": "2026-06-30",
+    "referencia": {
+      "train_window": [
+        2011,
+        2015
+      ],
+      "n": 217060,
+      "config_fingerprint": "969867602d1192cc"
+    },
+    "cohortes": [
+      {
+        "approval_fy": 2016,
+        "n": 56763,
+        "peor_feature": "borrower_state",
+        "peor_psi": 0.018515,
+        "sin_soporte": {},
+        "score_psi_forma": 0.02792
+      },
+      {
+        "approval_fy": 2017,
+        "n": 56059,
+        "peor_feature": "borrower_state",
+        "peor_psi": 0.033961,
+        "sin_soporte": {},
+        "score_psi_forma": 0.005522
+      },
+      {
+        "approval_fy": 2018,
+        "n": 54200,
+        "peor_feature": "business_age",
+        "peor_psi": 5.150978,
+        "sin_soporte": {
+          "business_age": 0.4849
+        },
+        "score_psi_forma": 0.009395
+      },
+      {
+        "approval_fy": 2019,
+        "n": 45680,
+        "peor_feature": "business_age",
+        "peor_psi": 15.988054,
+        "sin_soporte": {
+          "business_age": 0.6579
+        },
+        "score_psi_forma": 0.050097
+      },
+      {
+        "approval_fy": 2020,
+        "n": 36482,
+        "peor_feature": "business_age",
+        "peor_psi": 17.178838,
+        "sin_soporte": {
+          "business_age": 0.7566
+        },
+        "score_psi_forma": 0.019547
+      },
+      {
+        "approval_fy": 2021,
+        "n": 45359,
+        "peor_feature": "business_age",
+        "peor_psi": 18.607191,
+        "sin_soporte": {
+          "business_age": 0.8259
+        },
+        "score_psi_forma": 0.055279
+      },
+      {
+        "approval_fy": 2022,
+        "n": 42280,
+        "peor_feature": "business_age",
+        "peor_psi": 18.617332,
+        "sin_soporte": {
+          "business_age": 0.8244
+        },
+        "score_psi_forma": 0.01317
+      },
+      {
+        "approval_fy": 2023,
+        "n": 51747,
+        "peor_feature": "business_age",
+        "peor_psi": 18.513184,
+        "sin_soporte": {
+          "business_age": 0.8209
+        },
+        "score_psi_forma": 0.142007
+      },
+      {
+        "approval_fy": 2024,
+        "n": 62618,
+        "peor_feature": "business_age",
+        "peor_psi": 18.438051,
+        "sin_soporte": {
+          "business_age": 0.8398
+        },
+        "score_psi_forma": 0.149441
+      },
+      {
+        "approval_fy": 2025,
+        "n": 64096,
+        "peor_feature": "business_age",
+        "peor_psi": 18.484907,
+        "sin_soporte": {
+          "business_age": 0.8402
+        },
+        "score_psi_forma": 0.140438
+      },
+      {
+        "approval_fy": 2026,
+        "n": 35641,
+        "peor_feature": "business_age",
+        "peor_psi": 18.480954,
+        "sin_soporte": {
+          "business_age": 0.8289
+        },
+        "score_psi_forma": 0.169591
+      }
+    ]
+  },
+  "madurez": {
+    "fuente": "exports/maturity.json",
+    "meses_a_chargeoff": {
+      "n": 220630,
+      "p10": 24.0,
+      "p25": 35.0,
+      "mediana": 51.0,
+      "p75": 75.0,
+      "p90": 103.0
+    },
+    "referencia": {
+      "12": 1.79,
+      "24": 4.96,
+      "36": 6.63,
+      "48": 7.22,
+      "60": 7.14
+    },
+    "por_cosecha": [
+      {
+        "fy": 2005,
+        "ventana_meses": 12,
+        "n_resueltos": 3672.0,
+        "n_chargeoffs": 169.0,
+        "tasa": 4.60239651416122,
+        "observable": true
+      },
+      {
+        "fy": 2005,
+        "ventana_meses": 24,
+        "n_resueltos": 12807.0,
+        "n_chargeoffs": 1615.0,
+        "tasa": 12.610291246974311,
+        "observable": true
+      },
+      {
+        "fy": 2005,
+        "ventana_meses": 36,
+        "n_resueltos": 23771.0,
+        "n_chargeoffs": 4338.0,
+        "tasa": 18.24912708762778,
+        "observable": true
+      },
+      {
+        "fy": 2005,
+        "ventana_meses": 48,
+        "n_resueltos": 33576.0,
+        "n_chargeoffs": 7622.0,
+        "tasa": 22.700738622825828,
+        "observable": true
+      },
+      {
+        "fy": 2005,
+        "ventana_meses": 60,
+        "n_resueltos": 41732.0,
+        "n_chargeoffs": 11331.0,
+        "tasa": 27.15182593693089,
+        "observable": true
+      },
+      {
+        "fy": 2006,
+        "ventana_meses": 12,
+        "n_resueltos": 3547.0,
+        "n_chargeoffs": 177.0,
+        "tasa": 4.990132506343389,
+        "observable": true
+      },
+      {
+        "fy": 2006,
+        "ventana_meses": 24,
+        "n_resueltos": 12417.0,
+        "n_chargeoffs": 2947.0,
+        "tasa": 23.733591044535718,
+        "observable": true
+      },
+      {
+        "fy": 2006,
+        "ventana_meses": 36,
+        "n_resueltos": 23132.0,
+        "n_chargeoffs": 7432.0,
+        "tasa": 32.12865294829673,
+        "observable": true
+      },
+      {
+        "fy": 2006,
+        "ventana_meses": 48,
+        "n_resueltos": 33566.0,
+        "n_chargeoffs": 13175.0,
+        "tasa": 39.251027825776085,
+        "observable": true
+      },
+      {
+        "fy": 2006,
+        "ventana_meses": 60,
+        "n_resueltos": 44832.0,
+        "n_chargeoffs": 19474.0,
+        "tasa": 43.43772305496074,
+        "observable": true
+      },
+      {
+        "fy": 2007,
+        "ventana_meses": 12,
+        "n_resueltos": 3373.0,
+        "n_chargeoffs": 458.0,
+        "tasa": 13.578416839608657,
+        "observable": true
+      },
+      {
+        "fy": 2007,
+        "ventana_meses": 24,
+        "n_resueltos": 12402.0,
+        "n_chargeoffs": 4965.0,
+        "tasa": 40.03386550556362,
+        "observable": true
+      },
+      {
+        "fy": 2007,
+        "ventana_meses": 36,
+        "n_resueltos": 23643.0,
+        "n_chargeoffs": 12014.0,
+        "tasa": 50.81419447616631,
+        "observable": true
+      },
+      {
+        "fy": 2007,
+        "ventana_meses": 48,
+        "n_resueltos": 36477.0,
+        "n_chargeoffs": 20550.0,
+        "tasa": 56.3368698083724,
+        "observable": true
+      },
+      {
+        "fy": 2007,
+        "ventana_meses": 60,
+        "n_resueltos": 45819.0,
+        "n_chargeoffs": 24441.0,
+        "tasa": 53.34249983631245,
+        "observable": true
+      },
+      {
+        "fy": 2008,
+        "ventana_meses": 12,
+        "n_resueltos": 1738.0,
+        "n_chargeoffs": 264.0,
+        "tasa": 15.189873417721518,
+        "observable": true
+      },
+      {
+        "fy": 2008,
+        "ventana_meses": 24,
+        "n_resueltos": 6927.0,
+        "n_chargeoffs": 3145.0,
+        "tasa": 45.402049949473074,
+        "observable": true
+      },
+      {
+        "fy": 2008,
+        "ventana_meses": 36,
+        "n_resueltos": 14853.0,
+        "n_chargeoffs": 8084.0,
+        "tasa": 54.42671514172221,
+        "observable": true
+      },
+      {
+        "fy": 2008,
+        "ventana_meses": 48,
+        "n_resueltos": 22017.0,
+        "n_chargeoffs": 11519.0,
+        "tasa": 52.31866285143298,
+        "observable": true
+      },
+      {
+        "fy": 2008,
+        "ventana_meses": 60,
+        "n_resueltos": 28755.0,
+        "n_chargeoffs": 13161.0,
+        "tasa": 45.76943140323422,
+        "observable": true
+      },
+      {
+        "fy": 2009,
+        "ventana_meses": 12,
+        "n_resueltos": 944.0,
+        "n_chargeoffs": 53.0,
+        "tasa": 5.614406779661017,
+        "observable": true
+      },
+      {
+        "fy": 2009,
+        "ventana_meses": 24,
+        "n_resueltos": 3604.0,
+        "n_chargeoffs": 704.0,
+        "tasa": 19.533851276359602,
+        "observable": true
+      },
+      {
+        "fy": 2009,
+        "ventana_meses": 36,
+        "n_resueltos": 7448.0,
+        "n_chargeoffs": 1886.0,
+        "tasa": 25.322234156820624,
+        "observable": true
+      },
+      {
+        "fy": 2009,
+        "ventana_meses": 48,
+        "n_resueltos": 11691.0,
+        "n_chargeoffs": 2555.0,
+        "tasa": 21.85441792832093,
+        "observable": true
+      },
+      {
+        "fy": 2009,
+        "ventana_meses": 60,
+        "n_resueltos": 16003.0,
+        "n_chargeoffs": 3098.0,
+        "tasa": 19.35887021183528,
+        "observable": true
+      },
+      {
+        "fy": 2010,
+        "ventana_meses": 12,
+        "n_resueltos": 1108.0,
+        "n_chargeoffs": 21.0,
+        "tasa": 1.8953068592057762,
+        "observable": true
+      },
+      {
+        "fy": 2010,
+        "ventana_meses": 24,
+        "n_resueltos": 4034.0,
+        "n_chargeoffs": 489.0,
+        "tasa": 12.121963311849282,
+        "observable": true
+      },
+      {
+        "fy": 2010,
+        "ventana_meses": 36,
+        "n_resueltos": 8353.0,
+        "n_chargeoffs": 961.0,
+        "tasa": 11.504848557404525,
+        "observable": true
+      },
+      {
+        "fy": 2010,
+        "ventana_meses": 48,
+        "n_resueltos": 13326.0,
+        "n_chargeoffs": 1427.0,
+        "tasa": 10.708389614287858,
+        "observable": true
+      },
+      {
+        "fy": 2010,
+        "ventana_meses": 60,
+        "n_resueltos": 18508.0,
+        "n_chargeoffs": 1985.0,
+        "tasa": 10.725091852172033,
+        "observable": true
+      },
+      {
+        "fy": 2011,
+        "ventana_meses": 12,
+        "n_resueltos": 1400.0,
+        "n_chargeoffs": 30.0,
+        "tasa": 2.142857142857143,
+        "observable": true
+      },
+      {
+        "fy": 2011,
+        "ventana_meses": 24,
+        "n_resueltos": 5150.0,
+        "n_chargeoffs": 288.0,
+        "tasa": 5.592233009708738,
+        "observable": true
+      },
+      {
+        "fy": 2011,
+        "ventana_meses": 36,
+        "n_resueltos": 10274.0,
+        "n_chargeoffs": 711.0,
+        "tasa": 6.920381545649212,
+        "observable": true
+      },
+      {
+        "fy": 2011,
+        "ventana_meses": 48,
+        "n_resueltos": 16109.0,
+        "n_chargeoffs": 1209.0,
+        "tasa": 7.505121360730027,
+        "observable": true
+      },
+      {
+        "fy": 2011,
+        "ventana_meses": 60,
+        "n_resueltos": 22211.0,
+        "n_chargeoffs": 1688.0,
+        "tasa": 7.5998379181486655,
+        "observable": true
+      },
+      {
+        "fy": 2012,
+        "ventana_meses": 12,
+        "n_resueltos": 1407.0,
+        "n_chargeoffs": 12.0,
+        "tasa": 0.8528784648187633,
+        "observable": true
+      },
+      {
+        "fy": 2012,
+        "ventana_meses": 24,
+        "n_resueltos": 4596.0,
+        "n_chargeoffs": 191.0,
+        "tasa": 4.155787641427328,
+        "observable": true
+      },
+      {
+        "fy": 2012,
+        "ventana_meses": 36,
+        "n_resueltos": 8882.0,
+        "n_chargeoffs": 544.0,
+        "tasa": 6.124746678675974,
+        "observable": true
+      },
+      {
+        "fy": 2012,
+        "ventana_meses": 48,
+        "n_resueltos": 14304.0,
+        "n_chargeoffs": 937.0,
+        "tasa": 6.550615212527965,
+        "observable": true
+      },
+      {
+        "fy": 2012,
+        "ventana_meses": 60,
+        "n_resueltos": 19379.0,
+        "n_chargeoffs": 1285.0,
+        "tasa": 6.630889106765055,
+        "observable": true
+      },
+      {
+        "fy": 2013,
+        "ventana_meses": 12,
+        "n_resueltos": 1438.0,
+        "n_chargeoffs": 23.0,
+        "tasa": 1.599443671766342,
+        "observable": true
+      },
+      {
+        "fy": 2013,
+        "ventana_meses": 24,
+        "n_resueltos": 4737.0,
+        "n_chargeoffs": 211.0,
+        "tasa": 4.454295967912181,
+        "observable": true
+      },
+      {
+        "fy": 2013,
+        "ventana_meses": 36,
+        "n_resueltos": 9230.0,
+        "n_chargeoffs": 523.0,
+        "tasa": 5.666305525460455,
+        "observable": true
+      },
+      {
+        "fy": 2013,
+        "ventana_meses": 48,
+        "n_resueltos": 14723.0,
+        "n_chargeoffs": 926.0,
+        "tasa": 6.289479046390002,
+        "observable": true
+      },
+      {
+        "fy": 2013,
+        "ventana_meses": 60,
+        "n_resueltos": 20242.0,
+        "n_chargeoffs": 1257.0,
+        "tasa": 6.209860685702994,
+        "observable": true
+      },
+      {
+        "fy": 2014,
+        "ventana_meses": 12,
+        "n_resueltos": 1671.0,
+        "n_chargeoffs": 37.0,
+        "tasa": 2.214242968282466,
+        "observable": true
+      },
+      {
+        "fy": 2014,
+        "ventana_meses": 24,
+        "n_resueltos": 5329.0,
+        "n_chargeoffs": 270.0,
+        "tasa": 5.066616626008632,
+        "observable": true
+      },
+      {
+        "fy": 2014,
+        "ventana_meses": 36,
+        "n_resueltos": 10393.0,
+        "n_chargeoffs": 660.0,
+        "tasa": 6.350428172808622,
+        "observable": true
+      },
+      {
+        "fy": 2014,
+        "ventana_meses": 48,
+        "n_resueltos": 16610.0,
+        "n_chargeoffs": 1170.0,
+        "tasa": 7.043949428055388,
+        "observable": true
+      },
+      {
+        "fy": 2014,
+        "ventana_meses": 60,
+        "n_resueltos": 23470.0,
+        "n_chargeoffs": 1635.0,
+        "tasa": 6.966340008521517,
+        "observable": true
+      },
+      {
+        "fy": 2015,
+        "ventana_meses": 12,
+        "n_resueltos": 1884.0,
+        "n_chargeoffs": 38.0,
+        "tasa": 2.0169851380042463,
+        "observable": true
+      },
+      {
+        "fy": 2015,
+        "ventana_meses": 24,
+        "n_resueltos": 6052.0,
+        "n_chargeoffs": 322.0,
+        "tasa": 5.320555188367482,
+        "observable": true
+      },
+      {
+        "fy": 2015,
+        "ventana_meses": 36,
+        "n_resueltos": 12379.0,
+        "n_chargeoffs": 952.0,
+        "tasa": 7.69044349301236,
+        "observable": true
+      },
+      {
+        "fy": 2015,
+        "ventana_meses": 48,
+        "n_resueltos": 19908.0,
+        "n_chargeoffs": 1652.0,
+        "tasa": 8.29817158931083,
+        "observable": true
+      },
+      {
+        "fy": 2015,
+        "ventana_meses": 60,
+        "n_resueltos": 27168.0,
+        "n_chargeoffs": 2162.0,
+        "tasa": 7.957891637220259,
+        "observable": true
+      },
+      {
+        "fy": 2016,
+        "ventana_meses": 12,
+        "n_resueltos": 1759.0,
+        "n_chargeoffs": 38.0,
+        "tasa": 2.160318362706083,
+        "observable": true
+      },
+      {
+        "fy": 2016,
+        "ventana_meses": 24,
+        "n_resueltos": 6093.0,
+        "n_chargeoffs": 469.0,
+        "tasa": 7.69735762350238,
+        "observable": true
+      },
+      {
+        "fy": 2016,
+        "ventana_meses": 36,
+        "n_resueltos": 12441.0,
+        "n_chargeoffs": 1176.0,
+        "tasa": 9.452616349168073,
+        "observable": true
+      },
+      {
+        "fy": 2016,
+        "ventana_meses": 48,
+        "n_resueltos": 19491.0,
+        "n_chargeoffs": 1753.0,
+        "tasa": 8.993894618028834,
+        "observable": true
+      },
+      {
+        "fy": 2016,
+        "ventana_meses": 60,
+        "n_resueltos": 26921.0,
+        "n_chargeoffs": 2211.0,
+        "tasa": 8.212919282344638,
+        "observable": true
+      },
+      {
+        "fy": 2017,
+        "ventana_meses": 12,
+        "n_resueltos": 1757.0,
+        "n_chargeoffs": 35.0,
+        "tasa": 1.9920318725099602,
+        "observable": true
+      },
+      {
+        "fy": 2017,
+        "ventana_meses": 24,
+        "n_resueltos": 6116.0,
+        "n_chargeoffs": 482.0,
+        "tasa": 7.880967952910399,
+        "observable": true
+      },
+      {
+        "fy": 2017,
+        "ventana_meses": 36,
+        "n_resueltos": 11682.0,
+        "n_chargeoffs": 1079.0,
+        "tasa": 9.23643211778805,
+        "observable": true
+      },
+      {
+        "fy": 2017,
+        "ventana_meses": 48,
+        "n_resueltos": 17717.0,
+        "n_chargeoffs": 1660.0,
+        "tasa": 9.369532087825252,
+        "observable": true
+      },
+      {
+        "fy": 2017,
+        "ventana_meses": 60,
+        "n_resueltos": 26354.0,
+        "n_chargeoffs": 2449.0,
+        "tasa": 9.292706989451316,
+        "observable": true
+      },
+      {
+        "fy": 2018,
+        "ventana_meses": 12,
+        "n_resueltos": 1766.0,
+        "n_chargeoffs": 70.0,
+        "tasa": 3.9637599093997733,
+        "observable": true
+      },
+      {
+        "fy": 2018,
+        "ventana_meses": 24,
+        "n_resueltos": 5587.0,
+        "n_chargeoffs": 487.0,
+        "tasa": 8.7166636835511,
+        "observable": true
+      },
+      {
+        "fy": 2018,
+        "ventana_meses": 36,
+        "n_resueltos": 10106.0,
+        "n_chargeoffs": 934.0,
+        "tasa": 9.242034434989115,
+        "observable": true
+      },
+      {
+        "fy": 2018,
+        "ventana_meses": 48,
+        "n_resueltos": 18293.0,
+        "n_chargeoffs": 1768.0,
+        "tasa": 9.66489914174821,
+        "observable": true
+      },
+      {
+        "fy": 2018,
+        "ventana_meses": 60,
+        "n_resueltos": 26623.0,
+        "n_chargeoffs": 2549.0,
+        "tasa": 9.574428126056418,
+        "observable": true
+      },
+      {
+        "fy": 2019,
+        "ventana_meses": 12,
+        "n_resueltos": 1177.0,
+        "n_chargeoffs": 29.0,
+        "tasa": 2.463891248937978,
+        "observable": true
+      },
+      {
+        "fy": 2019,
+        "ventana_meses": 24,
+        "n_resueltos": 3815.0,
+        "n_chargeoffs": 198.0,
+        "tasa": 5.190039318479686,
+        "observable": true
+      },
+      {
+        "fy": 2019,
+        "ventana_meses": 36,
+        "n_resueltos": 9489.0,
+        "n_chargeoffs": 723.0,
+        "tasa": 7.619348719570028,
+        "observable": true
+      },
+      {
+        "fy": 2019,
+        "ventana_meses": 48,
+        "n_resueltos": 15553.0,
+        "n_chargeoffs": 1269.0,
+        "tasa": 8.159197582459976,
+        "observable": true
+      },
+      {
+        "fy": 2019,
+        "ventana_meses": 60,
+        "n_resueltos": 22453.0,
+        "n_chargeoffs": 1808.0,
+        "tasa": 8.052376074466663,
+        "observable": true
+      },
+      {
+        "fy": 2020,
+        "ventana_meses": 12,
+        "n_resueltos": 1119.0,
+        "n_chargeoffs": 2.0,
+        "tasa": 0.17873100983020554,
+        "observable": true
+      },
+      {
+        "fy": 2020,
+        "ventana_meses": 24,
+        "n_resueltos": 4280.0,
+        "n_chargeoffs": 92.0,
+        "tasa": 2.149532710280374,
+        "observable": true
+      },
+      {
+        "fy": 2020,
+        "ventana_meses": 36,
+        "n_resueltos": 8652.0,
+        "n_chargeoffs": 310.0,
+        "tasa": 3.5829865926953306,
+        "observable": true
+      },
+      {
+        "fy": 2020,
+        "ventana_meses": 48,
+        "n_resueltos": 13016.0,
+        "n_chargeoffs": 637.0,
+        "tasa": 4.893976644130301,
+        "observable": true
+      },
+      {
+        "fy": 2020,
+        "ventana_meses": 60,
+        "n_resueltos": 18400.0,
+        "n_chargeoffs": 959.0,
+        "tasa": 5.211956521739131,
+        "observable": true
+      },
+      {
+        "fy": 2021,
+        "ventana_meses": 12,
+        "n_resueltos": 1514.0,
+        "n_chargeoffs": 4.0,
+        "tasa": 0.26420079260237783,
+        "observable": true
+      },
+      {
+        "fy": 2021,
+        "ventana_meses": 24,
+        "n_resueltos": 5067.0,
+        "n_chargeoffs": 104.0,
+        "tasa": 2.05249654627985,
+        "observable": true
+      },
+      {
+        "fy": 2021,
+        "ventana_meses": 36,
+        "n_resueltos": 9807.0,
+        "n_chargeoffs": 347.0,
+        "tasa": 3.53828897726114,
+        "observable": true
+      },
+      {
+        "fy": 2021,
+        "ventana_meses": 48,
+        "n_resueltos": 14973.0,
+        "n_chargeoffs": 727.0,
+        "tasa": 4.855406398183397,
+        "observable": true
+      },
+      {
+        "fy": 2022,
+        "ventana_meses": 12,
+        "n_resueltos": 1300.0,
+        "n_chargeoffs": 31.0,
+        "tasa": 2.3846153846153846,
+        "observable": true
+      },
+      {
+        "fy": 2022,
+        "ventana_meses": 24,
+        "n_resueltos": 4080.0,
+        "n_chargeoffs": 297.0,
+        "tasa": 7.279411764705882,
+        "observable": true
+      },
+      {
+        "fy": 2022,
+        "ventana_meses": 36,
+        "n_resueltos": 7990.0,
+        "n_chargeoffs": 825.0,
+        "tasa": 10.32540675844806,
+        "observable": true
+      },
+      {
+        "fy": 2023,
+        "ventana_meses": 12,
+        "n_resueltos": 1332.0,
+        "n_chargeoffs": 30.0,
+        "tasa": 2.2522522522522523,
+        "observable": true
+      },
+      {
+        "fy": 2023,
+        "ventana_meses": 24,
+        "n_resueltos": 4512.0,
+        "n_chargeoffs": 512.0,
+        "tasa": 11.347517730496454,
+        "observable": true
+      },
+      {
+        "fy": 2024,
+        "ventana_meses": 12,
+        "n_resueltos": 1663.0,
+        "n_chargeoffs": 40.0,
+        "tasa": 2.4052916416115453,
+        "observable": true
+      }
+    ]
+  },
+  "decision": {
+    "fuente": "exports/retrain_decision.json",
+    "reentrenar": true,
+    "disparadores": [
+      {
+        "name": "vocabulario",
+        "fired": true,
+        "detail": "business_age 84.0%",
+        "action": "REENTRENAR NO ALCANZA: hay que armonizar el vocabulario o cambiar la ventana"
+      },
+      {
+        "name": "forma_del_score",
+        "fired": true,
+        "detail": "PSI de forma 0.1696 en FY2026 (umbral 0.1)",
+        "action": "reentrenar: recalibrar no corrige un cambio de mezcla"
+      },
+      {
+        "name": "madurez_pareja",
+        "fired": true,
+        "detail": "FY2023 a 24m: 11.35% vs referencia 4.96% (+129%, tolerancia +-32%)",
+        "action": "reentrenar con una ventana que incluya el regimen nuevo"
+      }
+    ]
+  }
+}

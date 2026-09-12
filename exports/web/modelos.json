@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "fuente": "exports/metrics.json",
+  "produccion": "lightgbm",
+  "baseline": "scorecard_woe",
+  "modelos": [
+    {
+      "modelo": "neural_mlp",
+      "auc_test": 0.7053936720640248,
+      "gini_test": 0.4107873441280496,
+      "ks_test": 0.3106898817978475,
+      "brier_test": 0.28552400334711214,
+      "ece_test": 0.4371556739654951,
+      "drop_oot": 0.002063292336857536
+    },
+    {
+      "modelo": "lightgbm",
+      "auc_test": 0.7004661352641914,
+      "gini_test": 0.4009322705283829,
+      "ks_test": 0.2882574326135246,
+      "brier_test": 0.08312655081701202,
+      "ece_test": 0.016130142417429348,
+      "drop_oot": 0.029890594212046873
+    },
+    {
+      "modelo": "scorecard_woe",
+      "auc_test": 0.6693809192577486,
+      "gini_test": 0.3387618385154971,
+      "ks_test": 0.2453346150748621,
+      "brier_test": 0.08471425792217771,
+      "ece_test": 0.018952404434458715,
+      "drop_oot": -0.016297409846977473
+    }
+  ]
+}

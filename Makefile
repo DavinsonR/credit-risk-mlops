@@ -1,4 +1,4 @@
-﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
+﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal web-exports web-check maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -34,6 +34,12 @@ economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
 
 causal:  ## Identificacion causal: se puede estimar el efecto de la garantia?
 	$(UV) run python -m crmlops.causal.identification
+
+web-exports:  ## Bundle JSON para el sitio, desde los exports existentes
+	$(UV) run python -m crmlops.export.web
+
+web-check:  ## Verifica que el bundle coincida con sus fuentes, sin escribir
+	$(UV) run python -m crmlops.export.web --check
 
 maturity:  ## Que se puede monitorear: madurez de la etiqueta por cosecha
 	$(UV) run python -m crmlops.monitoring.maturity

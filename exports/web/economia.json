@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "fuente": "exports/headline_economics.json",
+  "ventana": [
+    2017,
+    2018
+  ],
+  "n_prestamos": 89313,
+  "monto_prestado_usd": 32950580400.0,
+  "perdida_realizada_usd": 1287976751.27,
+  "absorbe_sba_usd": 942141987.6676269,
+  "absorbe_banco_usd": 345834763.60237324,
+  "al_10_por_ciento": {
+    "loss_avoided": 276313829.40999997,
+    "loss_avoided_random": 128797675.12699999,
+    "lift_vs_random": 2.1453324303994057,
+    "share_of_all_losses": 0.21453324303994056,
+    "good_volume_foregone": 1992446200.0
+  },
+  "supuesto": "Contrafactual sobre prestamos que SI fueron aprobados. Supone que rechazar no altera el comportamiento del resto del mercado."
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "fuente": "exports/causal_identification.json",
+  "tratamiento": "sba_guaranteed / gross_approval",
+  "veredicto": "no_identificado",
+  "determinacion": {
+    "n": 1398416,
+    "celdas": 3015,
+    "r2": 0.9145,
+    "identificable": false
+  },
+  "densidad": {
+    "umbral_usd": 150000,
+    "n_exacto": 52770,
+    "por_ventana": [
+      {
+        "ventana_usd": 5000,
+        "n": 63484,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 83.12
+      },
+      {
+        "ventana_usd": 10000,
+        "n": 78432,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 67.28
+      },
+      {
+        "ventana_usd": 25000,
+        "n": 126449,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 41.73
+      },
+      {
+        "ventana_usd": 50000,
+        "n": 284988,
+        "n_en_umbral": 52770.0,
+        "pct_en_umbral": 18.52
+      }
+    ],
+    "rd_explotable": false
+  },
+  "gradiente": {
+    "crudo_pp": 7.76,
+    "dentro_de_tramo_pp": 4.79,
+    "explicado_por_tamano": 0.3827,
+    "n_comparable": 112526
+  }
+}

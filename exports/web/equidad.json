@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "fuente": "exports/hmda_metrics.json",
+  "auc_test": 0.8847021809305798,
+  "disparate_impact_ratio": 0.763867980853527,
+  "peor_grupo": "Native Hawaiian or Other Pacific Islander",
+  "promovido": false,
+  "bloqueado_por": "disparate_impact_ratio 0.764 < 0.8",
+  "delta_vs_observado": {
+    "RAZA": -0.001675555583660504,
+    "ETNIA": 0.008339023475697482,
+    "SEXO": 0.030796379545837804
+  }
+}

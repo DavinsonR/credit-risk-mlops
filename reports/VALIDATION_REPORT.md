@@ -1,10 +1,10 @@
 # Reporte de Validación de Modelos
 
-> Generado por `crmlops.governance.validation_report` el 2026-09-12 05:24 UTC.
+> Generado por `crmlops.governance.validation_report` el 2026-09-12 05:51 UTC.
 > **No editar a mano**: se regenera en cada corrida.
 >
 > Vintage de datos `260630` · configuración `969867602d1192cc` ·
-> código `7feae6905ddae543`
+> código `0f1f958efacecb47`
 >
 > Los tres identificadores salen de `exports/metrics.json`: son la procedencia de
 > los números que este reporte describe. La versión anterior calculaba el de código

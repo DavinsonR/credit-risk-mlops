@@ -95,9 +95,35 @@ class WoEScorecard:
         """Puntaje en la escala de puntos (mas alto = menor riesgo)."""
         return self._check().score(X[self.features])
 
+    @staticmethod
+    def _bin_legible(valor: object) -> str:
+        """Etiqueta de bin como texto plano.
+
+        optbinning devuelve el bin de una categorica como un ARRAY de categorias, no
+        como una cadena. `to_csv` escribe su `repr()`, que en pandas 3 es un bloque
+        multilinea:
+
+            naics_sector,0,"<ArrowStringArray>
+            ['55', '52', '22', '53', '11']
+            Length: 5, dtype: str",11793,...
+
+        El CSV commiteado tenia 35 filas asi -- 166 lineas fisicas para 83
+        registros--, y es el scorecard: el artefacto que un validador abre para
+        entender el modelo interpretable. Aqui las categorias se unen con "|", que
+        es legible, cabe en una celda y no colisiona con la coma del CSV.
+        """
+        if isinstance(valor, str):
+            return valor
+        try:
+            return " | ".join(str(v) for v in valor)
+        except TypeError:
+            return str(valor)
+
     def artifacts(self) -> ScorecardArtifacts:
         m = self._check()
-        table = m.table(style="detailed")
+        table = m.table(style="detailed").copy()
+        if "Bin" in table.columns:
+            table["Bin"] = [self._bin_legible(v) for v in table["Bin"]]
         iv = m.binning_process_.summary()[["name", "iv", "selected"]].sort_values(
             "iv", ascending=False
         )

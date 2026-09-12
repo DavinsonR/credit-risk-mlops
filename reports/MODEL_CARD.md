@@ -1,6 +1,6 @@
 # Model Card - lightgbm
 
-> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-12 05:24 UTC.
+> Generado automaticamente por `crmlops.governance.model_card` el 2026-09-12 05:51 UTC.
 > **No editar a mano**: se regenera en cada entrenamiento.
 
 ## 1. Detalles del modelo
@@ -14,8 +14,8 @@
 | Semilla | 42 |
 | Vintage de datos | `260630` |
 | Huella de configuracion | `969867602d1192cc` |
-| Huella del codigo de modelado | `7feae6905ddae543` |
-| Commit al generar | `3d3e7af25b45` |
+| Huella del codigo de modelado | `0f1f958efacecb47` |
+| Commit al generar | `04ea2ce6daf4` |
 
 ## 2. Uso previsto
 

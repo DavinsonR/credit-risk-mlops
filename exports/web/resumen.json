@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "clave": "auc_test",
+      "valor": 0.7004661352641914,
+      "fuente": "exports/metrics.json"
+    },
+    {
+      "clave": "perdida_evitada_usd",
+      "valor": 276313829.40999997,
+      "fuente": "exports/headline_economics.json"
+    },
+    {
+      "clave": "lift_vs_azar",
+      "valor": 2.1453324303994057,
+      "fuente": "exports/headline_economics.json"
+    },
+    {
+      "clave": "volumen_bueno_sacrificado_usd",
+      "valor": 1992446200.0,
+      "fuente": "exports/headline_economics.json"
+    },
+    {
+      "clave": "disparate_impact_ratio",
+      "valor": 0.763867980853527,
+      "fuente": "exports/hmda_metrics.json"
+    }
+  ]
+}

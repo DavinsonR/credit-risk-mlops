@@ -39,7 +39,7 @@
       "drop_oot": 0.002063292336857536,
       "psi": 0.20331471558670458,
       "psi_shape": 0.013320316093736594,
-      "segundos": 47.814117899979465
+      "segundos": 47.51990289997775
     },
     {
       "modelo": "lightgbm",
@@ -54,7 +54,7 @@
       "drop_oot": 0.029890594212046873,
       "psi": 0.17460933214034136,
       "psi_shape": 0.016789630813376387,
-      "segundos": 2.870363900088705
+      "segundos": 2.851462100050412
     },
     {
       "modelo": "scorecard_woe",
@@ -69,7 +69,7 @@
       "drop_oot": -0.016297409846977473,
       "psi": 0.132280608345734,
       "psi_shape": 0.038020457216272396,
-      "segundos": 2.1060671999584883
+      "segundos": 2.0024662000359967
     }
   ],
   "production_model": "lightgbm",
@@ -84,5 +84,5 @@
   },
   "production_calibrator": "intercept",
   "config_fingerprint": "969867602d1192cc",
-  "code_fingerprint": "7feae6905ddae543"
+  "code_fingerprint": "0f1f958efacecb47"
 }
