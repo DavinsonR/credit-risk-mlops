@@ -1,144 +1,180 @@
 # credit-risk-mlops
 
-Sistema de decisión crediticia con gobierno de modelos, construido sobre datos
-públicos reales de EE.UU. El diferenciador no es el modelo: es que **sobrevive
-una auditoría**.
+A credit decisioning system with model risk governance, built on real US public
+data. The model is not the point. **The point is that it survives an audit — and
+that I ran the audit against myself first.**
 
-> 🚧 En construcción. Ver [NOTES.md](NOTES.md) para la bitácora y
-> [docs/adr/](docs/adr/) para las decisiones de arquitectura.
+> 🇪🇸 [Versión en español](README.es.md) · Engineering log: [NOTES.md](NOTES.md) ·
+> Architecture decisions: [docs/adr/](docs/adr/)
 
-## Qué hace
+---
 
-| Modelo | Fuente | Target | Ancla regulatoria |
+## What it found
+
+Every project shows the run that worked. This one ships the ledger of what broke,
+because that is the part you cannot fake and the part that predicts how someone
+works. Each row links to the artifact that proves it.
+
+| # | What broke | Why it matters |
+|---|---|---|
+| 1 | **AUC 0.9461** looked great. `TermInMonths` is overwritten when a loan is liquidated — the field leaked the outcome. Remove it and the ablation drops to **0.6621** | [ADR 0002](docs/adr/0002-terminmonths-es-fuga.md) · I deleted my best number on purpose |
+| 2 | The temporal split crossed a cyclical base rate. Validation scored *worse* than test and PSI hit **4.08**. Redesigned around two measured criteria | [ADR 0003](docs/adr/0003-diseno-del-split-temporal.md) |
+| 3 | `exports/metrics.json` was hand-editable. **I wrote AUC 0.95 into it and every gate passed.** The fingerprint did not cover the code either | [docs/AUDIT.md](docs/AUDIT.md) · both closed |
+| 4 | The adverse-action compliance checker used `"\b"` in a non-raw string — that is the **backspace** character, not a word boundary. The control silently matched nothing | Week 8 · found by testing the checker against bad output |
+| 5 | I reported LLM inconsistency as a finding about local inference. It was **my measurement**: the first generation after a model loads is not deterministic. With warm-up, one arm went 0% → 83% | [ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md) |
+| 6 | The authorship hook **failed open**. `grep` returns non-zero both when it finds nothing and when it cannot search. With `sh.exe` lacking `/usr/bin` on PATH: `grep: command not found`, exit 0, **AI trailer accepted silently** | Now fails closed · 18 tests |
+| 7 | `run all` printed **`APPROVED: 8 gates passed`** after training crashed. The gates read committed metrics, so they passed with no new model | [tests/test_run_aborta.py](tests/test_run_aborta.py) |
+| 8 | **CI was red for 8 consecutive commits** while I wrote "lint green, N tests" in five commit messages. A test asserted local git config that CI never sets | Fixed · plus [`run ci-local`](scripts/ci_local.py), which reproduces CI before pushing |
+| 9 | Two published numbers **did not replicate on another machine**: the DuckDB/PySpark benchmark (29.3x → 14.3x) and LLM consistency (0.83 → 0.33). I had presented single-machine measurements as properties of the system | Both retracted and re-stated as ranges |
+| 10 | `MODEL_CARD.md` listed **7 gates of 8** — its generator never called the fairness one, the only gate the model fails. And `VALIDATION_REPORT.md` printed `PASS` for that gate in §3.1 while §5 said "promotion blocked" | Root cause was mine: one boolean meant two things. Now `passed` ≠ `threshold_met` |
+
+Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Three of these
+**failed silently or reported success** — which is the failure mode the whole project
+is built to hunt, found in its own tooling.
+
+---
+
+## What it is
+
+| Model | Source | Target | Regulatory anchor |
 |---|---|---|---|
-| **A — Default / Pérdida** | SBA 7(a) FOIA · 1.96M préstamos, FY1991–2026 | Charge-off (PD) + severidad (LGD) | SR 26-2 |
-| **B — Underwriting / Acceso** | HMDA · **62.4M solicitudes**, FY2020–2024 | Denegación | ECOA / Reg B |
+| **A — Default / Loss** | SBA 7(a) FOIA · 1.96M loans, FY1991–2026 | Charge-off (PD) + severity (LGD) | [SR 26-2](docs/adr/0012-el-ancla-regulatoria-cambio.md) |
+| **B — Underwriting / Access** | HMDA · **62.4M applications**, FY2020–2024 | Denial | ECOA / Reg B |
 
-Los datos de HMDA se verifican contra los conteos oficiales del CFPB: no basta con
-que la descarga termine, tiene que estar **completa**.
+HMDA row counts are verified against the CFPB's own published aggregations: a
+download that finishes is not a download that is **complete**.
 
-## Principios
+## The numbers, with their counterweight
 
-1. **Validación out-of-time, nunca split aleatorio.** El corte cruza el shock COVID.
-2. **El baseline es un scorecard WoE + logística** — el estándar de industria. Los
-   retadores tienen que ganarle.
-3. **Calibración antes que ranking.** Sin probabilidades calibradas no hay expected loss.
-4. **El umbral se elige por utilidad en dólares**, no por F1.
-5. **Las transformaciones fit-on-train no viven en dbt** — filtrarían. dbt se queda
-   en bronze/silver; el feature engineering va en Python.
-6. **Ningún dato crudo se commitea.** `make acquire` los baja y verifica por SHA256.
-7. **Las clases protegidas se conservan para medir, jamás para entrenar.** Sin ellas
-   en el panel no se puede calcular disparate impact; con ellas en el modelo se
-   discrimina. Ver [ADR 0006](docs/adr/0006-exclusiones-en-hmda.md).
+Declining the riskiest 10% of the FY2017–2018 test portfolio would have avoided
+**$276.3M** in charge-offs — 2.15x what declining at random achieves, and **$942.1M**
+of the period's realized loss was absorbed by the SBA, i.e. by the taxpayer.
 
-## Instalación
+And the part a sales deck leaves out: doing that **forgoes $1.99B in good lending
+volume** — 7.2x the loss avoided. Both numbers ship in the same payload
+([`exports/web/resumen.json`](exports/web/resumen.json)), because a headline that
+shows only the numerator is not a headline.
 
-El único prerrequisito es [`uv`](https://docs.astral.sh/uv/). Python 3.12 y todas
-las dependencias las instala el propio proyecto — no hace falta tener Python.
+| | |
+|---|---|
+| AUC (test, out-of-time) | **0.7005** |
+| Margin over the interpretable WoE scorecard | **+0.0311** |
+| Calibration error (ECE) | **0.0107** |
+| Under a 2007-style regime | **AUC 0.5456**, and it underestimates risk 8x |
 
-**Windows** (no requiere `make`):
+That last row is not a caveat, it is a deliverable: `run stress` exists to answer
+what happens when the regime changes.
 
-```powershell
-.\run setup       # Python 3.12 + dependencias + hook de autoría
-.\run test        # verifica la instalación sin descargar nada
-.\run acquire     # descarga fuentes + verifica hashes (~860 MB)
-.\run all         # train -> gates -> model card -> economía
-.\run help        # todas las tareas
-```
+## Causal inference
 
-`.\run` es `run.cmd`: en un Windows por defecto la ExecutionPolicy es `Restricted`
-y ningún `.ps1` arranca. El script real vive en `scripts/run.ps1` —fuera de la
-raíz a propósito, porque PowerShell resuelve `.\run` al `.ps1` si están juntos— y
-el `.cmd` lo invoca sin cambiar nada de tu sistema. Detalle en
-[docs/INSTALL.md](docs/INSTALL.md).
+The model answers *"who will default?"*. The lever the SBA actually controls demands
+a different question — *"what happens if we change the guarantee percentage?"* —
+because **the SBA does not originate loans, it guarantees them.**
 
-**Linux / macOS** (lo que corre CI):
+`run causal` answers it, and the answer is that **it cannot be answered with this
+data.** Three diagnostics over 1,398,416 loans:
 
-```bash
-make setup
-make test
-make acquire
-make train && make gates && make card
-```
-
-Paso a paso completo —extras opcionales, LLM local, PySpark, Docker, y qué debe
-imprimir cada comando— en **[docs/INSTALL.md](docs/INSTALL.md)**.
-
-## Inferencia causal
-
-El modelo responde *"¿quién va a incumplir?"*. La palanca que la SBA controla de
-verdad exige otra pregunta: *"¿qué pasa si cambiamos el % de garantía?"* — porque
-**la SBA no origina préstamos, garantiza**.
-
-`run causal` la responde, y la respuesta es que **no se puede responder con estos
-datos**. Tres diagnósticos sobre 1.398.416 préstamos:
-
-| Diagnóstico | Medición | Consecuencia |
+| Diagnostic | Measurement | Consequence |
 |---|---|---|
-| ¿El tratamiento tiene variación propia? | **R² = 0.9145** sobre celdas (método × tramo de $10k) | Sin solapamiento: DML y causal forests quedan sin variación que explotar |
-| ¿Sirve un RD en el umbral de $150.000? | **83.1%** de la ventana ±$5k está *exactamente* en $150.000 | Densidad destruida: la asignación no es local-aleatoria |
-| ¿El gradiente crudo es composición? | **+7.76 pp** crudo → **+4.79 pp** dentro del mismo tramo de tamaño | Queda un residual, y su signo es el que predice la **selección adversa** |
+| Does the treatment have its own variation? | **R² = 0.9145** on (processing method × $10k size) cells | No overlap: DML and causal forests have nothing to exploit |
+| Is there an RD at the $150,000 threshold? | **83.1%** of the ±$5k window sits *exactly* at $150,000 | Density destroyed — assignment is not locally random |
+| Is the raw gradient composition? | **+7.76 pp** raw → **+4.79 pp** within the same size band | A residual survives, and its sign is what adverse selection predicts |
 
-**No se publica un efecto.** Un estimador aplicado donde sus supuestos no se cumplen
-produce un número, no una estimación. Lo que se publica es la no-identificación, con
-sus tres mediciones y la vía alternativa nombrada — ver
-[ADR 0013](docs/adr/0013-el-efecto-de-la-garantia-no-esta-identificado.md).
+**No effect is published.** An estimator applied where its assumptions fail produces
+a number, not an estimate. What ships is the non-identification, with its three
+measurements — [ADR 0013](docs/adr/0013-el-efecto-de-la-garantia-no-esta-identificado.md).
 
-Esto también nombra el supuesto del titular del proyecto: los **$276.3M evitados** se
-calculan rankeando por PD predicha y suponiendo que rechazar elimina la pérdida. Son
-dos supuestos causales dentro de un número presentado como predicción.
+This also names the assumption inside the project's own headline: the $276.3M is
+computed by ranking on predicted PD and assuming a decline erases the loss. Two
+causal claims inside a number presented as a prediction.
 
-## Monitoreo
+## Monitoring
 
-En crédito la etiqueta tarda **51 meses medianos** en existir, así que el monitoreo
-de desempeño sobre cosechas jóvenes es imposible y el proyecto **se niega a
-fingirlo**. Se monitorea lo que sí se puede medir el día que llega el vintage:
+A charge-off takes a **median of 51 months** to appear. At 12 months you can see
+about **1%** of the defaults a cohort will eventually have. So performance monitoring
+on young cohorts is impossible, and this project **refuses to fake it**.
 
-| Señal | `run <tarea>` | Qué detecta |
+| Signal | `run <task>` | What it detects |
 |---|---|---|
-| Madurez de la etiqueta | `maturity` | Qué cosechas se pueden evaluar, y compara tasas a **madurez pareja** |
-| Deriva de población | `drift` | PSI por feature y del score, más **masa sin soporte** en las categóricas |
-| Decisión | `retrain-check` | Los tres disparadores, y qué arregla y qué no reentrenar |
+| Label maturity | `maturity` | Which cohorts can be evaluated at all, comparing rates at **matched maturity** |
+| Population drift | `drift` | PSI per feature and on the score, plus **unsupported mass** in categoricals |
+| Decision | `retrain-check` | The three triggers, and what retraining does and does not fix |
 
-**Lo que encontró en su primera corrida:** el SBA cambió el vocabulario de
-`business_age` entre FY2018 y FY2021, y hoy el **84%** de sus valores cae en
-categorías que el modelo no vio. Es el primer driver de SHAP, y el serving lo manda
-a "desconocido" sin avisar — ver
+**What it found on its first run:** the SBA changed the `business_age` category
+scheme between FY2018 and FY2021. Today **84%** of its values fall into categories
+the model never saw. It carries the **second-highest information value** in the
+interpretable baseline (0.0536, behind `initial_rate` at 0.1461), and serving maps
+unseen categories to "unknown" — so the model does not degrade, it **loses the
+variable entirely and keeps answering with the same confidence**.
 [ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
 
-`.github/workflows/monitor.yml` revisa cada mes si hay vintage nuevo y solo entonces
-recalcula.
+## Promotion gates
 
-## Gates de promoción
+Ten gates. A model is not promoted unless it passes them, and CI runs them on every
+PR.
 
-El modelo no se promueve si no pasa los diez gates, y CI los ejecuta en cada PR:
-
-| Gate | Qué garantiza |
+| Gate | What it guarantees |
 |---|---|
-| `config_coherente` | Las métricas corresponden al `config.yaml` actual |
-| `integridad` | Las métricas se **recomputan** desde las predicciones, no se creen |
-| `auc_test` | Piso absoluto de discriminación |
-| `margen_sobre_baseline` | El retador supera al scorecard interpretable por ≥0.02 |
-| `drop_oot` | La degradación out-of-time no excede 2x la variación natural |
-| `brier_test` | Le gana al predictor sin habilidad (constante = tasa base) |
-| `ece_test` | Predicho y observado coinciden dentro de 2 puntos porcentuales |
-| `hmda:disparate_impact` | Criterio de los cuatro quintos por clase protegida. **Hoy da 0.7639 y por eso el modelo de acceso no está promovido** |
-| `reporte:MODEL_CARD.md` | El model card describe las métricas publicadas, no unas viejas |
-| `reporte:VALIDATION_REPORT.md` | Idem para el reporte de validación |
+| `config_coherente` | The metrics correspond to the current `config.yaml` |
+| `integridad` | Metrics are **recomputed** from saved predictions, not believed |
+| `auc_test` | Absolute discrimination floor |
+| `margen_sobre_baseline` | The challenger beats the interpretable scorecard by ≥0.02 |
+| `drop_oot` | Out-of-time degradation stays within 2x natural variation |
+| `brier_test` | Beats the no-skill predictor (constant = base rate) |
+| `ece_test` | Predicted and observed agree within 2 percentage points |
+| `hmda:disparate_impact` | Four-fifths rule per protected class. **Currently 0.7639, so the access model is not promoted** |
+| `reporte:MODEL_CARD.md` | The model card describes the published metrics, not older ones |
+| `reporte:VALIDATION_REPORT.md` | Same for the validation report |
 
-Los dos últimos existen porque **hicieron falta**: el model card estuvo congelado
-seis semanas, listando 7 gates y omitiendo justamente el que no cumple, y el reporte
-de validación imprimía `PASA` en una sección y "promoción bloqueada" en otra, del
-mismo gate. Un reporte rancio es peor que no tener reporte, porque se cita.
+Every threshold has its derivation written next to it in `config.yaml`. None was
+chosen because the model passed it — see [docs/AUDIT.md](docs/AUDIT.md).
 
-El veredicto distingue dos cosas que antes se confundían: **`passed`** es "el build
-no se rompe" y **`threshold_met`** es "el modelo cumple". Para el gate de equidad no
-coinciden, y ahora se lee `NO CUMPLE (build ok: no se promueve)`.
+The verdict distinguishes two things that used to be conflated: **`passed`** means
+"the build does not break" and **`threshold_met`** means "the model complies". For
+the fairness gate they differ, and it now reads `NO CUMPLE (build ok: no se promueve)`.
 
-Cada umbral tiene su derivación escrita al lado en `config.yaml`. Ninguno se eligió
-porque el modelo lo pasaba — ver [docs/AUDIT.md](docs/AUDIT.md).
+## Verify it yourself
 
-## Licencia
+No number in this README is worth more than the command that reproduces it. One
+prerequisite: [`uv`](https://docs.astral.sh/uv/) — Python 3.12 and every dependency
+are installed by the project.
 
-MIT (código). Los datos fuente conservan sus propias licencias — ver
+```powershell
+.\run setup      # Python 3.12 + dependencies + authorship hook
+.\run test       # the suite. Prints its own count; do not trust mine
+.\run gates      # the ten gates, recomputed from saved predictions
+```
+
+Those three need **no data download**: `exports/metrics.json` is committed and the
+integrity gate recomputes its metrics from the stored predictions, so the model can
+be audited without access to the sources. It is why CI downloads nothing.
+
+```powershell
+.\run acquire    # SBA 7(a), 861 MB, SHA256-verified against the manifest
+.\run all        # train -> gates -> model card -> economics (stops at first failure)
+.\run reproduce  # retrains and ASSERTS the metrics are identical to the committed ones
+.\run ci-local   # runs what CI runs, in a clean clone, before you push
+```
+
+Step-by-step for every level, optional extras and known problems:
+**[docs/INSTALL.md](docs/INSTALL.md)**. On Linux/macOS every task is a `make` target.
+
+## What this is not
+
+- **Not in production, and its exposure is zero.** Under SR 26-2, materiality follows
+  purpose and exposure; this is a reference exercise and says so in its own
+  validation report.
+- **Not a compliance assessment.** SR 26-2 and the EU AI Act Annex IV are used as a
+  structure and a vocabulary, not as a certification.
+- **Not an automated credit decision.** It is an input to a human one.
+- **Reject inference is not solved.** Only approved loans have outcomes, so the model
+  describes risk *conditional on having been approved*. It is discussed, not fixed.
+- **The ONNX artifact is not hash-stable.** The model reproduces — 5 identical graph
+  nodes, bit-identical predictions on 20,000 rows — but re-exporting yields different
+  bytes. The distinction matters in a project that sells auditability, so it is
+  written down.
+
+## License
+
+MIT (code). Source data keeps its own licensing — see
 [docs/DATA_SOURCES.md](docs/DATA_SOURCES.md).

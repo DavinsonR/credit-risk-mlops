@@ -28,9 +28,17 @@ El modelo se entrenó en FY2011-2015. **En FY2024-2026, el 84% de los valores de
 
 `business_age` no es una variable cualquiera:
 
-- Es el **primer driver de SHAP** en los avisos de adverse action. Los ejemplos del
-  [ADR 0009](0009-la-plantilla-gana-al-llm.md) citan *"la antigüedad del negocio"*
-  como razón principal.
+- Carga el **segundo information value más alto** del baseline interpretable —
+  **0.0536**, detrás de `initial_rate` con 0.1461 (`exports/scorecard_points.csv`,
+  agrupando IV por variable) — y es la razón citada en primer lugar en los tres
+  ejemplos de avisos del [ADR 0009](0009-la-plantilla-gana-al-llm.md).
+
+  > **Corrección.** La primera versión de este ADR decía *"es el primer driver de
+  > SHAP"*, y de ahí pasó a `NOTES.md` y a los dos README: tres repeticiones y cero
+  > evidencia, porque el repo no tiene ningún export de SHAP. Al medirlo resultó
+  > **falso**: es el segundo, y el primero le saca casi el triple. El hallazgo no se
+  > debilita —romper el vocabulario del 84% de una variable top-3 sigue siendo
+  > grave— pero la afirmación era del tipo que este proyecto dice no hacer.
 - El contrato de serving mapea las categorías no vistas a `UNKNOWN_CODE`. Así que
   el modelo **no se degrada: pierde la variable entera** y sigue respondiendo con
   la misma confianza aparente.

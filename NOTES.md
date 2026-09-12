@@ -732,6 +732,14 @@ La primera corrida de `run drift` marcó `business_age` en su propia banda. El S
 las que el modelo no tiene evidencia.** Y `business_age` es el primer driver de
 SHAP: es la razón #1 de los avisos de adverse action del ADR 0009.
 
+> **Corregido el 2026-09-12.** Esa frase era falsa y la repetí tres veces —aquí, en
+> el ADR 0011 y en los dos README— sin un solo export que la respaldara; el repo no
+> produce ninguno de SHAP. Medido sobre el IV del baseline interpretable,
+> `business_age` es el **segundo** (0.0536) y `initial_rate` el primero (0.1461),
+> casi el triple. Lo que sí es cierto y verificable: es la razón citada primero en
+> los tres ejemplos de avisos. Un agente externo marcó la afirmación como
+> "sin evidencia" antes de que yo la midiera, y tenía razón.
+
 El contrato de serving manda lo no visto a `UNKNOWN_CODE`, así que **el modelo no
 se degrada: pierde la variable entera y sigue respondiendo con el mismo aplomo.**
 El smoke test de CI usa `"business_age": "Existing or more than 2 years old"` —la
@@ -1157,3 +1165,86 @@ donde el defecto existía.
 
 _(escribir: por qué la documentación de instalación es un test de integración del
 proyecto y no una tarea de redacción)_
+
+---
+
+## Semana 10 — La vitrina, y lo que encontré al escribirla
+
+Igual que en la semana 9: **empaquetar obligó a mirar, y mirar encontró cosas.**
+
+### El ancla regulatoria estaba obsoleta
+
+SR 11-7 fue reemplazada por **SR 26-2** el 17-abr-2026, cinco meses antes de que este
+proyecto empezara. La citaba en siete lugares.
+
+La señal vino de un análisis que además afirmaba que SR 26-2 exige *tiering por
+materialidad, champion/challenger y pruebas versionadas y reproducibles* — casi
+exactamente lo que ya tengo. **Ese encaje tan conveniente fue el motivo para
+desconfiar.** Bajé el documento y conté término por término: `materiality` 7 veces,
+`ongoing monitoring` 5, `benchmark` 1, y `tier`, `challenger`, `reproduc*`, `version`,
+`machine learning` **cero**. Actualicé la cita, no los mecanismos, y añadí la
+declaración de materialidad con la respuesta incómoda: exposición nula, ejercicio de
+referencia. [ADR 0012](docs/adr/0012-el-ancla-regulatoria-cambio.md).
+
+### Los documentos de gobierno mentían, y la causa era mía
+
+`MODEL_CARD.md` listaba 7 gates de 8 —su generador nunca llamaba al de equidad, el
+único que el modelo no cumple— y `VALIDATION_REPORT.md` imprimía `PASA` para ese gate
+en §3.1 mientras §5 decía "promoción bloqueada". Mismo gate, mismo documento.
+
+Causa raíz: `GateResult.passed` significaba dos cosas a la vez. Ahora son dos campos,
+`passed` (el build no se rompe) y `threshold_met` (el modelo cumple), y hay un gate
+nuevo —`reportes_al_dia`— porque el card llevaba **seis semanas congelado** sin que
+nada avisara.
+
+### Tres exports commiteados estaban mal
+
+`hmda_metrics.json` sin la bandera `promoted`, así que el gate pasaba **por defecto**;
+el perfil de deriva con el fingerprint viejo, que **commiteé yo el día anterior** y
+`drift.py` solo avisaba en vez de fallar; y `scorecard_points.csv` con 35 filas de
+`<ArrowStringArray>` incrustado — 166 líneas físicas para 83 registros, en el
+artefacto del modelo interpretable.
+
+### La capa causal: una no-identificación, no un efecto
+
+Lo mejor de la semana y lo que más me costó no adornar. Tres diagnósticos sobre
+1.398.416 préstamos cierran las dos vías que tenían sentido: R² del tratamiento sobre
+celdas administrativas **0.9145**, apilamiento del **83.1%** exactamente en el umbral,
+y un gradiente que **no** es enteramente composición (+7.76 → +4.79 pp).
+
+El agente que lo diseñó traía cinco números y **cuatro no replicaron**. Los publicados
+son los que medí. [ADR 0013](docs/adr/0013-el-efecto-de-la-garantia-no-esta-identificado.md).
+
+### Y una afirmación mía que resultó falsa
+
+Escribí que `business_age` era *"el primer driver de SHAP"*. Lo repetí en el ADR 0011,
+aquí y en los dos README. **El repo no produce ningún export de SHAP**, así que la
+afirmación no tenía respaldo en ninguna de las cuatro veces.
+
+Un agente externo la marcó como "sin evidencia". Fui a medirla con el IV del baseline
+interpretable y es **falsa**: `business_age` es el segundo (0.0536) y `initial_rate` el
+primero (0.1461), casi el triple. Corregida en los cuatro lugares.
+
+Lo que me llevo: **cuatro repeticiones no son evidencia, y el número de veces que uno
+afirma algo no tiene relación con que sea cierto.** Es el mismo error que el benchmark
+de 29.1x y la consistencia de 0.83, en otra forma.
+
+### El README dejó de tener números tecleados
+
+La reestructura mueve el registro de defectos de la línea 827 de esta bitácora a la
+**posición 2** del README, y baja la instalación al final. El gancho no es el AUC
+0.7005: es el **0.9461 que borré**.
+
+Y los conteos de tests salieron del README. Venía citando 152, 164 y 184 en distintos
+commits; los reales son **180** sin datos y **193** con los marcados `data`. En vez de
+un número que envejece, el README trae el comando que lo imprime.
+
+_(escribir: qué se siente publicar el registro de errores propios como argumento de
+venta, y por qué funciona mejor que el AUC)_
+
+### Pendiente
+- PBIP con páginas de desempeño, equidad, pérdida y monitoreo. `powerbi/` sigue vacía.
+- Los brazos de Groq y Gemini del harness de avisos (faltan las claves gratuitas).
+- Instrumentar la decisión de fallback del híbrido (pregunta abierta del ADR 0009).
+- El estudio de evento sobre HMDA en el shock de tasas de 2022, que es el diseño
+  causal con mejor pinta y no está implementado.
