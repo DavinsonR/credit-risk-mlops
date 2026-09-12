@@ -94,6 +94,51 @@ stress_cohorts:
   covid_2020_2021:  { start: 2020, end: 2021 }   # régimen de emergencia
   reciente_2019:    { start: 2019, end: 2019 }   # censura al 60.9%
 
+# Monitoreo (Semana 9). Ver docs/adr/0010: en crédito la etiqueta tarda ~51 meses
+# medianos en existir, así que el disparador de reentrenamiento NO puede ser "cayó
+# el AUC" — ese número no está disponible a tiempo.
+monitoring:
+  # Estados que NO representan un préstamo desembolsado. Vive aquí y no en
+  # `exclusions` por una razón que el gate hizo explícita: `config_fingerprint`
+  # hashea todo `exclusions`, así que ponerlo ahí invalidaba el entrenamiento
+  # anterior y exigía reentrenar por un parámetro que el modelado no lee. La clave
+  # va donde se usa.
+  #
+  # Un préstamo cancelado nunca se desembolsó: no forma parte de la población que
+  # el modelo puntúa. EXEMPT y COMMIT SÍ entran, y es un supuesto declarado —se
+  # asume que son préstamos vivos o sin estado publicado, cuyas features existen
+  # igual—. Si EXEMPT fuera otra cosa, la población del monitoreo estaría
+  # contaminada por ~297 mil registros. No afecta al modelado: ahí se exige
+  # resultado conocido.
+  not_booked_statuses: ["CANCLD"]
+
+  # Cosechas que se vigilan: las posteriores al entrenamiento. FY2016 en adelante
+  # incluye validación y test a propósito, para ver si el monitoreo detecta el
+  # corrimiento que el proyecto ya conoce por otra vía (tasa base 6.75% → 9.60%).
+  watch_from_fy: 2016
+
+  # Umbrales de PSI. Convención de industria: <0.10 estable, 0.10-0.25 vigilar,
+  # >0.25 acción. No se re-derivan porque no son propios del proyecto: son el
+  # lenguaje en que un validador los va a leer.
+  psi_warn: 0.10
+  psi_action: 0.25
+
+  # Disparador por tasa a madurez pareja (ADR 0010).
+  matched_maturity_window_months: 24
+
+  # Tolerancia relativa sobre la tasa de referencia a 24 meses (4.96%).
+  #
+  # DERIVACIÓN: las cinco cosechas de entrenamiento, medidas por separado a 24
+  # meses, dan 5.59 / 4.16 / 4.45 / 5.07 / 5.32%. La desviación máxima contra la
+  # referencia agrupada es 16.1% (FY2012). El umbral se pone en 2x esa variación
+  # natural: una cosecha tiene que salirse el doble de lo que se mueven entre sí
+  # las cosechas de un régimen estable.
+  #
+  # CONSECUENCIA, dicha por adelantado: con este umbral casi todas las cosechas
+  # posteriores a FY2015 lo cruzan. No es un umbral mal calibrado — es el hallazgo.
+  # La población lleva derivando desde FY2016.
+  matched_maturity_tolerance: 0.32
+
 # Gate de viabilidad de la Semana 1.
 # Criterio fijado ANTES de ver resultados finales: eso lo hace de-risking, no p-hacking.
 signal_gate:

@@ -1,0 +1,23 @@
+{
+  "should_retrain": true,
+  "triggers": [
+    {
+      "name": "vocabulario",
+      "fired": true,
+      "detail": "business_age 84.0%",
+      "action": "REENTRENAR NO ALCANZA: hay que armonizar el vocabulario o cambiar la ventana"
+    },
+    {
+      "name": "forma_del_score",
+      "fired": true,
+      "detail": "PSI de forma 0.1696 en FY2026 (umbral 0.1)",
+      "action": "reentrenar: recalibrar no corrige un cambio de mezcla"
+    },
+    {
+      "name": "madurez_pareja",
+      "fired": true,
+      "detail": "FY2023 a 24m: 11.35% vs referencia 4.96% (+129%, tolerancia +-32%)",
+      "action": "reentrenar con una ventana que incluya el regimen nuevo"
+    }
+  ]
+}

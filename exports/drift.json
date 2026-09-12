@@ -1,0 +1,210 @@
+{
+  "as_of": "2026-06-30",
+  "reference": {
+    "train_window": [
+      2011,
+      2015
+    ],
+    "n": 217060,
+    "config_fingerprint": "a546f40778b642d8"
+  },
+  "thresholds": {
+    "psi_warn": 0.1,
+    "psi_action": 0.25
+  },
+  "cohorts": [
+    {
+      "approval_fy": 2016,
+      "n": 56763,
+      "peor_feature": "borrower_state",
+      "peor_psi": 0.018515,
+      "features_en_accion": [
+        "processing_method"
+      ],
+      "sin_soporte": {},
+      "score_psi_total": 0.137181,
+      "score_psi_forma": 0.02792,
+      "score_nivel": -0.230363,
+      "score_lectura": "corrimiento de NIVEL: recalibrar basta"
+    },
+    {
+      "approval_fy": 2017,
+      "n": 56059,
+      "peor_feature": "borrower_state",
+      "peor_psi": 0.033961,
+      "features_en_accion": [
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {},
+      "score_psi_total": 0.045447,
+      "score_psi_forma": 0.005522,
+      "score_nivel": -0.135481,
+      "score_lectura": "estable"
+    },
+    {
+      "approval_fy": 2018,
+      "n": 54200,
+      "peor_feature": "business_age",
+      "peor_psi": 5.150978,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.4849
+      },
+      "score_psi_total": 0.073766,
+      "score_psi_forma": 0.009395,
+      "score_nivel": 0.162668,
+      "score_lectura": "estable"
+    },
+    {
+      "approval_fy": 2019,
+      "n": 45680,
+      "peor_feature": "business_age",
+      "peor_psi": 15.988054,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.6579
+      },
+      "score_psi_total": 0.273447,
+      "score_psi_forma": 0.050097,
+      "score_nivel": 0.297114,
+      "score_lectura": "corrimiento de NIVEL: recalibrar basta"
+    },
+    {
+      "approval_fy": 2020,
+      "n": 36482,
+      "peor_feature": "business_age",
+      "peor_psi": 17.178838,
+      "features_en_accion": [
+        "business_age",
+        "processing_method"
+      ],
+      "sin_soporte": {
+        "business_age": 0.7566
+      },
+      "score_psi_total": 0.018371,
+      "score_psi_forma": 0.019547,
+      "score_nivel": -0.012674,
+      "score_lectura": "estable"
+    },
+    {
+      "approval_fy": 2021,
+      "n": 45359,
+      "peor_feature": "business_age",
+      "peor_psi": 18.607191,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "guarantee_pct",
+        "sba_guaranteed",
+        "initial_rate",
+        "gross_approval",
+        "log_gross_approval"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8259
+      },
+      "score_psi_total": 0.175393,
+      "score_psi_forma": 0.055279,
+      "score_nivel": -0.258021,
+      "score_lectura": "corrimiento de NIVEL: recalibrar basta"
+    },
+    {
+      "approval_fy": 2022,
+      "n": 42280,
+      "peor_feature": "business_age",
+      "peor_psi": 18.617332,
+      "features_en_accion": [
+        "business_age",
+        "processing_method"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8244
+      },
+      "score_psi_total": 0.024297,
+      "score_psi_forma": 0.01317,
+      "score_nivel": 0.048856,
+      "score_lectura": "estable"
+    },
+    {
+      "approval_fy": 2023,
+      "n": 51747,
+      "peor_feature": "business_age",
+      "peor_psi": 18.513184,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8209
+      },
+      "score_psi_total": 0.799757,
+      "score_psi_forma": 0.142007,
+      "score_nivel": 0.473739,
+      "score_lectura": "cambio de FORMA: la mezcla cambio, evaluar reentrenamiento"
+    },
+    {
+      "approval_fy": 2024,
+      "n": 62618,
+      "peor_feature": "business_age",
+      "peor_psi": 18.438051,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8398
+      },
+      "score_psi_total": 1.02318,
+      "score_psi_forma": 0.149441,
+      "score_nivel": 0.518061,
+      "score_lectura": "cambio de FORMA: la mezcla cambio, evaluar reentrenamiento"
+    },
+    {
+      "approval_fy": 2025,
+      "n": 64096,
+      "peor_feature": "business_age",
+      "peor_psi": 18.484907,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8402
+      },
+      "score_psi_total": 0.921824,
+      "score_psi_forma": 0.140438,
+      "score_nivel": 0.495085,
+      "score_lectura": "cambio de FORMA: la mezcla cambio, evaluar reentrenamiento"
+    },
+    {
+      "approval_fy": 2026,
+      "n": 35641,
+      "peor_feature": "business_age",
+      "peor_psi": 18.480954,
+      "features_en_accion": [
+        "business_age",
+        "processing_method",
+        "initial_rate"
+      ],
+      "sin_soporte": {
+        "business_age": 0.8289
+      },
+      "score_psi_total": 0.782706,
+      "score_psi_forma": 0.169591,
+      "score_nivel": 0.444906,
+      "score_lectura": "cambio de FORMA: la mezcla cambio, evaluar reentrenamiento"
+    }
+  ]
+}

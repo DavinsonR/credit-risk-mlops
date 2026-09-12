@@ -686,10 +686,129 @@ sería repetir el error que esta misma revisión corrige.**
 _(escribir: por qué un eval de un solo modelo produce conclusiones que se leen
 razonables y son falsas)_
 
-### Pendiente Semana 9
-- Monitoreo de drift con datos trimestrales reales de SBA.
-- Reentrenamiento automático con gate de promoción.
+---
+
+## Semana 9 — El monitoreo encontró que el modelo perdió su mejor variable
+
+La semana empezó por la pregunta previa: **¿qué se puede monitorear?** En crédito la
+etiqueta tarda **51 meses medianos** en existir, así que un tablero que muestre AUC
+sobre las originaciones del último trimestre no mide el modelo, mide cuánto tiempo
+ha pasado. Eso es [ADR 0010](docs/adr/0010-monitoreo-a-madurez-pareja.md), y de ahí
+sale todo el diseño.
+
+### Madurez pareja: la comparación que sí es defendible
+
+La ingenua no lo es. Tasa cruda entre lo resuelto: FY2013 da 6.25% y FY2023 da
+17.40%. Leído así FY2023 falla casi tres veces más, pero FY2013 está al 83.5%
+resuelto y FY2023 al 17.4%: se está comparando antigüedad, no riesgo.
+
+Fijando la ventana de observación —solo lo resuelto dentro de los primeros M meses
+desde la aprobación— contra la referencia de las cosechas de entrenamiento:
+
+| Ventana | Referencia FY2011-15 | FY2020 | FY2021 | FY2022 | FY2023 |
+|---|---|---|---|---|---|
+| 12m | 1.79% | 0.18% | 0.26% | 2.38% | 2.25% |
+| **24m** | **4.96%** | 2.15% | 2.05% | **7.28%** | **11.35%** |
+| 36m | 6.63% | 3.58% | 3.54% | 10.33% | — |
+
+**FY2023 falla al 11.35% a 24 meses contra 4.96%: 2.3 veces.** Y FY2020-2021 a
+menos de la mitad, que es el alivio crediticio de la pandemia visible en el dato.
+La alarma no desaparece al hacerla honesta; se vuelve citable.
+
+### El hallazgo de la semana: la fuente cambió el vocabulario
+
+La primera corrida de `run drift` marcó `business_age` en su propia banda. El SBA
+**cambió el esquema de categorías** entre FY2018 y FY2021:
+
+| Categoría | FY2015 | FY2019 | FY2023 |
+|---|---|---|---|
+| `Existing, 5 or more years` | **48.5%** | 0.0% | 0.0% |
+| `New, Less than 1 Year old` | 12.2% | 0.0% | 0.0% |
+| `Existing or more than 2 years old` | 0.0% | **52.3%** | **52.5%** |
+| `Change of Ownership` | 0.0% | 12.3% | 9.0% |
+| `New Business or 2 years or less` | 0.0% | 0.0% | 20.6% |
+
+**El 84% de los valores de `business_age` en FY2024-2026 cae en categorías sobre
+las que el modelo no tiene evidencia.** Y `business_age` es el primer driver de
+SHAP: es la razón #1 de los avisos de adverse action del ADR 0009.
+
+El contrato de serving manda lo no visto a `UNKNOWN_CODE`, así que **el modelo no
+se degrada: pierde la variable entera y sigue respondiendo con el mismo aplomo.**
+El smoke test de CI usa `"business_age": "Existing or more than 2 years old"` —la
+categoría nueva— así que llevaba meses puntuando con un código desconocido y
+devolviendo un 200 impecable.
+
+Detalle completo en [ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
+
+### La métrica que el PSI no podía dar
+
+El PSI de `business_age` da **18.5**, y ese número no significa nada: un bucket con
+proporción de referencia cero deja el PSI fijado por el epsilon que uno elija para
+no dividir por cero. Con `EPS = 1e-6` una categoría nueva con el 52% de la masa
+aporta ~6.9; tres dan 18.5. **Cambiar el epsilon cambia el titular.**
+
+Así que la alarma es la **masa sin soporte**: la proporción del dato nuevo que cae
+en categorías con menos de 0.5% de la masa de entrenamiento. Es una proporción, es
+interpretable y no depende de ninguna constante.
+
+Y "sin soporte" tenía que ser más que "no vista": `Existing or more than 2 years
+old` SÍ existe en el vocabulario de entrenamiento, con 22 préstamos de 217.060. No
+es nueva — es una categoría sobre la que el modelo no aprendió nada. **Mi primera
+versión contaba solo las inexistentes y reportaba 30% donde el problema es 84%.**
+
+### El disparador no puede ser "cayó el AUC"
+
+Ese número no existe a tiempo. Los tres disparadores son medibles el día que llega
+el vintage, y hoy los tres están activos:
+
+| Disparador | Estado | Detalle |
+|---|---|---|
+| `vocabulario` | **DISPARA** | `business_age` 84.0% |
+| `forma_del_score` | **DISPARA** | PSI de forma 0.1696 en FY2026 |
+| `madurez_pareja` | **DISPARA** | FY2023 a 24m: 11.35% vs 4.96% (+129%) |
+
+### Y la parte que no se resuelve reentrenando
+
+`retrain.py` lo imprime en vez de esconderlo. Reentrenar **no arregla** un cambio de
+vocabulario:
+
+- sobre FY2011-2015 el vocabulario sigue siendo el viejo;
+- sobre FY2019+ choca con la madurez de la etiqueta (FY2019 al 60.9% y bajando), y
+  el modelo aprendería de los que resolvieron rápido, que son los que fallan;
+- `Existing or more than 2 years old` agrupa cuatro buckets viejos, así que
+  armonizar **pierde resolución**; y `Change of Ownership` no existía como
+  antigüedad — no es un renombre, es un concepto nuevo.
+
+Queda abierto y escrito. Un diccionario de mapeo que aparente equivalencia donde no
+la hay sería peor que el problema.
+
+### Lo que el gate me hizo a mí, otra vez
+
+Tocar `loader.py` movió el `code_fingerprint` y el gate `integridad` bloqueó:
+*"métricas producidas por código X, actual Y: reentrenar"*. Y al poner
+`not_booked_statuses` dentro de `exclusions`, el `config_coherente` también
+bloqueó: ese bloque entero entra al fingerprint, así que un parámetro que el
+modelado **no lee** invalidaba el entrenamiento. Lo moví a `monitoring`, donde se
+usa. El gate no estaba equivocado — mi ubicación de la clave sí.
+
+### Autonomía: el workflow
+
+`.github/workflows/monitor.yml` corre el día 1 de cada mes. Primero **detecta** —
+descubrir URLs y comparar contra el manifiesto, sin descargar nada— y solo si hay
+vintage nuevo baja los 861 MB, recalcula y commitea los artefactos a nombre de
+Davirson, con el hook de autoría apuntado. Es el único job del repo con
+`contents: write`, y está acotado a ese job: `ci.yml` sigue en `contents: read`
+porque verificar no necesita publicar.
+
+_(escribir: por qué el monitoreo encontró en una corrida lo que 131 tests no
+encontraron en nueve semanas)_
+
+### Pendiente Semana 10
+- README con métricas verificables y la vitrina.
+- Exports JSON → sitio Vercel.
+- PBIP con páginas de performance, equidad y pérdida.
 - Cerrar la pregunta abierta del híbrido (instrumentar la decisión de fallback).
+- Armonización del vocabulario de `business_age`, con su propio ADR.
 
 ---
 

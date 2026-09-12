@@ -64,6 +64,27 @@ make train && make gates && make card
 Paso a paso completo —extras opcionales, LLM local, PySpark, Docker, y qué debe
 imprimir cada comando— en **[docs/INSTALL.md](docs/INSTALL.md)**.
 
+## Monitoreo
+
+En crédito la etiqueta tarda **51 meses medianos** en existir, así que el monitoreo
+de desempeño sobre cosechas jóvenes es imposible y el proyecto **se niega a
+fingirlo**. Se monitorea lo que sí se puede medir el día que llega el vintage:
+
+| Señal | `run <tarea>` | Qué detecta |
+|---|---|---|
+| Madurez de la etiqueta | `maturity` | Qué cosechas se pueden evaluar, y compara tasas a **madurez pareja** |
+| Deriva de población | `drift` | PSI por feature y del score, más **masa sin soporte** en las categóricas |
+| Decisión | `retrain-check` | Los tres disparadores, y qué arregla y qué no reentrenar |
+
+**Lo que encontró en su primera corrida:** el SBA cambió el vocabulario de
+`business_age` entre FY2018 y FY2021, y hoy el **84%** de sus valores cae en
+categorías que el modelo no vio. Es el primer driver de SHAP, y el serving lo manda
+a "desconocido" sin avisar — ver
+[ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
+
+`.github/workflows/monitor.yml` revisa cada mes si hay vintage nuevo y solo entonces
+recalcula.
+
 ## Gates de promoción
 
 El modelo no se promueve si no pasa los ocho gates, y CI los ejecuta en cada PR:

@@ -78,6 +78,15 @@ $Tasks = [ordered]@{
     "economics"    = @{ desc = "Traduce el modelo a dolares: perdida evitada y corte"; cmd = { uv run python -m crmlops.models.train_economics } }
     "stress"       = @{ desc = "Aplica el modelo a cohortes fuera de su regimen"; cmd = { uv run python -m crmlops.evaluation.stress } }
     "maturity"     = @{ desc = "Que se puede monitorear: madurez de la etiqueta por cosecha"; cmd = { uv run python -m crmlops.monitoring.maturity } }
+    "drift"        = @{ desc = "Deriva de poblacion contra el perfil de referencia"; cmd = { uv run python -m crmlops.monitoring.drift } }
+    "drift-build"  = @{ desc = "Regenera el perfil de referencia commiteado"; cmd = { uv run python -m crmlops.monitoring.drift --build } }
+    "retrain-check" = @{ desc = "Disparadores de reentrenamiento (no reentrena)"; cmd = { uv run python -m crmlops.monitoring.retrain } }
+    "monitor"      = @{ desc = "maturity -> drift -> decision de reentrenamiento"; cmd = {
+            Invoke-Step "madurez"  { uv run python -m crmlops.monitoring.maturity }
+            Invoke-Step "deriva"   { uv run python -m crmlops.monitoring.drift }
+            Invoke-Step "decision" { uv run python -m crmlops.monitoring.retrain }
+        }
+    }
     "gates"        = @{ desc = "Gates de promocion. Falla si el modelo no cumple"; cmd = { uv run python -m crmlops.governance.gates } }
     "card"         = @{ desc = "Regenera reports/MODEL_CARD.md"; cmd = { uv run python -m crmlops.governance.model_card } }
     "validation"   = @{ desc = "Regenera reports/VALIDATION_REPORT.md (SR 11-7 + Anexo IV)"; cmd = { uv run python -m crmlops.governance.validation_report } }

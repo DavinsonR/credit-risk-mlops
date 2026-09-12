@@ -23,8 +23,24 @@ def _sql_list(values: list[str]) -> str:
     return f"({escaped})"
 
 
-def build_query(cfg: dict | None = None, source_glob: str | None = None) -> str:
-    """Construye la query del panel. `source_glob` permite apuntar a un fixture en CI."""
+def build_query(
+    cfg: dict | None = None,
+    source_glob: str | None = None,
+    *,
+    require_resolved: bool = True,
+) -> str:
+    """Construye la query del panel. `source_glob` permite apuntar a un fixture en CI.
+
+    `require_resolved=False` devuelve TODAS las originaciones desembolsadas, con
+    resultado conocido o no. Solo sirve para monitorear deriva de features, que se
+    conocen en la originacion: en una cosecha joven exigir resultado deja una
+    minoria sesgada hacia los que resolvieron rapido (FY2023 esta al 17.4%, ver
+    docs/adr/0010).
+
+    ENTRENAR CON ESO SERIA UN ERROR GRAVE: `is_chargeoff` vale 0 para todo lo que
+    aun no fallo, asi que la mitad de los ceros son "todavia no se sabe" y no "no
+    fallo". Por eso el default es True y el parametro es keyword-only.
+    """
     cfg = cfg or load_config()
     exc = cfg["exclusions"]
     tgt = cfg["target"]
@@ -35,7 +51,13 @@ def build_query(cfg: dict | None = None, source_glob: str | None = None) -> str:
         "sample_size=200000, all_varchar=true)"
     )
 
-    conds = [f"trim(LoanStatus) in {_sql_list(exc['resolved_statuses'])}"]
+    if require_resolved:
+        conds = [f"trim(LoanStatus) in {_sql_list(exc['resolved_statuses'])}"]
+    else:
+        # La lista vive en `monitoring` y no en `exclusions` a proposito: el
+        # fingerprint del gate hashea todo `exclusions`, y un parametro que el
+        # modelado no lee no debe invalidar un entrenamiento.
+        conds = [f"trim(LoanStatus) not in {_sql_list(cfg['monitoring']['not_booked_statuses'])}"]
     if exc.get("require_positive_amount"):
         conds.append("try_cast(GrossApproval as double) > 0")
     if exc.get("require_positive_term"):

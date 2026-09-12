@@ -1,4 +1,4 @@
-.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
+.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -34,6 +34,17 @@ economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
 
 maturity:  ## Que se puede monitorear: madurez de la etiqueta por cosecha
 	$(UV) run python -m crmlops.monitoring.maturity
+
+drift:  ## Deriva de poblacion contra el perfil de referencia commiteado
+	$(UV) run python -m crmlops.monitoring.drift
+
+drift-build:  ## Regenera exports/reference_profile.json desde el entrenamiento
+	$(UV) run python -m crmlops.monitoring.drift --build
+
+retrain-check:  ## Disparadores de reentrenamiento. NO reentrena: decide y explica
+	$(UV) run python -m crmlops.monitoring.retrain
+
+monitor: maturity drift retrain-check  ## El ciclo completo de monitoreo
 
 gates:  ## Gates de promocion. Falla (exit 1) si el modelo no cumple
 	$(UV) run python -m crmlops.governance.gates

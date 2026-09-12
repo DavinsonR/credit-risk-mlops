@@ -1,0 +1,123 @@
+name: Monitoreo de deriva
+
+# El vintage de SBA rota cada trimestre, pero el dia exacto no esta anunciado, asi
+# que se revisa mensualmente. La revision es barata: descubrir las URLs y comparar
+# hashes contra el manifiesto commiteado, sin descargar nada.
+#
+# Solo si el vintage cambio se baja el corte completo (861 MB) y se recalcula todo.
+# Un job que descargara 861 MB cada mes sin necesidad seria caro en tiempo y
+# gratuito en informacion.
+on:
+  schedule:
+    - cron: "0 6 1 * *" # dia 1 de cada mes, 06:00 UTC
+  workflow_dispatch: # y a mano, para poder probarlo sin esperar un mes
+
+concurrency:
+  group: monitor
+  cancel-in-progress: false
+
+jobs:
+  detectar:
+    name: Hay vintage nuevo?
+    runs-on: ubuntu-latest
+    outputs:
+      nuevo: ${{ steps.check.outputs.nuevo }}
+      vintage: ${{ steps.check.outputs.vintage }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - run: uv sync --extra dev
+
+      - id: check
+        name: Comparar el vintage publicado contra el manifiesto
+        run: |
+          uv run python - <<'PY' >> "$GITHUB_OUTPUT"
+          import json, pathlib
+          from crmlops.sources import sba
+
+          manifiesto = json.loads(
+              pathlib.Path("data/manifests/sba_7a.json").read_text(encoding="utf-8")
+          )
+          conocidos = {r["filename"] for r in manifiesto["resources"]}
+          recursos = sba.discover()
+
+          nuevos = sorted(r.filename for r in recursos if r.filename not in conocidos)
+          vintages = sorted({r.vintage for r in recursos})
+          print(f"nuevo={'true' if nuevos else 'false'}")
+          print(f"vintage={'-'.join(vintages)}")
+          if nuevos:
+              print(f"::notice::Vintage nuevo detectado: {nuevos}")
+          else:
+              print("::notice::Sin vintage nuevo; no hay nada que recalcular.")
+          PY
+
+  monitorear:
+    name: Recalcular deriva
+    needs: detectar
+    if: needs.detectar.outputs.nuevo == 'true'
+    runs-on: ubuntu-latest
+    # Este job SI escribe: commitea los exports y el reporte. Es el unico del repo
+    # con este permiso, y esta acotado a este job a proposito -- ci.yml sigue en
+    # contents: read, porque verificar no necesita publicar.
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # onnx ademas de dev: la deriva del score puntua la cosecha nueva con el
+      # grafo commiteado. Sin el extra, el reporte sale con deriva de features
+      # solamente y no avisa por que.
+      - run: uv sync --extra dev --extra onnx
+
+      - name: Descargar el vintage nuevo y verificar hashes
+        run: |
+          uv run python -m crmlops.sources.sba
+          uv run python -c "from crmlops.sources import sba; raise SystemExit(0 if sba.verify() else 1)"
+
+      - name: Madurez de la etiqueta
+        run: uv run python -m crmlops.monitoring.maturity
+
+      - name: Deriva de poblacion
+        run: uv run python -m crmlops.monitoring.drift
+
+      - name: Decision de reentrenamiento
+        run: uv run python -m crmlops.monitoring.retrain
+
+      - name: Resumen en el run
+        run: |
+          {
+            echo "## Monitoreo — vintage ${{ needs.detectar.outputs.vintage }}"
+            echo
+            uv run python -c "
+          import json, pathlib
+          d = json.loads(pathlib.Path('exports/retrain_decision.json').read_text(encoding='utf-8'))
+          print('**Reentrenar:**', 'SI' if d['should_retrain'] else 'no')
+          print()
+          print('| Disparador | Estado | Detalle |')
+          print('|---|---|---|')
+          for t in d['triggers']:
+              print(f\"| {t['name']} | {'DISPARA' if t['fired'] else 'ok'} | {t['detail']} |\")
+          "
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Commitear los artefactos actualizados
+        run: |
+          git config user.name "Davirson Novoa R"
+          git config user.email "104369068+DavinsonR@users.noreply.github.com"
+          git config core.hooksPath scripts/hooks
+          git add exports/maturity.json exports/drift.json exports/retrain_decision.json \
+                  data/manifests/sba_7a.json reports/DRIFT_REPORT.md
+          if git diff --staged --quiet; then
+            echo "::notice::El vintage cambio pero los artefactos no. Nada que commitear."
+            exit 0
+          fi
+          # El mensaje no lleva trailers de asistentes: el hook de autoria esta
+          # apuntado arriba y rechazaria el commit si los llevara.
+          git commit -m "chore(monitoreo): recalcular deriva con el vintage ${{ needs.detectar.outputs.vintage }}" \
+                     -m "Generado por .github/workflows/monitor.yml. Sin intervencion humana."
+          git push
