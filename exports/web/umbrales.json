@@ -1,0 +1,42 @@
+{
+  "schema_version": 1,
+  "fuente": "config.yaml",
+  "umbrales": [
+    {
+      "gate": "margen_sobre_baseline",
+      "clave_config": "min_margin_over_baseline",
+      "direccion": "min",
+      "valor": 0.02
+    },
+    {
+      "gate": "auc_test",
+      "clave_config": "min_auc_test",
+      "direccion": "min",
+      "valor": 0.6894
+    },
+    {
+      "gate": "drop_oot",
+      "clave_config": "max_auc_drop_oot",
+      "direccion": "max",
+      "valor": 0.08
+    },
+    {
+      "gate": "brier_test",
+      "clave_config": "max_brier_test",
+      "direccion": "max",
+      "valor": 0.0868
+    },
+    {
+      "gate": "ece_test",
+      "clave_config": "max_ece_test",
+      "direccion": "max",
+      "valor": 0.02
+    },
+    {
+      "gate": "hmda:disparate_impact",
+      "clave_config": "min_disparate_impact_ratio",
+      "direccion": "min",
+      "valor": 0.8
+    }
+  ]
+}

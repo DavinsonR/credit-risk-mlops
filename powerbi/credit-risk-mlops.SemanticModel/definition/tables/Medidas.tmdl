@@ -1,0 +1,97 @@
+/// Tabla sin datos, solo medidas. Convencion estandar para que las medidas no queden
+/// colgadas de una tabla de hechos arbitraria.
+///
+/// TODAS las medidas de umbral leen el valor desde `Config` o desde `Umbrales`. Ninguna
+/// escribe un numero. Es la misma regla que gobierna `crmlops.export.web`: si el
+/// tablero tuviera su propia copia de un umbral, podria mostrar aprobado algo que el
+/// gate bloquea, y seria el peor lugar posible para esa divergencia.
+table Medidas
+
+	column _
+		dataType: string
+		isHidden
+		sourceColumn: _
+
+	measure 'Modelo de produccion' = SELECTEDVALUE('Config'[produccion])
+		/// Se lee del artefacto, no se escribe aqui. Si el proyecto promueve otro
+		/// modelo, el tablero lo refleja al refrescar.
+
+	measure 'Es produccion' =
+			VAR Actual = SELECTEDVALUE('Modelos'[modelo])
+			VAR Prod = SELECTEDVALUE('Config'[produccion])
+			RETURN IF(Actual = Prod, "Produccion", IF(Actual = SELECTEDVALUE('Config'[baseline]), "Baseline", "Retador"))
+
+	measure 'AUC produccion' =
+			CALCULATE(
+				MAX('Modelos'[auc_test]),
+				FILTER(ALL('Modelos'), 'Modelos'[modelo] = SELECTEDVALUE('Config'[produccion]))
+			)
+		formatString: 0.0000
+
+	measure 'AUC baseline' =
+			CALCULATE(
+				MAX('Modelos'[auc_test]),
+				FILTER(ALL('Modelos'), 'Modelos'[modelo] = SELECTEDVALUE('Config'[baseline]))
+			)
+		formatString: 0.0000
+
+	/// El criterio del gate `margen_sobre_baseline`, calculado igual que en el gate.
+	measure 'Margen sobre baseline' = [AUC produccion] - [AUC baseline]
+		formatString: +0.0000;-0.0000;0.0000
+
+	measure 'Umbral margen' =
+			CALCULATE(MAX('Umbrales'[valor]), FILTER(ALL('Umbrales'), 'Umbrales'[gate] = "margen_sobre_baseline"))
+		formatString: 0.0000
+
+	measure 'Margen cumple' = IF([Margen sobre baseline] >= [Umbral margen], "Cumple", "NO cumple")
+
+	measure 'Umbral disparate impact' =
+			CALCULATE(MAX('Umbrales'[valor]), FILTER(ALL('Umbrales'), 'Umbrales'[gate] = "hmda:disparate_impact"))
+		formatString: 0.000
+
+	/// El disparate impact del modelo, del peor grupo hacia abajo: es un MINIMO entre
+	/// grupos, no un promedio. Promediarlo escondería justamente al grupo que importa.
+	measure 'Disparate impact modelo' = MIN('EquidadDelta'[dir_modelo])
+		formatString: 0.000
+
+	/// El veredicto que el proyecto imprime, con la distincion que costo un defecto:
+	/// el build no se rompe (el modelo esta marcado `promoted: false`) pero el modelo
+	/// NO cumple el umbral. Dos hechos distintos, dos textos distintos.
+	measure 'Veredicto equidad' =
+			IF(
+				[Disparate impact modelo] >= [Umbral disparate impact],
+				"CUMPLE",
+				"NO CUMPLE — promocion bloqueada"
+			)
+
+	measure 'Perdida evitada al corte' = SUM('Decision'[loss_avoided])
+		formatString: \$#,0
+
+	measure 'Volumen bueno sacrificado' = SUM('Decision'[good_volume_foregone])
+		formatString: \$#,0
+
+	/// Cuantos dolares de volumen sano se renuncian por cada dolar de perdida evitada.
+	/// Al 10% de rechazo son 7.2. Es el numero que falta en toda presentacion de ventas.
+	measure 'Costo por dolar evitado' =
+			DIVIDE([Volumen bueno sacrificado], [Perdida evitada al corte])
+		formatString: 0.0"x"
+
+	measure 'AUC en crisis' =
+			CALCULATE(MAX('Estres'[auc]), FILTER(ALL('Estres'), 'Estres'[cohorte] = "crisis_2005_2008"))
+		formatString: 0.0000
+
+	/// Cuantas veces subestima el riesgo en el regimen de crisis. Ratio 0.12 -> 8.1x.
+	measure 'Subestimacion en crisis' =
+			VAR Ratio = CALCULATE(MAX('Estres'[ratio_calibracion]), FILTER(ALL('Estres'), 'Estres'[cohorte] = "crisis_2005_2008"))
+			RETURN DIVIDE(1, Ratio)
+		formatString: 0.0"x"
+
+	/// Procedencia en pantalla. Un validador cruza esto con exports/metrics.json.
+	measure 'Procedencia' =
+			"vintage " & SELECTEDVALUE('Config'[vintage])
+				& " · config " & SELECTEDVALUE('Config'[config_fingerprint])
+				& " · codigo " & SELECTEDVALUE('Config'[code_fingerprint])
+
+	partition Medidas = m
+		mode: import
+		source = Table.FromRows({{""}}, {"_"})

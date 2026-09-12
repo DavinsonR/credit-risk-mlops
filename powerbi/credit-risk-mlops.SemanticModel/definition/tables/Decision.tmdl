@@ -1,0 +1,71 @@
+/// Curva de decision en dolares. Fuente: exports/decision_curve.csv
+///
+/// `good_volume_foregone` es tan parte de la curva como `loss_avoided`, y va en el
+/// mismo eje visual: para evitar $276.3M al 10% de rechazo se renuncia a $1.99B de
+/// volumen sano. Un tablero que grafique solo la perdida evitada convierte un
+/// analisis en una ficha de venta.
+table Decision
+
+	column decline_rate
+		dataType: double
+		sourceColumn: decline_rate
+		formatString: 0.0%
+		summarizeBy: none
+
+	column n_declined
+		dataType: int64
+		sourceColumn: n_declined
+		formatString: #,0
+		summarizeBy: sum
+
+	column loss_avoided
+		dataType: double
+		sourceColumn: loss_avoided
+		formatString: \$#,0
+		summarizeBy: none
+
+	column good_volume_foregone
+		dataType: double
+		sourceColumn: good_volume_foregone
+		formatString: \$#,0
+		summarizeBy: none
+
+	column bad_declined
+		dataType: int64
+		sourceColumn: bad_declined
+		formatString: #,0
+		summarizeBy: sum
+
+	column good_declined
+		dataType: int64
+		sourceColumn: good_declined
+		formatString: #,0
+		summarizeBy: sum
+
+	column precision
+		dataType: double
+		sourceColumn: precision
+		formatString: 0.0%
+		summarizeBy: none
+
+	column loss_capture
+		dataType: double
+		sourceColumn: loss_capture
+		formatString: 0.0%
+		summarizeBy: none
+
+	column loss_avoided_random
+		dataType: double
+		sourceColumn: loss_avoided_random
+		formatString: \$#,0
+		summarizeBy: none
+
+	column lift
+		dataType: double
+		sourceColumn: lift
+		formatString: 0.00"x"
+		summarizeBy: none
+
+	partition Decision = m
+		mode: import
+		source = LeerExport("decision_curve.csv")

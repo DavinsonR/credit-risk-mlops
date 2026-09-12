@@ -234,6 +234,43 @@ def build_causal(f: dict[str, Fuente]) -> dict[str, Any]:
     }
 
 
+def build_umbrales(f: dict[str, Fuente]) -> dict[str, Any]:
+    """Los umbrales de los gates, copiados de config.yaml.
+
+    POR QUE ESTAN AQUI. El tablero de Power BI necesita los umbrales para decir
+    "cumple" o "no cumple", y Power BI no lee YAML. La alternativa era teclearlos en
+    una medida DAX: dos copias del mismo umbral, y la del tablero podria mostrar
+    aprobado algo que el gate bloquea. Ese es el peor lugar posible para una
+    divergencia.
+
+    Esto SIGUE siendo copiar, no calcular: los valores salen de `config.yaml`, que es
+    la superficie declarativa del proyecto, y la unica transformacion es renombrar la
+    clave al nombre con el que el gate se imprime.
+    """
+    from crmlops.config import load_config
+
+    cfg = load_config()["gates"]
+    # Nombre del gate tal como lo imprime `crmlops.governance.gates`, para que el
+    # tablero y la consola hablen del mismo objeto.
+    mapa = {
+        "margen_sobre_baseline": ("min_margin_over_baseline", "min"),
+        "auc_test": ("min_auc_test", "min"),
+        "drop_oot": ("max_auc_drop_oot", "max"),
+        "brier_test": ("max_brier_test", "max"),
+        "ece_test": ("max_ece_test", "max"),
+        "hmda:disparate_impact": ("min_disparate_impact_ratio", "min"),
+    }
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "fuente": "config.yaml",
+        "umbrales": [
+            {"gate": gate, "clave_config": clave, "direccion": direccion, "valor": cfg[clave]}
+            for gate, (clave, direccion) in mapa.items()
+            if clave in cfg
+        ],
+    }
+
+
 PAYLOADS = {
     "resumen": build_resumen,
     "modelos": build_modelos,
@@ -241,6 +278,7 @@ PAYLOADS = {
     "equidad": build_equidad,
     "monitoreo": build_monitoreo,
     "causal": build_causal,
+    "umbrales": build_umbrales,
 }
 
 
@@ -305,7 +343,10 @@ def build_manifest(bundle: dict[str, dict], fuentes: dict[str, Fuente]) -> dict[
         "archivos": {
             nombre: {
                 "bytes": len(json.dumps(payload, ensure_ascii=False).encode("utf-8")),
-                "fuentes": sorted({f.ruta for f in fuentes.values()} & _fuentes_citadas(payload)),
+                # Todas las fuentes citadas, no solo las de exports/: `umbrales` sale de
+                # config.yaml, y filtrarlo contra la lista de exports lo mostraba sin
+                # procedencia. Un payload sin fuente visible parece inventado.
+                "fuentes": sorted(_fuentes_citadas(payload)),
             }
             for nombre, payload in bundle.items()
         },

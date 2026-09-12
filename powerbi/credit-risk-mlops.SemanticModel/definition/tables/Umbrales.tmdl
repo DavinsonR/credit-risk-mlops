@@ -1,0 +1,42 @@
+/// Umbrales de los gates. Fuente: exports/web/umbrales.json, generado desde config.yaml
+///
+/// NINGUN UMBRAL SE ESCRIBE EN UNA MEDIDA DAX. Si el tablero tuviera su propia copia,
+/// podria mostrar "cumple" sobre algo que el gate bloquea, y ese es el peor lugar
+/// posible para una divergencia: el tablero es lo que alguien mira en una reunion, no
+/// la consola.
+///
+/// La columna `clave_config` existe para que un revisor pueda ir del tablero a la
+/// linea de `config.yaml` donde esta escrita la derivacion del umbral.
+table Umbrales
+
+	column gate
+		dataType: string
+		sourceColumn: gate
+		summarizeBy: none
+
+	column clave_config
+		dataType: string
+		sourceColumn: clave_config
+		summarizeBy: none
+
+	/// "min" = el valor tiene que ser mayor o igual. "max" = menor o igual.
+	column direccion
+		dataType: string
+		sourceColumn: direccion
+		summarizeBy: none
+
+	column valor
+		dataType: double
+		sourceColumn: valor
+		formatString: 0.0000
+		summarizeBy: none
+
+	partition Umbrales = m
+		mode: import
+		source =
+				let
+					crudo = Json.Document(File.Contents(RutaRepo & "\exports\web\umbrales.json")),
+					lista = crudo[umbrales],
+					tabla = Table.FromRecords(lista)
+				in
+					tabla

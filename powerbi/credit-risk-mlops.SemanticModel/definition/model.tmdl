@@ -1,0 +1,36 @@
+model Model
+	culture: es-CO
+	defaultPowerBIDataSourceVersion: powerBI_V3
+	sourceQueryCulture: es-CO
+	dataAccessOptions
+		legacyRedirects
+		returnErrorValuesAsNull
+
+/// NO HAY RELACIONES entre las tablas de hechos, y es deliberado.
+///
+/// `Modelos`, `Decision`, `EquidadRaza`, `EquidadDelta`, `Estres` y `ScorecardPuntos`
+/// son resultados de analisis distintos sobre poblaciones distintas: el modelo A sobre
+/// SBA, el modelo B sobre HMDA, el estres sobre cohortes que no se entrenaron. Unirlas
+/// con una dimension comun inventaria una relacion que no existe en el dominio y
+/// permitiria cruces sin sentido --el disparate impact de HMDA filtrado por el corte de
+/// decision de SBA, por ejemplo--.
+///
+/// `Config` y `Umbrales` son tablas de una y seis filas que las medidas leen con
+/// `SELECTEDVALUE` y `CALCULATE(... FILTER(ALL(...)))`, sin relacion: son parametros del
+/// sistema, no dimensiones.
+///
+/// Cada pagina del informe es un analisis, no un cubo navegable. Un tablero que permite
+/// cruzar todo con todo invita a producir el cruce que no significa nada.
+
+ref table Config
+ref table Umbrales
+ref table Modelos
+ref table Decision
+ref table EquidadRaza
+ref table EquidadDelta
+ref table Estres
+ref table ScorecardPuntos
+ref table Medidas
+
+ref expression RutaRepo
+ref expression LeerExport

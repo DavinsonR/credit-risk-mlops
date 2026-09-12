@@ -1,0 +1,54 @@
+/// Una fila con la procedencia y la configuracion vigente.
+/// Fuente: exports/web/manifest.json y exports/web/modelos.json
+///
+/// POR QUE EXISTE. Todo lo que el tablero necesita saber "de sistema" --cual es el
+/// modelo de produccion, cual el baseline, con que vintage y con que huella de codigo
+/// se produjeron los numeros-- se lee de aqui y no se escribe en ninguna medida ni
+/// columna calculada. Si el proyecto promueve otro modelo, el tablero lo refleja al
+/// refrescar; no hay que editarlo.
+///
+/// Y la huella de codigo en pantalla no es decoracion: un validador que vea un numero
+/// en el tablero puede cruzarlo con `exports/metrics.json` y con el commit.
+table Config
+
+	column produccion
+		dataType: string
+		sourceColumn: produccion
+		summarizeBy: none
+
+	column baseline
+		dataType: string
+		sourceColumn: baseline
+		summarizeBy: none
+
+	column vintage
+		dataType: string
+		sourceColumn: vintage
+		summarizeBy: none
+
+	column config_fingerprint
+		dataType: string
+		sourceColumn: config_fingerprint
+		summarizeBy: none
+
+	column code_fingerprint
+		dataType: string
+		sourceColumn: code_fingerprint
+		summarizeBy: none
+
+	partition Config = m
+		mode: import
+		source =
+				let
+					modelos = Json.Document(File.Contents(RutaRepo & "\exports\web\modelos.json")),
+					manifest = Json.Document(File.Contents(RutaRepo & "\exports\web\manifest.json")),
+					fila = [
+						produccion = modelos[produccion],
+						baseline = modelos[baseline],
+						vintage = manifest[vintage],
+						config_fingerprint = manifest[config_fingerprint],
+						code_fingerprint = manifest[code_fingerprint]
+					],
+					tabla = Table.FromRecords({fila})
+				in
+					tabla

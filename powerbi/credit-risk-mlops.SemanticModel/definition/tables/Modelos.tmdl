@@ -1,0 +1,91 @@
+/// Comparacion de modelos. Fuente: exports/model_comparison.csv
+///
+/// El baseline (scorecard_woe) NO se filtra ni se esconde: el gate
+/// `margen_sobre_baseline` existe porque el retador tiene que ganarle, y un tablero
+/// que solo muestre el ganador oculta el unico criterio que decide la promocion.
+table Modelos
+
+	column modelo
+		dataType: string
+		sourceColumn: modelo
+		summarizeBy: none
+
+	column auc_train
+		dataType: double
+		sourceColumn: auc_train
+		formatString: 0.0000
+		summarizeBy: none
+
+	column auc_valid
+		dataType: double
+		sourceColumn: auc_valid
+		formatString: 0.0000
+		summarizeBy: none
+
+	column auc_test
+		dataType: double
+		sourceColumn: auc_test
+		formatString: 0.0000
+		summarizeBy: none
+
+	column gini_test
+		dataType: double
+		sourceColumn: gini_test
+		formatString: 0.0000
+		summarizeBy: none
+
+	column ks_test
+		dataType: double
+		sourceColumn: ks_test
+		formatString: 0.0000
+		summarizeBy: none
+
+	column brier_test
+		dataType: double
+		sourceColumn: brier_test
+		formatString: 0.0000
+		summarizeBy: none
+
+	column ece_test
+		dataType: double
+		sourceColumn: ece_test
+		formatString: 0.0000
+		summarizeBy: none
+
+	column drop_oot
+		dataType: double
+		sourceColumn: drop_oot
+		formatString: 0.0000
+		summarizeBy: none
+
+	column psi
+		dataType: double
+		sourceColumn: psi
+		formatString: 0.0000
+		summarizeBy: none
+
+	column psi_shape
+		dataType: double
+		sourceColumn: psi_shape
+		formatString: 0.0000
+		summarizeBy: none
+
+	column segundos
+		dataType: double
+		sourceColumn: segundos
+		formatString: 0.0
+		summarizeBy: none
+
+	/// Cual es el modelo de produccion NO se escribe aqui.
+	///
+	/// La primera version de este archivo tenia
+	/// `IF('Modelos'[modelo] = "lightgbm", ...)` con un comentario que decia "no
+	/// escrita a mano" justo encima. Es el defecto A2 de docs/AUDIT.md en otra capa:
+	/// dos listas paralelas que se desincronizan, y en este caso el tablero seguiria
+	/// marcando LightGBM como produccion despues de que el proyecto promoviera otro.
+	///
+	/// El nombre vive en la tabla `Config`, que lo lee de exports/web/modelos.json.
+	/// La marca se calcula con la medida `Es produccion`.
+	partition Modelos = m
+		mode: import
+		source = LeerExport("model_comparison.csv")

@@ -1,0 +1,23 @@
+/// Ruta del repositorio. Es el UNICO parametro que hay que ajustar al clonar.
+///
+/// Power BI no tiene concepto de "ruta relativa al archivo .pbip", asi que sin este
+/// parametro cada tabla llevaria una ruta absoluta incrustada y el archivo solo
+/// funcionaria en la maquina de quien lo creo. Con el, se cambia en un lugar.
+expression RutaRepo = "C:\Users\davin\Desktop\Claude\MachineLearning\credit-risk-mlops" meta [
+	IsParameterQuery = true,
+	Type = "Text",
+	IsParameterQueryRequired = true
+]
+
+/// Lector de CSV comun. Todos los exports se escriben con la misma convencion --UTF-8,
+/// coma, encabezado en la primera fila-- asi que se declara una vez.
+///
+/// `Csv.Document` con `QuoteStyle.Csv` respeta las comillas, que hacen falta desde que
+/// `scorecard_points.csv` trae etiquetas con el separador " | " adentro.
+expression LeerExport = (nombre as text) as table =>
+		let
+			ruta = RutaRepo & "\exports\" & nombre,
+			contenido = Csv.Document(File.Contents(ruta), [Delimiter = ",", Encoding = 65001, QuoteStyle = QuoteStyle.Csv]),
+			conEncabezado = Table.PromoteHeaders(contenido, [PromoteAllScalars = true])
+		in
+			conEncabezado

@@ -1,0 +1,94 @@
+/// Equidad del modelo de acceso por raza. Fuente: exports/hmda_fairness_race.csv
+///
+/// Las clases protegidas estan aqui para MEDIR, nunca para entrenar (ADR 0006). Este
+/// tablero es el unico lugar del proyecto donde aparecen, y aparece completo: los
+/// seis grupos, no los que quedan bien.
+table EquidadRaza
+
+	column grupo
+		dataType: string
+		sourceColumn: group
+		summarizeBy: none
+
+	column n
+		dataType: int64
+		sourceColumn: n
+		formatString: #,0
+		summarizeBy: sum
+
+	column tasa_aprobacion
+		dataType: double
+		sourceColumn: selection_rate
+		formatString: 0.0%
+		summarizeBy: none
+
+	column tasa_denegacion_real
+		dataType: double
+		sourceColumn: positive_rate
+		formatString: 0.0%
+		summarizeBy: none
+
+	column score_medio
+		dataType: double
+		sourceColumn: mean_score
+		formatString: 0.0000
+		summarizeBy: none
+
+	column tpr
+		dataType: double
+		sourceColumn: tpr
+		formatString: 0.0000
+		summarizeBy: none
+
+	column fpr
+		dataType: double
+		sourceColumn: fpr
+		formatString: 0.0000
+		summarizeBy: none
+
+	column ratio_calibracion
+		dataType: double
+		sourceColumn: calibration_ratio
+		formatString: 0.000
+		summarizeBy: none
+
+	partition EquidadRaza = m
+		mode: import
+		source = LeerExport("hmda_fairness_race.csv")
+
+/// Lo que el MODELO agrega sobre la disparidad que ya existia en los datos.
+/// Fuente: exports/hmda_fairness_delta.csv
+///
+/// Es la comparacion que importa y la que casi nadie hace: el modelo reproduce la
+/// disparidad historica en vez de crearla (delta de raza -0.002). Sin esta tabla, el
+/// disparate impact de 0.764 se leeria como si el modelo lo hubiera inventado.
+table EquidadDelta
+
+	column dimension
+		dataType: string
+		sourceColumn: dimension
+		summarizeBy: none
+
+	column dir_observado
+		dataType: double
+		sourceColumn: dir_observado
+		formatString: 0.000
+		summarizeBy: none
+
+	column dir_modelo
+		dataType: double
+		sourceColumn: dir_modelo
+		formatString: 0.000
+		summarizeBy: none
+
+	/// delta > 0: el modelo es MENOS dispar que las decisiones historicas.
+	/// delta < 0: el modelo AMPLIFICA la disparidad existente.
+	column delta
+		dataType: double
+		sourceColumn: delta
+		formatString: +0.000;-0.000;0.000
+		summarizeBy: none
+
+	partition EquidadDelta = m
+		mode: import
+		source = LeerExport("hmda_fairness_delta.csv")

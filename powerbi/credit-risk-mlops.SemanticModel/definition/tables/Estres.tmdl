@@ -1,0 +1,126 @@
+/// El modelo aplicado fuera de su regimen, sin reentrenar.
+/// Fuente: exports/stress_test.csv
+///
+/// La fila que importa es `crisis_2005_2008`: AUC 0.5456 y ratio de calibracion 0.12,
+/// es decir que subestima el riesgo por un factor de ocho. Va en el tablero con el
+/// mismo tamano que el AUC de 0.7005, porque un AUC citado sin regimen es un numero de
+/// un solo escenario.
+///
+/// El ordenamiento (AUC) y el nivel (calibracion) se degradan de forma independiente:
+/// un modelo puede seguir ordenando bien y equivocarse por el doble en cuanta perdida
+/// espera. El expected loss se calcula con la probabilidad, no con el orden.
+table Estres
+
+	column cohorte
+		dataType: string
+		sourceColumn: cohorte
+		summarizeBy: none
+
+	column fy
+		dataType: string
+		sourceColumn: fy
+		summarizeBy: none
+
+	column n
+		dataType: int64
+		sourceColumn: n
+		formatString: #,0
+		summarizeBy: sum
+
+	column tasa_base
+		dataType: double
+		sourceColumn: tasa_base
+		formatString: 0.00%
+		summarizeBy: none
+
+	column auc
+		dataType: double
+		sourceColumn: auc
+		formatString: 0.0000
+		summarizeBy: none
+
+	column ks
+		dataType: double
+		sourceColumn: ks
+		formatString: 0.0000
+		summarizeBy: none
+
+	column brier
+		dataType: double
+		sourceColumn: brier
+		formatString: 0.0000
+		summarizeBy: none
+
+	column predicho
+		dataType: double
+		sourceColumn: predicho
+		formatString: 0.00%
+		summarizeBy: none
+
+	/// Predicho / observado. 1.0 es calibracion perfecta; 0.12 significa que el modelo
+	/// predice ocho veces menos riesgo del que hay.
+	column ratio_calibracion
+		dataType: double
+		sourceColumn: ratio_calibracion
+		formatString: 0.000
+		summarizeBy: none
+
+	partition Estres = m
+		mode: import
+		source = LeerExport("stress_test.csv")
+
+/// Scorecard interpretable: puntos por bin e Information Value.
+/// Fuente: exports/scorecard_points.csv
+///
+/// Es el artefacto que un validador abre para entender POR QUE el modelo decide lo que
+/// decide. Estuvo 35 filas corrupto con reprs de Python incrustados hasta la semana 10.
+table ScorecardPuntos
+
+	column variable
+		dataType: string
+		sourceColumn: Variable
+		summarizeBy: none
+
+	column bin_id
+		dataType: int64
+		sourceColumn: Bin id
+		summarizeBy: none
+
+	column bin
+		dataType: string
+		sourceColumn: Bin
+		summarizeBy: none
+
+	column conteo
+		dataType: int64
+		sourceColumn: Count
+		formatString: #,0
+		summarizeBy: sum
+
+	column tasa_evento
+		dataType: double
+		sourceColumn: Event rate
+		formatString: 0.00%
+		summarizeBy: none
+
+	column woe
+		dataType: double
+		sourceColumn: WoE
+		formatString: 0.0000
+		summarizeBy: none
+
+	column iv
+		dataType: double
+		sourceColumn: IV
+		formatString: 0.0000
+		summarizeBy: sum
+
+	column puntos
+		dataType: double
+		sourceColumn: Points
+		formatString: 0.0
+		summarizeBy: none
+
+	partition ScorecardPuntos = m
+		mode: import
+		source = LeerExport("scorecard_points.csv")

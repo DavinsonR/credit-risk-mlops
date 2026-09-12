@@ -43,6 +43,12 @@
       "fuentes": [
         "exports/causal_identification.json"
       ]
+    },
+    "umbrales": {
+      "bytes": 657,
+      "fuentes": [
+        "config.yaml"
+      ]
     }
   }
 }
