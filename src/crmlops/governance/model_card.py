@@ -6,7 +6,8 @@ entrenamiento -- metricas, vintage de datos, huella de configuracion -- asi que 
 refleja el modelo actual, o el gate de coherencia falla.
 
 Estructura basada en Model Cards for Model Reporting (Mitchell et al., 2019) y en
-lo que SR 11-7 espera de la documentacion de un modelo.
+lo que SR 26-2 espera de la documentacion de un modelo (reemplazo de SR 11-7,
+abril 2026).
 """
 
 from __future__ import annotations

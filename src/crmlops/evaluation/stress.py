@@ -1,6 +1,6 @@
 """Pruebas de estres sobre cohortes fuera del regimen de entrenamiento.
 
-SR 11-7 exige responder que le pasa al modelo cuando cambian las condiciones. En
+SR 26-2 exige responder que le pasa al modelo cuando cambian las condiciones. En
 este dataset la pregunta no es hipotetica: la tasa base del 7(a) fue 36.9% en
 FY2007 y 6.2% en FY2013, un factor de seis.
 
@@ -9,7 +9,7 @@ descartadas por el ADR 0003 no se tiran: se usan aqui, sin reentrenar, para medi
 cuanto de su desempeno sobrevive fuera de su mundo.
 
 Este modulo existe porque `stress_cohorts` estaba declarado en config.yaml con
-comentarios elaborados sobre SR 11-7 y ninguna linea de codigo que lo leyera
+comentarios elaborados sobre la guia y ninguna linea de codigo que lo leyera
 (docs/AUDIT.md, defecto B2). Config que aparenta funcionalidad es peor que
 config ausente: promete una capacidad que no existe.
 """

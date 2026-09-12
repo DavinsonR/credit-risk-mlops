@@ -11,7 +11,7 @@ una auditoría**.
 
 | Modelo | Fuente | Target | Ancla regulatoria |
 |---|---|---|---|
-| **A — Default / Pérdida** | SBA 7(a) FOIA · 1.96M préstamos, FY1991–2026 | Charge-off (PD) + severidad (LGD) | SR 11-7 |
+| **A — Default / Pérdida** | SBA 7(a) FOIA · 1.96M préstamos, FY1991–2026 | Charge-off (PD) + severidad (LGD) | SR 26-2 |
 | **B — Underwriting / Acceso** | HMDA · **62.4M solicitudes**, FY2020–2024 | Denegación | ECOA / Reg B |
 
 Los datos de HMDA se verifican contra los conteos oficiales del CFPB: no basta con
@@ -87,7 +87,7 @@ recalcula.
 
 ## Gates de promoción
 
-El modelo no se promueve si no pasa los ocho gates, y CI los ejecuta en cada PR:
+El modelo no se promueve si no pasa los diez gates, y CI los ejecuta en cada PR:
 
 | Gate | Qué garantiza |
 |---|---|
@@ -99,6 +99,17 @@ El modelo no se promueve si no pasa los ocho gates, y CI los ejecuta en cada PR:
 | `brier_test` | Le gana al predictor sin habilidad (constante = tasa base) |
 | `ece_test` | Predicho y observado coinciden dentro de 2 puntos porcentuales |
 | `hmda:disparate_impact` | Criterio de los cuatro quintos por clase protegida. **Hoy da 0.7639 y por eso el modelo de acceso no está promovido** |
+| `reporte:MODEL_CARD.md` | El model card describe las métricas publicadas, no unas viejas |
+| `reporte:VALIDATION_REPORT.md` | Idem para el reporte de validación |
+
+Los dos últimos existen porque **hicieron falta**: el model card estuvo congelado
+seis semanas, listando 7 gates y omitiendo justamente el que no cumple, y el reporte
+de validación imprimía `PASA` en una sección y "promoción bloqueada" en otra, del
+mismo gate. Un reporte rancio es peor que no tener reporte, porque se cita.
+
+El veredicto distingue dos cosas que antes se confundían: **`passed`** es "el build
+no se rompe" y **`threshold_met`** es "el modelo cumple". Para el gate de equidad no
+coinciden, y ahora se lee `NO CUMPLE (build ok: no se promueve)`.
 
 Cada umbral tiene su derivación escrita al lado en `config.yaml`. Ninguno se eligió
 porque el modelo lo pasaba — ver [docs/AUDIT.md](docs/AUDIT.md).

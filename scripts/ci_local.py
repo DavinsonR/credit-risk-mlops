@@ -149,14 +149,27 @@ def main() -> int:
         # sincronizar en cada etapa y en Windows aparecia un
         # `error: Failed to spawn: pytest` intermitente -- el ejecutable estaba a
         # medio escribir. Un chequeo pre-push que falla al azar se deja de usar.
-        run = ["uv", "run", "--no-sync"]
+        # TODO se invoca como `python -m <modulo>`, nunca por el ejecutable de la
+        # herramienta. Los `.exe` que uv genera en el venv nuevo son shims recien
+        # creados, y Windows Application Control los bloquea:
+        #
+        #   error: Failed to spawn: `pytest`
+        #     Caused by: An Application Control policy has blocked this file.
+        #                (os error 4551)
+        #
+        # Perdi varios intentos creyendo que era uv re-sincronizando o un problema de
+        # entornos, porque el error aparecia y desaparecia -- la politica decide por
+        # reputacion, asi que no es determinista. `python.exe` del venv si pasa (es
+        # copia del interprete que uv administra); los shims de consola no. Llamar al
+        # modulo evita el shim por completo.
+        run = ["uv", "run", "--no-sync", "python", "-m"]
         etapas: list[tuple[str, list[str]]] = [
             ("instalar dependencias", ["uv", "sync", *[f"--extra={e}" for e in EXTRAS]]),
             ("configurar el hook de autoria", ["git", "config", "core.hooksPath", "scripts/hooks"]),
             ("ruff check", [*run, "ruff", "check", "."]),
             ("ruff format", [*run, "ruff", "format", "--check", "."]),
             ("pytest", [*run, "pytest", "-m", "not data", "-q"]),
-            ("gates de promocion", [*run, "python", "-m", "crmlops.governance.gates"]),
+            ("gates de promocion", [*run, "crmlops.governance.gates"]),
         ]
         for etapa, cmd in etapas:
             if not _run(cmd, clon, env, etapa):

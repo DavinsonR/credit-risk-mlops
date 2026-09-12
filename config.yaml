@@ -88,7 +88,7 @@ splits:
   test:  { start: 2017, end: 2018 }   # 75.5% y 70.0% resuelto
 
 # Cohortes de estrés: NO se entrena con ellas. Se usan para responder la pregunta
-# que exige SR 11-7: si vuelve un 2007, ¿qué le pasa al modelo?
+# que exige SR 26-2: si vuelve un 2007, ¿qué le pasa al modelo?
 stress_cohorts:
   crisis_2005_2008: { start: 2005, end: 2008 }   # tasa base 24-37%
   covid_2020_2021:  { start: 2020, end: 2021 }   # régimen de emergencia

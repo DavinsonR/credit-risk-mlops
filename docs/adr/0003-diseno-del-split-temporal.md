@@ -58,7 +58,7 @@ resueltos**. FY2019 (60.9%) queda fuera.
 
 **Las cohortes descartadas no se tiran, se reasignan a estrés:**
 
-- `crisis_2005_2008` — responde la pregunta que exige SR 11-7: si vuelve un 2007,
+- `crisis_2005_2008` — responde la pregunta que exige SR 26-2: si vuelve un 2007,
   ¿qué le pasa al modelo? Nunca se entrena con ella.
 - `covid_2020_2021` — régimen de emergencia.
 - `reciente_2019` — análisis de sensibilidad a la censura.

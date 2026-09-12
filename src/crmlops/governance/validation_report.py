@@ -1,6 +1,6 @@
 """Reporte de validación de modelos, generado desde las corridas.
 
-Estructura tomada de SR 11-7 (Federal Reserve, *Guidance on Model Risk
+Estructura tomada de SR 26-2 (Fed/OCC/FDIC, *Revised Guidance on Model Risk
 Management*), que organiza la validación en tres bloques:
 
   1. Solidez conceptual — ¿el diseño tiene sentido para el problema?
@@ -78,10 +78,23 @@ def build(cfg: dict | None = None) -> str:
 > dejaban de coincidir sin que nada avisara. El gate `reportes_al_dia` ahora lo
 > verifica.
 
-Estructura según **SR 11-7** (Federal Reserve, *Guidance on Model Risk
-Management*). El mapeo al **Anexo IV del Reglamento de IA de la UE** está en la
-sección 4: la evaluación de solvencia crediticia figura como sistema de alto
-riesgo en el Anexo III, punto 5.b.
+Estructura según **SR 26-2** (Federal Reserve / OCC / FDIC, *Revised Guidance on
+Model Risk Management*, 17 de abril de 2026), que **reemplaza a SR 11-7** (2011) y
+a SR 21-8 (2021). Las tres secciones de validación de este reporte corresponden a
+las secciones **IV (Model Development and Model Use)**, **V (Model Validation and
+Monitoring)** y **VI (Governance and Controls)** de esa guía.
+
+> El proyecto se construyó contra SR 11-7 y la reancla a SR 26-2 **no cambió
+> ningún mecanismo**: los conceptos que sostienen este reporte —*effective
+> challenge*, *outcomes analysis* y *ongoing monitoring*— aparecen textualmente en
+> la guía nueva. Lo que SR 26-2 añade y aquí se declara es el énfasis en
+> **materialidad**: *"Model purpose, together with model exposure, determines model
+> materiality"*. Este modelo no está en producción y su exposición es nula, así que
+> su materialidad es la de un ejercicio de referencia.
+
+El mapeo al **Anexo IV del Reglamento de IA de la UE** está en la sección 4: la
+evaluación de solvencia crediticia figura como sistema de alto riesgo en el Anexo
+III, punto 5.b.
 
 ## Modelos en alcance
 
