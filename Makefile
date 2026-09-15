@@ -103,7 +103,9 @@ ci-local:  ## Corre lo que corre CI, en un clon limpio del HEAD y sin setup
 	$(UV) run python scripts/ci_local.py
 
 test:  ## pytest (excluye tests que requieren datos adquiridos)
-	$(UV) run pytest -m "not data"
+	@# python -m pytest, no pytest: en Windows los shims .exe del venv los bloquea
+	@# Application Control de forma intermitente. Ver scripts/ci_local.py.
+	$(UV) run python -m pytest -m "not data"
 
 clean:  ## Borra artefactos locales (no borra data/raw)
 	rm -rf .pytest_cache .ruff_cache htmlcov .coverage

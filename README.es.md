@@ -157,6 +157,15 @@ Paso a paso completo, extras opcionales y problemas conocidos:
   distintos. La distinción importa en un proyecto que vende auditabilidad, así que
   queda escrita.
 
+## Lo que falta
+
+El alcance de las diez semanas está cerrado. Lo que queda está escrito y priorizado
+por cuánto cambia el resultado, no por cuándo apareció —
+**[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
+descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
+Power BI que necesita Desktop, y cinco párrafos deliberadamente vacíos en la bitácora
+que solo su autor puede llenar.
+
 ## Licencia
 
 MIT (código). Los datos fuente conservan sus propias licencias — ver

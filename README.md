@@ -174,6 +174,14 @@ Step-by-step for every level, optional extras and known problems:
   bytes. The distinction matters in a project that sells auditability, so it is
   written down.
 
+## What is missing
+
+The ten-week scope is closed. What remains is written down and prioritised by how
+much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**.
+Four of the eleven items are not code: a repository description, a GitHub bio that
+contradicts this one, a Power BI report layout that needs Desktop, and five
+deliberately empty paragraphs in the engineering log that only their author can fill.
+
 ## License
 
 MIT (code). Source data keeps its own licensing — see

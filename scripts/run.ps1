@@ -117,7 +117,12 @@ $Tasks = [ordered]@{
             Invoke-Step "ruff format" { uv run ruff format --check . }
         }
     }
-    "test"         = @{ desc = "pytest"; cmd = { uv run pytest -m "not data" -q } }
+    # `python -m pytest` y no `pytest`: Windows Application Control bloquea de forma
+    # intermitente los shims .exe que uv genera en el venv, con
+    # "An Application Control policy has blocked this file (os error 4551)". Decide
+    # por reputacion, asi que aparece y desaparece. Llamar al modulo evita el shim.
+    # Es el mismo arreglo que ya lleva scripts/ci_local.py.
+    "test"         = @{ desc = "pytest"; cmd = { uv run python -m pytest -m "not data" -q } }
     # Reproduce las condiciones de CI en un clon limpio, sin setup y con solo los
     # extras de ci.yml. Existe porque seis veces un cambio paso aqui y fallo alla.
     "ci-local"     = @{ desc = "Corre lo que corre CI, en un clon limpio del HEAD"; cmd = { uv run python scripts/ci_local.py } }
