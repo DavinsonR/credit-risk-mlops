@@ -221,7 +221,7 @@ be audited without access to the sources. It is why CI downloads nothing.
 
 **Or just score a loan:** the production ONNX artifact runs in the browser, with no
 server and nothing leaving the page —
-[davirsonnovoa.com/credit-risk-demo](https://davirsonnovoa.com/credit-risk-demo/index.html?lang=en).
+[proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=en).
 Set business age to `Change of Ownership` to watch defect row 11's cousin in action:
 the category is not in the contract, so it scores as unknown and the model answers
 with the same confidence.

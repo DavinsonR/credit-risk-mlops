@@ -203,7 +203,7 @@ se puede auditar sin acceso a las fuentes. Es la razón por la que CI no descarg
 
 **O simplemente puntúa un préstamo:** el artefacto ONNX de producción corre en el
 navegador, sin servidor y sin que nada salga de la página —
-[davirsonnovoa.com/credit-risk-demo](https://davirsonnovoa.com/credit-risk-demo/index.html?lang=es).
+[proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=es).
 Pon la antigüedad en `Change of Ownership` para ver el defecto en vivo: la categoría
 no está en el contrato, se codifica como desconocida y el modelo responde con el
 mismo aplomo.
