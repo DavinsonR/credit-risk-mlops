@@ -33,8 +33,9 @@ alguien. Cada fila enlaza al artefacto que lo prueba.
 | 10 | `MODEL_CARD.md` listaba **7 gates de 8**: su generador nunca llamaba al de equidad, el único que el modelo no cumple. Y `VALIDATION_REPORT.md` imprimía `PASA` para ese gate en §3.1 mientras §5 decía "promoción bloqueada" | La causa era mía: un booleano significaba dos cosas. Ahora `passed` ≠ `threshold_met` |
 | 11 | Tres módulos definían su muestra de análisis con `glob("*.parquet")`. **El sistema de archivos decidía qué significaba "62.4M solicitudes".** Descargar tres años más para el estudio de evento habría movido en silencio la disparidad observada, el benchmark de backends y ese encabezado — y ningún test habría fallado, porque todos leen el mismo directorio que el código | Encontrado al ir a tropezarlo · la ventana sale de `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
 | 12 | La instrumentación del híbrido pasaba sus campos nuevos **solo en la rama de error** de `evaluate()`. En cada éxito —o sea, en todos los casos a analizar— llegaban vacíos, pandas leyó `NaN`, `.astype(bool)` lo hizo `False`, y el reporte publicó una conclusión sobre un campo que nunca se llenó | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · el análisis ahora se niega a concluir sin instrumentación |
+| 13 | La demo del navegador **nunca se había pulsado.** El campo de la garantía SBA traía `step="1000"` y un valor por defecto de `187500` —el 75% del préstamo, la cifra correcta— que no es múltiplo de 1000. El formulario nacía inválido y el botón no hacía nada. El modelo ONNX cargaba, la paridad estaba verificada, y lo único que nadie había hecho era pulsar el botón | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · ahora publicada y bilingüe |
 
-Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Cinco de
+Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Seis de
 estos **fallaban en silencio o reportaban éxito** — que es el modo de fallo que el
 proyecto entero persigue, encontrado en su propio tooling.
 
@@ -200,6 +201,13 @@ Esos tres **no descargan nada**: `exports/metrics.json` está commiteado y el ga
 integridad recomputa sus métricas desde las predicciones guardadas, así que el modelo
 se puede auditar sin acceso a las fuentes. Es la razón por la que CI no descarga nada.
 
+**O simplemente puntúa un préstamo:** el artefacto ONNX de producción corre en el
+navegador, sin servidor y sin que nada salga de la página —
+[davirsonnovoa.com/credit-risk-demo](https://davirsonnovoa.com/credit-risk-demo/index.html?lang=es).
+Pon la antigüedad en `Change of Ownership` para ver el defecto en vivo: la categoría
+no está en el contrato, se codifica como desconocida y el modelo responde con el
+mismo aplomo.
+
 Paso a paso completo, extras opcionales y problemas conocidos:
 **[docs/INSTALL.md](docs/INSTALL.md)**.
 
@@ -225,7 +233,7 @@ El alcance de las diez semanas está cerrado. Lo que queda está escrito y prior
 por cuánto cambia el resultado, no por cuándo apareció —
 **[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
 descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
-Power BI que necesita Desktop, y dieciocho párrafos deliberadamente vacíos en la bitácora
+Power BI que necesita Desktop, y diecinueve párrafos deliberadamente vacíos en la bitácora
 que solo su autor puede llenar.
 
 ## Licencia

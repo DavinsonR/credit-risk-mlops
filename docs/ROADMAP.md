@@ -1,11 +1,11 @@
 # Lo que falta
 
-Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 212 tests,
-10 gates, 14 ADRs, y el proyecto ya está enlazado desde el perfil y el portafolio.
-**Nada de esta lista bloquea mostrarlo.**
+Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 222 tests,
+10 gates, 14 ADRs, y el proyecto tiene su propia página en el portafolio con la demo
+corriendo en el navegador. **Nada de esta lista bloquea mostrarlo.**
 
 El orden no es cronológico: es por cuánto cambia el resultado. Cada entrada dice quién
-puede hacerla, porque cuatro de ellas no dependen del código.
+puede hacerla, porque cuatro de las seis que quedan no dependen del código.
 
 ## Cerrado en la semana 11
 
@@ -23,9 +23,21 @@ proyecto venía citando:
   despreciable en magnitud.
 - **La instrumentación del híbrido.** Cero cambios de camino: la hipótesis del ADR
   0009 era mía y era falsa.
+- **La demo WASM, publicada y bilingüe**, en
+  [davirsonnovoa.com/credit-risk-demo](https://davirsonnovoa.com/credit-risk-demo/index.html).
+  Estaba construida y nunca se había pulsado: el valor por defecto de la garantía no
+  era múltiplo de su propio `step`, así que el formulario nacía inválido y el botón
+  no hacía nada.
+- **Página propia en el portafolio**, con el acantilado de vocabulario, la curva de
+  decisión, el gate bloqueando y el estudio de evento. Ningún número se teclea: la
+  página lee el mismo bundle que el repositorio verifica.
 
-Y dejaron dos defectos en la bitácora: la muestra de análisis la definía el sistema de
-archivos, y el manifiesto de procedencia se sobrescribía en vez de fusionarse.
+Y dejaron tres defectos en la bitácora: la muestra de análisis la definía el sistema de
+archivos, el manifiesto de procedencia se sobrescribía en vez de fusionarse, y la demo
+del navegador nunca se había pulsado.
+
+**De los once puntos originales quedan seis, y cuatro de ellos solo los puedes hacer
+tú.** Los dos míos que faltan dependen de una clave gratuita y de Power BI Desktop.
 
 ---
 
@@ -64,7 +76,7 @@ código con un comentario para que se vea que es una decisión pendiente y no un
 
 ---
 
-## Después — completan lo que ya está a medias
+## Después — lo que queda a medias
 
 ### 4. El informe de Power BI
 **Quién:** solo Davirson (hace falta Power BI Desktop) · **Esfuerzo:** medio día
@@ -79,44 +91,11 @@ Es la capacidad que el portafolio ya reclama con TMDL y DAX, y aquí está a med
 Abrir `credit-risk-mlops.pbip`, ajustar el parámetro `RutaRepo`, refrescar y armar las
 páginas.
 
-### 5. Página propia en el portafolio
-**Quién:** yo, leyendo primero `DESIGN.md` · **Esfuerzo:** medio día
-
-Hoy el proyecto es el bloque destacado de la portada y enlaza al repositorio. Le falta
-una página como la que tienen trading-sim y powerbi, donde quepan los gráficos que
-ninguna tabla de Markdown puede dar:
-
-- **El acantilado de vocabulario** — 0% en FY2015, 48.5% en FY2019, 84% hoy. Es el más
-  persuasivo de todos y sus datos ya están en `exports/drift.json`. El pie que lo remata:
-  el serving devuelve HTTP 200 mientras tanto.
-- **La curva de decisión en dólares**, con la pérdida evitada y el volumen sacrificado en
-  el mismo eje, más la bandera `at_boundary` que evita vender un óptimo que está en el
-  borde de la grilla.
-- **El gate de equidad bloqueando** su propio modelo.
-- **La tabla de madurez pareja**, 2.8x ingenuo contra 2.3x honesto.
-
-No lo hice a ciegas a propósito: el sitio tiene un sistema visual con opiniones fuertes y
-una página fuera de estilo resta en vez de sumar.
-
-### 6. La demo WASM está construida y apagada
-**Quién:** yo · **Esfuerzo:** medio día
-
-`serving/web/` ya tiene el modelo en ONNX de 1,9 MB y la página que lo corre en el
-navegador con `onnxruntime-web`. **Nunca se publicó.** Es un modelo de crédito real
-puntuando en el navegador del reclutador, sin backend y sin cold start.
-
-Y trae una trampa que vale más que la demo: `Change of Ownership` no está en
-`contract.json`, así que se codifica como desconocido y el modelo responde igual de
-seguro. El ADR 0011 en vivo, en veinte segundos.
-
-Falta decidir dónde vive —subdirectorio del sitio actual o un despliegue aparte— y
-verificar que el `wasmPaths` funcione desde esa ruta, que ya dio problemas una vez.
-
 ---
 
 ## Abierto — trabajo de verdad, no acabados
 
-### 7. Los brazos de Groq y Gemini
+### 5. Los brazos de Groq y Gemini
 **Quién:** Davirson pone las claves, yo corro el harness · **Esfuerzo:** 10 minutos suyos
 
 Tiers gratuitos sin tarjeta en `console.groq.com` y `aistudio.google.com`, formato en
@@ -126,10 +105,10 @@ Vale por una razón concreta: la segunda revisión del ADR 0009 concluyó que **
 consistencia de un LLM local no es reproducible entre máquinas**. Dos modelos hospedados
 pondrían a prueba si eso es de la inferencia local o del problema.
 
-### 8. Los `_(escribir: ...)_` de NOTES.md
+### 6. Los `_(escribir: ...)_` de NOTES.md
 **Quién:** solo Davirson · **Esfuerzo:** dos horas
 
-Dieciocho huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
+Diecinueve huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
 algo. **Están vacíos a propósito**: son lo que hay que poder defender en una entrevista, y
 escritos por otro no sirven para eso.
 

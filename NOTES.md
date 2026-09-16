@@ -1348,7 +1348,51 @@ prohíbe mapearla a una, para que nadie suba la cobertura inventando el dato.
 
 _(escribir: cuándo un argumento cualitativo correcto conduce a la decisión equivocada)_
 
+### La demo estaba construida y nunca se había pulsado
+
+El punto 6 del ROADMAP decía que `serving/web/` tenía el modelo en ONNX y la página que
+lo corre, y que nunca se había publicado. Al abrirla para publicarla, el botón no hacía
+nada.
+
+El campo de la garantía SBA traía `step="1000"` y un valor por defecto de `187500` —el
+75% del préstamo, que es el porcentaje estándar del 7(a) y por tanto la cifra
+correcta—. 187.500 no es múltiplo de 1.000, así que **el formulario nacía inválido** y
+el navegador se limitaba a mostrar su burbuja de validación.
+
+El modelo ONNX cargaba, la paridad numérica estaba verificada a 2,24e-7, el contrato se
+leía bien. Lo único que nadie había hecho era pulsar el botón.
+
+Ahora hay un test que replica las reglas de validación de HTML sobre los atributos del
+archivo y afirma lo único que hay que garantizar: **el estado inicial es enviable**.
+
+_(escribir: por qué lo que nadie ha ejercido no está probado, aunque todo lo que lo
+rodea sí lo esté)_
+
+### Y hablaba un solo idioma
+
+La página del portafolio es bilingüe y en inglés enlazaba un formulario en español. El
+mercado objetivo del proyecto es empleo remoto en EE.UU.: la superficie que un
+reclutador toca primero estaba en el idioma equivocado. La demo ahora resuelve el
+idioma por `?lang=`, con dos tests que exigen que los dos diccionarios tengan la misma
+forma — el mismo invariante que el sitio ya aplica al suyo.
+
+Uno de esos tests nació roto, además: solo reconocía claves al principio de línea y el
+diccionario empaqueta varias por línea, así que daba por no traducidas dieciséis que sí
+lo estaban. Un test que falla por el formato del archivo no mide nada.
+
+### Lo que la página del portafolio no repite
+
+La página nueva no teclea un solo número: lee el mismo bundle `exports/web/` que el
+repositorio verifica contra sus fuentes. Incluido el umbral del gate de equidad, que se
+busca por nombre en vez de escribirse — dos copias del mismo umbral, una en el gate y
+otra en el escaparate, es exactamente cómo se termina mostrando aprobado lo que el
+control bloquea.
+
+Y la CSP del sitio no se aflojó para que cupiera la demo: la regla general la excluye
+por ruta y la demo lleva la suya, con los orígenes nombrados uno por uno y el runtime
+atado a un hash `integrity`. Aflojar la política de todas las páginas para una sola era
+el trato que no convenía.
+
 ### Pendiente al cierre de la semana 11
 - El layout del informe de Power BI (necesita Desktop).
 - Los brazos de Groq y Gemini (faltan las claves gratuitas).
-- Página propia del proyecto en el portafolio y la demo WASM publicada.

@@ -53,13 +53,19 @@
   .status { font-size: 0.82rem; color: var(--muted); margin-bottom: 14px; }
   .warn { border-left: 3px solid var(--d); padding: 10px 12px; margin-top: 20px;
           background: var(--card); font-size: 0.83rem; border-radius: 0 6px 6px 0; }
+  .lang { display:flex; gap:10px; justify-content:flex-end; margin-bottom:6px;
+          font-size:0.8rem; }
+  .lang a { color: var(--muted); text-decoration:none; }
+  .lang a[aria-current] { color: var(--fg); font-weight:600;
+          text-decoration:underline; text-underline-offset:3px; }
   code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.85em; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Scoring de riesgo crediticio — SBA 7(a)</h1>
-  <p class="sub">
+  <div class="lang" id="lang"></div>
+  <h1 data-i18n="title">Scoring de riesgo crediticio — SBA 7(a)</h1>
+  <p class="sub" data-i18n-html="sub">
     El modelo corre <strong>en tu navegador</strong>. Ningún dato sale de esta página.
   </p>
 
@@ -68,36 +74,43 @@
       <div class="status" id="status">Cargando modelo…</div>
       <form id="form">
         <fieldset>
-          <legend>Préstamo</legend>
+          <legend data-i18n="legendLoan">Préstamo</legend>
           <div class="row">
-            <div><label for="gross">Monto aprobado (USD)</label>
-              <input type="number" id="gross" value="250000" min="1000" step="1000" /></div>
-            <div><label for="guar">Garantía SBA (USD)</label>
-              <input type="number" id="guar" value="187500" min="0" step="1000" /></div>
+            <!-- step="any" y no step="1000": con el paso de mil, el valor por
+                 defecto de la garantía (187.500 = 75% de 250.000, que es el
+                 porcentaje estándar del 7(a)) NO era múltiplo del paso, así que el
+                 formulario nacía inválido y el botón no hacía nada. La demo estaba
+                 construida y nunca se había pulsado. Un monto en dólares no tiene
+                 por qué caer en una rejilla; el límite que sí importa --garantía <=
+                 monto-- se valida abajo, con mensaje. -->
+            <div><label for="gross" data-i18n="lblGross">Monto aprobado (USD)</label>
+              <input type="number" id="gross" value="250000" min="1000" step="any" /></div>
+            <div><label for="guar" data-i18n="lblGuar">Garantía SBA (USD)</label>
+              <input type="number" id="guar" value="187500" min="0" step="any" /></div>
           </div>
           <div class="row" style="margin-top:10px">
-            <div><label for="rate">Tasa inicial (%)</label>
+            <div><label for="rate" data-i18n="lblRate">Tasa inicial (%)</label>
               <input type="number" id="rate" value="8.5" min="0" max="30" step="0.25" /></div>
-            <div><label for="jobs">Empleos sostenidos</label>
+            <div><label for="jobs" data-i18n="lblJobs">Empleos sostenidos</label>
               <input type="number" id="jobs" value="6" min="0" step="1" /></div>
           </div>
         </fieldset>
 
         <fieldset>
-          <legend>Negocio</legend>
+          <legend data-i18n="legendBiz">Negocio</legend>
           <div class="row">
-            <div><label for="naics">Sector NAICS</label>
+            <div><label for="naics" data-i18n="lblNaics">Sector NAICS</label>
               <select id="naics">
-                <option value="72">72 — Alojamiento y comida</option>
-                <option value="23">23 — Construcción</option>
-                <option value="44">44 — Comercio minorista</option>
-                <option value="54">54 — Servicios profesionales</option>
-                <option value="62">62 — Salud</option>
-                <option value="81">81 — Otros servicios</option>
-                <option value="31">31 — Manufactura</option>
-                <option value="48">48 — Transporte</option>
+                <option value="72" data-i18n="naics72">72 — Alojamiento y comida</option>
+                <option value="23" data-i18n="naics23">23 — Construcción</option>
+                <option value="44" data-i18n="naics44">44 — Comercio minorista</option>
+                <option value="54" data-i18n="naics54">54 — Servicios profesionales</option>
+                <option value="62" data-i18n="naics62">62 — Salud</option>
+                <option value="81" data-i18n="naics81">81 — Otros servicios</option>
+                <option value="31" data-i18n="naics31">31 — Manufactura</option>
+                <option value="48" data-i18n="naics48">48 — Transporte</option>
               </select></div>
-            <div><label for="age">Antigüedad</label>
+            <div><label for="age" data-i18n="lblAge">Antigüedad</label>
               <select id="age">
                 <option>Existing or more than 2 years old</option>
                 <option>Existing, 5 or more years</option>
@@ -107,20 +120,20 @@
               </select></div>
           </div>
           <div class="row" style="margin-top:10px">
-            <div><label for="state">Estado</label>
+            <div><label for="state" data-i18n="lblState">Estado</label>
               <select id="state">
                 <option>TX</option><option>CA</option><option>FL</option><option>NY</option>
                 <option>GA</option><option>IL</option><option>OH</option><option>WY</option>
               </select></div>
-            <div><label for="type">Tipo</label>
+            <div><label for="type" data-i18n="lblType">Tipo</label>
               <select id="type">
                 <option>CORPORATION</option><option>INDIVIDUAL</option><option>PARTNERSHIP</option>
               </select></div>
           </div>
           <div class="row" style="margin-top:10px">
-            <div><label for="coll">Con colateral</label>
-              <select id="coll"><option value="Y">Sí</option><option value="N">No</option></select></div>
-            <div><label for="method">Método de procesamiento</label>
+            <div><label for="coll" data-i18n="lblColl">Con colateral</label>
+              <select id="coll"><option value="Y" data-i18n="yes">Sí</option><option value="N" data-i18n="no">No</option></select></div>
+            <div><label for="method" data-i18n="lblMethod">Método de procesamiento</label>
               <select id="method">
                 <option>Preferred Lenders Program</option>
                 <option>SBA Express Program</option>
@@ -130,22 +143,22 @@
           </div>
         </fieldset>
 
-        <button type="submit" id="btn" disabled>Calcular riesgo</button>
+        <button type="submit" id="btn" data-i18n="btn" disabled>Calcular riesgo</button>
       </form>
     </div>
 
     <div class="card" id="result" hidden>
-      <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)">Banda</div>
+      <div style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.06em;color:var(--muted)" data-i18n="resBand">Banda</div>
       <div class="band" id="band">—</div>
       <div style="color:var(--muted);font-size:0.86rem" id="bandLabel"></div>
       <div class="pd" id="pd">—</div>
-      <div style="color:var(--muted);font-size:0.82rem">probabilidad de charge-off</div>
+      <div style="color:var(--muted);font-size:0.82rem" data-i18n="resPd">probabilidad de charge-off</div>
       <dl>
-        <dt>Pérdida esperada</dt><dd id="el">—</dd>
-        <dt>Absorbe la SBA</dt><dd id="elSba">—</dd>
-        <dt>Absorbe el banco</dt><dd id="elLender">—</dd>
+        <dt data-i18n="resEL">Pérdida esperada</dt><dd id="el">—</dd>
+        <dt data-i18n="resSBA">Absorbe la SBA</dt><dd id="elSba">—</dd>
+        <dt data-i18n="resBank">Absorbe el banco</dt><dd id="elLender">—</dd>
       </dl>
-      <div class="note">
+      <div class="note" data-i18n-html="resNote">
         La SBA garantiza parte del préstamo, así que el contribuyente y el banco
         <strong>no pierden lo mismo</strong>. El margen de equilibrio del banco es
         1.05% contra 3.91% bruto.
@@ -153,7 +166,7 @@
     </div>
   </div>
 
-  <div class="warn">
+  <div class="warn" data-i18n-html="warn">
     <strong>No es una decisión automática de crédito.</strong> Es una entrada a una
     decisión humana. El modelo se entrenó sobre FY2011-2015 y <strong>no está validado
     para regímenes de crisis</strong>: en un escenario tipo 2007 su AUC cae a 0.55 y
@@ -163,7 +176,16 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.19.2/ort.min.js"></script>
+<!-- integrity + crossorigin: sin ellos, un CDN comprometido puede sustituir el
+     runtime que puntua el credito y la pagina lo ejecuta sin chistar. En un
+     proyecto cuyo argumento es el gobierno de modelos, cargar 434 KB de codigo de
+     terceros sin verificar el hash era la contradiccion mas barata de arreglar.
+     El .wasm que el runtime descarga despues no lleva SRI --lo pide el propio ort,
+     no una etiqueta-- y eso queda dicho en lugar de disimulado. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/onnxruntime-web/1.19.2/ort.min.js"
+        integrity="sha384-4uQjzVxVRlLf2zq2sqRNKh3IzetqQzu15fI6xgLQzhXYGJMtTZc/fvdszanED0Zp"
+        crossorigin="anonymous"
+        referrerpolicy="no-referrer"></script>
 <script>
 const $ = (id) => document.getElementById(id);
 let session = null, contract = null;
@@ -216,9 +238,89 @@ function calibrate(p) {
   return 1 / (1 + Math.exp(-logit));
 }
 
-const BANDS = [[0.03,"A","riesgo muy bajo"],[0.06,"B","riesgo bajo"],
-               [0.12,"C","riesgo moderado"],[0.20,"D","riesgo alto"],
-               [1.01,"E","riesgo muy alto"]];
+// Umbrales de banda: solo el corte y la letra. La etiqueta se resuelve por
+// idioma, para que la banda no viva en dos sitios.
+const BANDS = [[0.03,"A"],[0.06,"B"],[0.12,"C"],[0.20,"D"],[1.01,"E"]];
+
+// El sitio que enlaza esta demo es bilingue y la demo no lo era: la pagina en
+// ingles mandaba a un formulario en espanol, y el mercado objetivo del proyecto es
+// empleo remoto en EE.UU. Se resuelve por ?lang=, con el idioma del navegador como
+// valor por defecto para no imponer ninguno.
+const I18N = {
+  es: {
+    title: "Scoring de riesgo crediticio — SBA 7(a)",
+    sub: "El modelo corre <strong>en tu navegador</strong>. Ningún dato sale de esta página.",
+    loading: "Cargando modelo…",
+    loaded: (n, p) => `Modelo cargado · ${n} variables · paridad verificada ${p}`,
+    loadError: "No se pudo cargar el modelo: ",
+    guarError: "La garantía SBA no puede superar el monto aprobado: el modelo usa el cociente entre ambos.",
+    legendLoan: "Préstamo", legendBiz: "Negocio",
+    lblGross: "Monto aprobado (USD)", lblGuar: "Garantía SBA (USD)",
+    lblRate: "Tasa inicial (%)", lblJobs: "Empleos sostenidos",
+    lblNaics: "Sector NAICS", lblAge: "Antigüedad", lblState: "Estado",
+    lblType: "Tipo", lblColl: "Con colateral", lblMethod: "Método de procesamiento",
+    naics72: "72 — Alojamiento y comida", naics23: "23 — Construcción",
+    naics44: "44 — Comercio minorista", naics54: "54 — Servicios profesionales",
+    naics62: "62 — Salud", naics81: "81 — Otros servicios",
+    naics31: "31 — Manufactura", naics48: "48 — Transporte",
+    yes: "Sí", no: "No", btn: "Calcular riesgo",
+    resBand: "Banda", resPd: "probabilidad de charge-off",
+    resEL: "Pérdida esperada", resSBA: "Absorbe la SBA", resBank: "Absorbe el banco",
+    resNote: "La SBA garantiza parte del préstamo, así que el contribuyente y el banco <strong>no pierden lo mismo</strong>. El margen de equilibrio del banco es 1.05% contra 3.91% bruto.",
+    warn: "<strong>No es una decisión automática de crédito.</strong> Es una entrada a una decisión humana. El modelo se entrenó sobre FY2011-2015 y <strong>no está validado para regímenes de crisis</strong>: en un escenario tipo 2007 su AUC cae a 0.55 y subestima el riesgo por un factor de ocho. HMDA muestra además que el crédito no se endurece de forma pareja entre grupos. Ver <code>reports/VALIDATION_REPORT.md</code>.",
+    bands: { A: "riesgo muy bajo", B: "riesgo bajo", C: "riesgo moderado", D: "riesgo alto", E: "riesgo muy alto" },
+  },
+  en: {
+    title: "Credit risk scoring — SBA 7(a)",
+    sub: "The model runs <strong>in your browser</strong>. No data leaves this page.",
+    loading: "Loading model…",
+    loaded: (n, p) => `Model loaded · ${n} features · parity verified ${p}`,
+    loadError: "Could not load the model: ",
+    guarError: "The SBA guarantee cannot exceed the approved amount: the model uses the ratio between them.",
+    legendLoan: "Loan", legendBiz: "Business",
+    lblGross: "Approved amount (USD)", lblGuar: "SBA guarantee (USD)",
+    lblRate: "Initial rate (%)", lblJobs: "Jobs supported",
+    lblNaics: "NAICS sector", lblAge: "Business age", lblState: "State",
+    lblType: "Entity type", lblColl: "Collateral", lblMethod: "Processing method",
+    naics72: "72 — Accommodation and food", naics23: "23 — Construction",
+    naics44: "44 — Retail trade", naics54: "54 — Professional services",
+    naics62: "62 — Health care", naics81: "81 — Other services",
+    naics31: "31 — Manufacturing", naics48: "48 — Transportation",
+    yes: "Yes", no: "No", btn: "Score the loan",
+    resBand: "Band", resPd: "probability of charge-off",
+    resEL: "Expected loss", resSBA: "Absorbed by the SBA", resBank: "Absorbed by the lender",
+    resNote: "The SBA guarantees part of the loan, so the taxpayer and the lender <strong>do not lose the same</strong>. The lender's break-even margin is 1.05% against 3.91% gross.",
+    warn: "<strong>This is not an automated credit decision.</strong> It is an input to a human one. The model was trained on FY2011-2015 and is <strong>not validated for crisis regimes</strong>: under a 2007-style scenario its AUC falls to 0.55 and it underestimates risk by a factor of eight. HMDA also shows that credit does not tighten evenly across groups. See <code>reports/VALIDATION_REPORT.md</code>.",
+    bands: { A: "very low risk", B: "low risk", C: "moderate risk", D: "high risk", E: "very high risk" },
+  },
+};
+
+const LANG = (() => {
+  const q = new URLSearchParams(location.search).get("lang");
+  if (q === "es" || q === "en") return q;
+  return (navigator.language || "es").toLowerCase().startsWith("en") ? "en" : "es";
+})();
+const T = I18N[LANG];
+
+function applyLanguage() {
+  document.documentElement.lang = LANG;
+  document.title = T.title;
+  for (const el of document.querySelectorAll("[data-i18n]")) {
+    const v = T[el.dataset.i18n];
+    if (v !== undefined) el.textContent = v;
+  }
+  for (const el of document.querySelectorAll("[data-i18n-html]")) {
+    const v = T[el.dataset.i18nHtml];
+    if (v !== undefined) el.innerHTML = v;
+  }
+  $("status").textContent = T.loading;
+  $("lang").innerHTML = ["es", "en"]
+    .map((l) => {
+      const here = l === LANG ? ' aria-current="true"' : "";
+      return `<a href="?lang=${l}"${here}>${l.toUpperCase()}</a>`;
+    })
+    .join("");
+}
 
 async function init() {
   try {
@@ -226,17 +328,30 @@ async function init() {
     session = await ort.InferenceSession.create("model.onnx", {
       executionProviders: ["wasm"],
     });
-    $("status").textContent =
-      `Modelo cargado · ${contract.feature_order.length} variables · ` +
-      `paridad verificada ${contract.parity.max_abs_diff.toExponential(2)}`;
+    $("status").textContent = T.loaded(
+      contract.feature_order.length,
+      contract.parity.max_abs_diff.toExponential(2),
+    );
     $("btn").disabled = false;
   } catch (err) {
-    $("status").textContent = "No se pudo cargar el modelo: " + err.message;
+    $("status").textContent = T.loadError + err.message;
   }
 }
 
 $("form").addEventListener("submit", async (e) => {
   e.preventDefault();
+
+  // La garantía no puede superar al monto: el modelo consume el cociente
+  // guarantee_pct, y por encima de 1 deja de significar nada. El navegador no
+  // puede expresar una restricción entre dos campos, así que va aquí.
+  const bruto = Number($("gross").value);
+  const gar = Number($("guar").value);
+  if (gar > bruto) {
+    $("status").textContent = T.guarError;
+    $("result").hidden = true;
+    return;
+  }
+
   const payload = {
     gross_approval: Number($("gross").value),
     sba_guaranteed: Number($("guar").value),
@@ -264,7 +379,8 @@ $("form").addEventListener("submit", async (e) => {
     if (t.dims.length === 2 && t.dims[1] >= 2) { raw = t.data[1]; break; }
   }
   const pd = calibrate(raw);
-  const [, letter, label] = BANDS.find(([t]) => pd < t);
+  const [, letter] = BANDS.find(([t]) => pd < t);
+  const label = T.bands[letter];
 
   const lgd = 0.735;  // severidad media observada en los charge-off del panel
   const el = pd * lgd * payload.gross_approval;
@@ -280,6 +396,7 @@ $("form").addEventListener("submit", async (e) => {
   $("result").hidden = false;
 });
 
+applyLanguage();
 init();
 </script>
 </body>

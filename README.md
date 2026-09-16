@@ -29,8 +29,9 @@ works. Each row links to the artifact that proves it.
 | 10 | `MODEL_CARD.md` listed **7 gates of 8** — its generator never called the fairness one, the only gate the model fails. And `VALIDATION_REPORT.md` printed `PASS` for that gate in §3.1 while §5 said "promotion blocked" | Root cause was mine: one boolean meant two things. Now `passed` ≠ `threshold_met` |
 | 11 | Three modules defined their analysis sample with `glob("*.parquet")`. **The filesystem decided what "62.4M applications" meant.** Downloading three more years for the event study would have silently moved the observed-disparity numbers, the backend benchmark and that headline — and no test would have failed, because every test reads the same directory the code does | Found by being about to trip it · the window now comes from `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
 | 12 | The hybrid-LLM instrumentation passed its new fields **only on the error branch** of `evaluate()`. On every success — i.e. every case being analysed — they arrived empty, pandas read `NaN`, `.astype(bool)` made it `False`, and the report printed a conclusion about a field that was never filled | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · the analysis now refuses to conclude without instrumentation |
+| 13 | The browser demo **had never been clicked.** The SBA-guarantee field carried `step="1000"` and a default of `187500` — 75% of the loan, the correct figure — which is not a multiple of 1000. The form was born invalid, so the button did nothing. The ONNX model loaded, parity was verified, and the one thing nobody had done was press the button | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · now live and bilingual |
 
-Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Five of these
+Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Six of these
 **failed silently or reported success** — which is the failure mode the whole project
 is built to hunt, found in its own tooling.
 
@@ -218,6 +219,13 @@ be audited without access to the sources. It is why CI downloads nothing.
 .\run ci-local   # runs what CI runs, in a clean clone, before you push
 ```
 
+**Or just score a loan:** the production ONNX artifact runs in the browser, with no
+server and nothing leaving the page —
+[davirsonnovoa.com/credit-risk-demo](https://davirsonnovoa.com/credit-risk-demo/index.html?lang=en).
+Set business age to `Change of Ownership` to watch defect row 11's cousin in action:
+the category is not in the contract, so it scores as unknown and the model answers
+with the same confidence.
+
 Step-by-step for every level, optional extras and known problems:
 **[docs/INSTALL.md](docs/INSTALL.md)**. On Linux/macOS every task is a `make` target.
 
@@ -241,7 +249,7 @@ Step-by-step for every level, optional extras and known problems:
 The ten-week scope is closed. What remains is written down and prioritised by how
 much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**.
 Four of the eleven items are not code: a repository description, a GitHub bio that
-contradicts this one, a Power BI report layout that needs Desktop, and eighteen
+contradicts this one, a Power BI report layout that needs Desktop, and nineteen
 deliberately empty paragraphs in the engineering log that only their author can fill.
 
 ## License
