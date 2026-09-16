@@ -23,7 +23,11 @@ lo tiene que dar alguien con Desktop instalado.
 
 ## Primer uso
 
-1. Abrir `credit-risk-mlops.pbip` en Power BI Desktop.
+**Procedimiento completo, con lo que hacer cuando algo falle:
+[docs/POWERBI.md](../docs/POWERBI.md).** Resumen:
+
+1. Abrir `credit-risk-mlops.pbip` en Power BI Desktop (hace falta activar antes la
+   característica de vista previa de proyectos `.pbip`).
 2. Ajustar el parámetro **`RutaRepo`** a la ruta local del repo. Es el único valor
    que depende de la máquina.
 3. Refrescar. Si un export falta, correr `run all` y `run web-exports` antes.

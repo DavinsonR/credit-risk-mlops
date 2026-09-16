@@ -1393,6 +1393,30 @@ por ruta y la demo lleva la suya, con los orígenes nombrados uno por uno y el r
 atado a un hash `integrity`. Aflojar la política de todas las páginas para una sola era
 el trato que no convenía.
 
+### Escribir el instructivo destapó los dos defectos que faltaban
+
+Los puntos 4 y 5 del ROADMAP no eran código: eran "explicarle a Davirson cómo hacerlo".
+Escribir las dos guías encontró dos cosas que ninguna corrida había tocado, porque
+nadie había intentado seguir las instrucciones.
+
+**`.env` no lo leía nadie.** `.env.example` decía "copiar a .env". El harness imprimía
+"claves en .env; ver .env.example". Y los proveedores hacen `os.environ.get(...)`, que
+solo ve variables de entorno reales. Crear el archivo y correr el harness dejaba Groq y
+Gemini en "no disponibles" — la misma salida que si el archivo no existiera. Ahora hay
+un cargador de treinta líneas sin dependencia nueva, y el aviso distingue tres
+situaciones que antes se leían igual: no hay archivo, hay archivo sin valor, hay clave y
+el proveedor falló.
+
+**El `.pbip` apuntaba a un artefacto que no existía.** Declaraba
+`credit-risk-mlops.Report` y solo se había escrito el modelo semántico. Power BI Desktop
+no abre un proyecto cuyo informe falta, así que la primera línea de la guía —"abrir el
+.pbip"— era inejecutable. Y el test del scaffold no lo veía porque comprobaba **una
+lista de archivos escrita a mano**, no lo que el propio `.pbip` declara. Un control que
+verifica su propia lista en vez de la del artefacto no verifica el artefacto.
+
+_(escribir: por qué escribir el instructivo encuentra cosas que correr el código no
+encuentra)_
+
 ### Pendiente al cierre de la semana 11
-- El layout del informe de Power BI (necesita Desktop).
-- Los brazos de Groq y Gemini (faltan las claves gratuitas).
+- El layout del informe de Power BI (necesita Desktop) — [docs/POWERBI.md](docs/POWERBI.md).
+- Los brazos de Groq y Gemini (faltan las claves) — [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md).

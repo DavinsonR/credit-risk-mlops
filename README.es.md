@@ -34,8 +34,10 @@ alguien. Cada fila enlaza al artefacto que lo prueba.
 | 11 | Tres módulos definían su muestra de análisis con `glob("*.parquet")`. **El sistema de archivos decidía qué significaba "62.4M solicitudes".** Descargar tres años más para el estudio de evento habría movido en silencio la disparidad observada, el benchmark de backends y ese encabezado — y ningún test habría fallado, porque todos leen el mismo directorio que el código | Encontrado al ir a tropezarlo · la ventana sale de `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
 | 12 | La instrumentación del híbrido pasaba sus campos nuevos **solo en la rama de error** de `evaluate()`. En cada éxito —o sea, en todos los casos a analizar— llegaban vacíos, pandas leyó `NaN`, `.astype(bool)` lo hizo `False`, y el reporte publicó una conclusión sobre un campo que nunca se llenó | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · el análisis ahora se niega a concluir sin instrumentación |
 | 13 | La demo del navegador **nunca se había pulsado.** El campo de la garantía SBA traía `step="1000"` y un valor por defecto de `187500` —el 75% del préstamo, la cifra correcta— que no es múltiplo de 1000. El formulario nacía inválido y el botón no hacía nada. El modelo ONNX cargaba, la paridad estaba verificada, y lo único que nadie había hecho era pulsar el botón | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · ahora publicada y bilingüe |
+| 14 | **Nadie leía `.env`.** `.env.example` decía "copiar a .env", el harness decía "claves en .env", y los proveedores hacían `os.environ.get(...)`, que solo ve variables de entorno reales. Seguir la instrucción oficial del repo dejaba Groq y Gemini en "no disponibles" — sin error y sin pista | Encontrado al escribir [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
+| 15 | El `.pbip` declaraba un artefacto de informe que **no existía**: solo se había escrito el modelo semántico. Power BI Desktop no abre un proyecto cuyo informe falta, así que la primera línea de la guía era inejecutable. El test del scaffold no lo veía porque comprobaba una lista de archivos escrita a mano, no lo que el propio `.pbip` declara | Encontrado al escribir [docs/POWERBI.md](docs/POWERBI.md) · el test ahora sigue la cadena de artefactos |
 
-Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Seis de
+Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Ocho de
 estos **fallaban en silencio o reportaban éxito** — que es el modo de fallo que el
 proyecto entero persigue, encontrado en su propio tooling.
 
@@ -209,7 +211,10 @@ no está en el contrato, se codifica como desconocida y el modelo responde con e
 mismo aplomo.
 
 Paso a paso completo, extras opcionales y problemas conocidos:
-**[docs/INSTALL.md](docs/INSTALL.md)**.
+**[docs/INSTALL.md](docs/INSTALL.md)**. Y al lado, dos procedimientos más:
+**[docs/POWERBI.md](docs/POWERBI.md)** (armar el informe) y
+**[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (encender los brazos de Groq y
+Gemini).
 
 ## Qué NO es
 
@@ -233,7 +238,7 @@ El alcance de las diez semanas está cerrado. Lo que queda está escrito y prior
 por cuánto cambia el resultado, no por cuándo apareció —
 **[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
 descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
-Power BI que necesita Desktop, y diecinueve párrafos deliberadamente vacíos en la bitácora
+Power BI que necesita Desktop, y veinte párrafos deliberadamente vacíos en la bitácora
 que solo su autor puede llenar.
 
 ## Licencia

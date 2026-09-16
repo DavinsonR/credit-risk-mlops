@@ -17,6 +17,7 @@ sin la segunda corrida no hay forma de saberlo.
 from __future__ import annotations
 
 import json
+import os
 import sys
 
 import pandas as pd
@@ -276,8 +277,20 @@ def main() -> int:
 
     faltantes = {"groq", "gemini"} - {p.name for p in providers}
     if faltantes:
+        # Distinguir "no hay archivo" de "hay archivo y la clave no sirve": son dos
+        # problemas distintos y antes los dos se leian igual.
+        from crmlops.config import repo_root
+
+        env = repo_root() / ".env"
         print(f"No disponibles: {', '.join(sorted(faltantes))}")
-        print("  (claves en .env; ver .env.example)")
+        if env.exists():
+            claves = {"groq": "GROQ_API_KEY", "gemini": "GEMINI_API_KEY"}
+            sin = [claves[n] for n in sorted(faltantes) if not os.environ.get(claves[n])]
+            print(
+                f"  .env existe. {'Sin valor: ' + ', '.join(sin) if sin else 'Claves cargadas pero el proveedor no respondio.'}"
+            )
+        else:
+            print(f"  No hay {env.name} en la raiz del repo. Ver docs/LLM_PROVIDERS.md")
 
     print("\nGenerando y evaluando...\n", flush=True)
     df = run(providers)

@@ -30,7 +30,15 @@ from dataclasses import dataclass
 
 import requests
 
+from crmlops.env import load as load_env
+
 TIMEOUT = 120
+
+# `.env` se vuelca al entorno AL IMPORTAR este modulo, que es el unico punto por el
+# que pasan los tres proveedores hospedados. Antes no lo leia nadie: el repo decia
+# "copiar a .env", el harness decia "claves en .env", y las claves nunca llegaban a
+# os.environ. Ver crmlops.env.
+load_env()
 
 
 @dataclass

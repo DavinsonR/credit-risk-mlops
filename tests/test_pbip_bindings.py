@@ -174,3 +174,52 @@ def test_ningun_nombre_de_modelo_esta_escrito_en_el_TMDL():
             assert prohibido not in cuerpo, (
                 f"{archivo.name} escribe {prohibido} a mano; usar Config[produccion]/[baseline]"
             )
+
+
+# --- la cadena de artefactos del .pbip resuelve ---
+
+
+def test_el_pbip_apunta_a_artefactos_que_existen():
+    """El `.pbip` declara sus artefactos por ruta, y esa ruta tiene que existir.
+
+    EL DEFECTO. El `.pbip` listaba `credit-risk-mlops.Report` y esa carpeta **no
+    estaba**: solo se habia escrito el modelo semantico. Power BI Desktop no puede
+    abrir un proyecto cuyo artefacto de informe no existe, asi que la primera
+    instruccion de la guia --"abrir el .pbip"-- era inejecutable.
+
+    `test_existe_el_scaffold_completo` no lo veia porque comprobaba una lista de
+    archivos escrita a mano, no lo que el propio `.pbip` declara. Un control que
+    verifica su propia lista en vez de la del artefacto no verifica el artefacto.
+    """
+    pbip = json.loads((PBIP / "credit-risk-mlops.pbip").read_text(encoding="utf-8"))
+    rutas = [
+        art[tipo]["path"]
+        for art in pbip["artifacts"]
+        for tipo in art
+        if isinstance(art[tipo], dict) and "path" in art[tipo]
+    ]
+    assert rutas, "el .pbip no declara ningun artefacto con ruta"
+    faltan = [r for r in rutas if not (PBIP / r).exists()]
+    assert not faltan, (
+        f"el .pbip apunta a artefactos inexistentes: {faltan}. "
+        "Power BI Desktop no abre el proyecto."
+    )
+
+
+def test_el_informe_referencia_al_modelo_semantico_por_ruta_relativa():
+    """Una ruta absoluta aqui ata el proyecto a una maquina.
+
+    Es el mismo motivo por el que existe el parametro `RutaRepo`: lo unico que puede
+    depender del equipo es ese parametro, y esta referencia no.
+    """
+    pbir = PBIP / "credit-risk-mlops.Report" / "definition.pbir"
+    ref = json.loads(pbir.read_text(encoding="utf-8"))["datasetReference"]
+    assert "byPath" in ref, "el informe deberia referenciar el modelo local, no uno remoto"
+    ruta = ref["byPath"]["path"]
+    assert not Path(ruta).is_absolute(), f"ruta absoluta en definition.pbir: {ruta}"
+    assert (pbir.parent / ruta).resolve().exists(), f"el modelo no esta en {ruta}"
+
+
+def test_el_informe_declara_su_tipo_en_platform():
+    p = json.loads((PBIP / "credit-risk-mlops.Report" / ".platform").read_text(encoding="utf-8"))
+    assert p["metadata"]["type"] == "Report"
