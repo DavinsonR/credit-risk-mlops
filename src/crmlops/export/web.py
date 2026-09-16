@@ -71,6 +71,8 @@ def cargar(raiz: Path | None = None) -> dict[str, Fuente]:
         "maturity.json",
         "retrain_decision.json",
         "causal_identification.json",
+        "event_study_hmda.json",
+        "business_age_harmonization.json",
     )
     fuentes = {}
     for n in nombres:
@@ -271,6 +273,77 @@ def build_umbrales(f: dict[str, Fuente]) -> dict[str, Any]:
     }
 
 
+def build_evento(f: dict[str, Fuente]) -> dict[str, Any]:
+    """El estudio de evento, reducido a lo que un sitio puede mostrar.
+
+    Se lleva los coeficientes completos porque la GRACIA del grafico es que los
+    puntos previos esten ahi: un estudio de evento sin sus periodos previos es una
+    linea que sube, y eso ya se sabia.
+    """
+    c = f.get("event_study_hmda")
+    if not c:
+        return {"schema_version": SCHEMA_VERSION}
+    d = c.datos
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "fuente": c.ruta,
+        "pregunta": d["pregunta"],
+        "ventana": d["ventana"],
+        "n_solicitudes": d["n_solicitudes"],
+        "umbral_economico_pp": d["umbral_economico_pp"],
+        "brecha_por_anio": [
+            {k: r[k] for k in ("anio", "brecha_pp", "ratio_4_5")} for r in d["regimen"]["por_anio"]
+        ],
+        "regimenes": {
+            "prepandemia_pp": d["regimen"]["brecha_prepandemia"],
+            "auge_pp": d["regimen"]["brecha_auge"],
+            "post_pp": d["regimen"]["brecha_post"],
+            "vs_auge_pp": d["regimen"]["ampliacion_vs_auge_pp"],
+            "vs_prepandemia_pp": d["regimen"]["ampliacion_vs_prepandemia_pp"],
+        },
+        "descomposicion": [
+            {k: x[k] for k in ("anio_final", "cambio_brecha_pp", "composicion_pp", "tasas_pp")}
+            for x in d["descomposicion"]
+        ],
+        "coeficientes": [
+            {k: c2[k] for k in ("anio", "gamma_pp", "se_pp", "ic95_lo", "ic95_hi")}
+            for c2 in d["estudio_evento"]["coeficientes"]
+        ],
+        "tendencias_paralelas": d["estudio_evento"]["tendencias_paralelas"],
+        "retencion_diferencial_pp": d["seleccion"]["retencion_diferencial_pp"],
+        "conclusion": d["conclusion"],
+    }
+
+
+def build_vocabulario(f: dict[str, Fuente]) -> dict[str, Any]:
+    """Costo y cobertura de armonizar `business_age`. El ADR 0011 en dos numeros."""
+    c = f.get("business_age_harmonization")
+    if not c:
+        return {"schema_version": SCHEMA_VERSION}
+    d = c.datos
+    return {
+        "schema_version": SCHEMA_VERSION,
+        "fuente": c.ruta,
+        "variable": d["variable"],
+        "costo_auc": d["costo"]["costo_auc"],
+        "auc_crudo": d["costo"]["auc_crudo"],
+        "auc_armonizado": d["costo"]["auc_armonizado"],
+        "cobertura": {
+            k: d["cobertura"][k]
+            for k in (
+                "fy_desde",
+                "fy_hasta",
+                "soportado_crudo",
+                "soportado_armonizado",
+                "recuperado_pp",
+                "sin_origen",
+            )
+        },
+        "sin_origen": d["sin_origen"],
+        "conclusion": d["conclusion"],
+    }
+
+
 PAYLOADS = {
     "resumen": build_resumen,
     "modelos": build_modelos,
@@ -278,6 +351,8 @@ PAYLOADS = {
     "equidad": build_equidad,
     "monitoreo": build_monitoreo,
     "causal": build_causal,
+    "evento": build_evento,
+    "vocabulario": build_vocabulario,
     "umbrales": build_umbrales,
 }
 
@@ -321,6 +396,20 @@ def check_coherence(bundle: dict[str, dict], fuentes: dict[str, Fuente]) -> list
         and eq["disparate_impact_ratio"] != h.datos["disparate_impact_ratio"]
     ):
         problemas.append("equidad: el disparate impact no coincide con su fuente")
+
+    ev = fuentes.get("event_study_hmda")
+    evb = bundle.get("evento", {})
+    if ev and "regimenes" in evb:
+        origen = ev.datos["regimen"]
+        if evb["regimenes"]["prepandemia_pp"] != origen["brecha_prepandemia"]:
+            problemas.append("evento: la brecha pre-pandemia no coincide con su fuente")
+        if len(evb["coeficientes"]) != len(ev.datos["estudio_evento"]["coeficientes"]):
+            problemas.append("evento: faltan coeficientes respecto de la fuente")
+
+    ba = fuentes.get("business_age_harmonization")
+    vb = bundle.get("vocabulario", {})
+    if ba and "costo_auc" in vb and vb["costo_auc"] != ba.datos["costo"]["costo_auc"]:
+        problemas.append("vocabulario: el costo en AUC no coincide con su fuente")
 
     for nombre, payload in bundle.items():
         peso = len(json.dumps(payload, ensure_ascii=False).encode("utf-8"))

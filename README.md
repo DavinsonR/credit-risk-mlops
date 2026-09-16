@@ -27,8 +27,10 @@ works. Each row links to the artifact that proves it.
 | 8 | **CI was red for 8 consecutive commits** while I wrote "lint green, N tests" in five commit messages. A test asserted local git config that CI never sets | Fixed · plus [`run ci-local`](scripts/ci_local.py), which reproduces CI before pushing |
 | 9 | Two published numbers **did not replicate on another machine**: the DuckDB/PySpark benchmark (29.3x → 14.3x) and LLM consistency (0.83 → 0.33). I had presented single-machine measurements as properties of the system | Both retracted and re-stated as ranges |
 | 10 | `MODEL_CARD.md` listed **7 gates of 8** — its generator never called the fairness one, the only gate the model fails. And `VALIDATION_REPORT.md` printed `PASS` for that gate in §3.1 while §5 said "promotion blocked" | Root cause was mine: one boolean meant two things. Now `passed` ≠ `threshold_met` |
+| 11 | Three modules defined their analysis sample with `glob("*.parquet")`. **The filesystem decided what "62.4M applications" meant.** Downloading three more years for the event study would have silently moved the observed-disparity numbers, the backend benchmark and that headline — and no test would have failed, because every test reads the same directory the code does | Found by being about to trip it · the window now comes from `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
+| 12 | The hybrid-LLM instrumentation passed its new fields **only on the error branch** of `evaluate()`. On every success — i.e. every case being analysed — they arrived empty, pandas read `NaN`, `.astype(bool)` made it `False`, and the report printed a conclusion about a field that was never filled | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · the analysis now refuses to conclude without instrumentation |
 
-Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Three of these
+Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Five of these
 **failed silently or reported success** — which is the failure mode the whole project
 is built to hunt, found in its own tooling.
 
@@ -40,6 +42,10 @@ is built to hunt, found in its own tooling.
 |---|---|---|---|
 | **A — Default / Loss** | SBA 7(a) FOIA · 1.96M loans, FY1991–2026 | Charge-off (PD) + severity (LGD) | [SR 26-2](docs/adr/0012-el-ancla-regulatoria-cambio.md) |
 | **B — Underwriting / Access** | HMDA · **62.4M applications**, FY2020–2024 | Denial | ECOA / Reg B |
+
+The event study below runs on a wider window — **93.4M applications, FY2018–2025** —
+declared separately in `config.yaml` so that extending it cannot move the published
+model's numbers. That separation exists because it once failed to: see defect 11.
 
 HMDA row counts are verified against the CFPB's own published aggregations: a
 download that finishes is not a download that is **complete**.
@@ -88,6 +94,46 @@ This also names the assumption inside the project's own headline: the $276.3M is
 computed by ranking on predicted PD and assuming a decline erases the loss. Two
 causal claims inside a number presented as a prediction.
 
+### The 2022 rate shock: the gap did not widen, it came back
+
+ADR 0013 said the alternative design was the 2022 rate shock on HMDA — exogenous,
+large, with protected classes in the data and **pre-periods to falsify against**.
+`run event-study` is that design, over **93.4M applications, FY2018–2025**.
+
+Its first result is not a coefficient. It is that the project's own week-6 finding
+was measured against the wrong baseline.
+
+| | Black–White denial gap |
+|---|---|
+| FY2018–2019 — ordinary rates | **15.70 pp** |
+| FY2020–2021 — refi boom | 13.14 pp |
+| FY2023–2025 — post-shock | **15.73 pp** |
+
+**The post-shock gap sits 0.03 pp from the pre-pandemic gap.** Measured against 2021
+the widening is +2.59 pp — and that is the number in circulation. It measures the refi
+boom ending. The five-year panel had exactly one comparable pre-shock year, so there
+was no way to see this.
+
+Of the movement against 2021, a Kitagawa decomposition (exact, no residual) puts
+**65% on recomposition of the applicant pool** — refinancing collapsed 92% and it was
+the lowest-denial segment — and the rest on rates within segment. In FY2024 the
+within-segment term is **negative**: gaps narrowed inside segments while the aggregate
+rose.
+
+And no causal effect is published, for three measured reasons:
+
+| Check | Result |
+|---|---|
+| Parallel pre-trends (threshold declared *before* estimating) | **Fails**: +2.37 pp in 2018, monotone — a trend, not noise |
+| The textbook fix — extrapolate the pre-trend | Manufactures **+5.61 pp**, because the trend it extrapolates *is* the boom the shock ends |
+| Differential selection into the applicant pool | **17.2 pp**: Black applications fell 40%, white ones 57% |
+
+[ADR 0014](docs/adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md). The
+conclusion resembles ADR 0013 — no effect published — but the content is the opposite.
+In SBA there was nothing to falsify *with*. Here there was, the test ran, and **the
+falsification is what closes the case**. A design that cannot fail its own test is not
+identifying anything; it just has not looked.
+
 ## Monitoring
 
 A charge-off takes a **median of 51 months** to appear. At 12 months you can see
@@ -107,6 +153,22 @@ interpretable baseline (0.0536, behind `initial_rate` at 0.1461), and serving ma
 unseen categories to "unknown" — so the model does not degrade, it **loses the
 variable entirely and keeps answering with the same confidence**.
 [ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
+
+**And what it cost to fix.** ADR 0011 argued that harmonising the vocabulary would
+cost resolution — four age bands collapse into one. Arguing is not measuring, so
+`run harmonize` trains the production model twice, same split, same seed, changing
+only that vocabulary:
+
+| | AUC (test) | Coverage of FY2024–2026 |
+|---|---|---|
+| Raw vocabulary | 0.7005 | **15.4%** |
+| Harmonised | 0.6990 | **90.1%** |
+
+**0.0015 of AUC buys back 74.7 points of coverage.** The intuition was right in
+direction and negligible in magnitude — and written without measuring, that same
+sentence would have justified doing nothing. What does not move: 9.7% stays
+unsupported, because `Change of Ownership` is not an age but a form of acquisition,
+and mapping it would be inventing the data.
 
 ## Promotion gates
 
@@ -179,7 +241,7 @@ Step-by-step for every level, optional extras and known problems:
 The ten-week scope is closed. What remains is written down and prioritised by how
 much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**.
 Four of the eleven items are not code: a repository description, a GitHub bio that
-contradicts this one, a Power BI report layout that needs Desktop, and five
+contradicts this one, a Power BI report layout that needs Desktop, and eighteen
 deliberately empty paragraphs in the engineering log that only their author can fill.
 
 ## License

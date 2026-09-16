@@ -29,7 +29,7 @@ from pathlib import Path
 import duckdb
 import requests
 
-from crmlops.config import repo_root, resolve_path
+from crmlops.config import load_config, repo_root, resolve_path
 
 API = "https://ffiec.cfpb.gov/v2/data-browser-api/view"
 TIMEOUT = 600
@@ -180,6 +180,46 @@ class Shard:
         return f"hmda_{self.year}_{self.state}.parquet"
 
 
+def default_years() -> tuple[int, ...]:
+    """Los anios que definen el panel PUBLICADO (`sources.hmda.years`)."""
+    return tuple(load_config()["sources"]["hmda"]["years"])
+
+
+def shard_paths(years: tuple[int, ...] | None = None, root: Path | None = None) -> list[Path]:
+    """Particiones a leer, seleccionadas por CONFIGURACION y no por lo que hay en disco.
+
+    Antes cada consumidor hacia `root.glob("*.parquet")` sin filtrar. Funcionaba
+    mientras el directorio contuviera exactamente los anios publicados -- y esa
+    coincidencia no era una garantia, era una casualidad. Descargar un anio mas
+    para otro analisis habria cambiado en silencio tres numeros ya publicados: la
+    disparidad observada, el benchmark de backends y el encabezado "62.4M
+    solicitudes". Ninguna prueba lo habria detectado, porque todas leen el mismo
+    directorio que el codigo.
+
+    El defecto de fondo es el mismo que el proyecto persigue en otros lados: la
+    muestra de analisis la definia el sistema de archivos. Ahora la define
+    `config.yaml`, que es lo que el fingerprint puede cubrir y lo que un revisor
+    puede leer.
+
+    Pasar `years` explicitamente es lo que permite que el estudio de evento use
+    una ventana mas ancha sin mover el panel publicado.
+    """
+    root = root or (resolve_path("parquet") / "hmda")
+    wanted = {str(y) for y in (years if years is not None else default_years())}
+    files = sorted(f for f in root.glob("*.parquet") if f.stem.split("_")[1] in wanted)
+    if not files:
+        raise FileNotFoundError(
+            f"No hay particiones HMDA para {sorted(wanted)} en {root}. "
+            "Correr: uv run python -m crmlops.sources.hmda"
+        )
+    return files
+
+
+def shard_list_sql(years: tuple[int, ...] | None = None, root: Path | None = None) -> str:
+    """La misma seleccion, como lista literal para `read_parquet([...])`."""
+    return "[" + ", ".join(f"'{f.as_posix()}'" for f in shard_paths(years, root)) + "]"
+
+
 def _get(url: str, **params) -> requests.Response:
     last: Exception | None = None
     for attempt in range(RETRIES):
@@ -211,7 +251,10 @@ def fetch_shard(shard: Shard, dest_dir: Path, *, force: bool = False) -> dict:
             .execute(f"select count(*) from read_parquet('{out.as_posix()}')")
             .fetchone()[0]
         )
-        return {"shard": shard.name, "rows": int(n), "cached": True}
+        # `bytes` tambien en el camino cacheado: sin esto el manifiesto de una
+        # corrida sin descargas reportaba "0.00 GB en Parquet" con 93M filas en
+        # disco, que es un dato de procedencia falso.
+        return {"shard": shard.name, "rows": int(n), "cached": True, "bytes": out.stat().st_size}
 
     with tempfile.TemporaryDirectory() as tmp:
         raw = Path(tmp) / "raw.csv"
@@ -272,13 +315,30 @@ def acquire(
             flush=True,
         )
 
+    # MERGE, NO SOBREESCRITURA. El manifiesto es el registro de procedencia de TODO
+    # lo adquirido, y `acquire` se llama por subconjuntos de anios: la version que
+    # escribia `years: list(years)` y `shards: entries` borro el registro de los
+    # cinco anios publicados al descargar tres nuevos para el estudio de evento.
+    # Los Parquet seguian en disco, asi que nada fallo ruidosamente -- solo se
+    # perdio la evidencia de donde venian.
+    path = resolve_path("manifests") / "hmda.json"
+    previos: list[dict] = []
+    if path.exists():
+        anterior = json.loads(path.read_text(encoding="utf-8"))
+        tocados = {s.name for s in shards}
+        previos = [e for e in anterior.get("shards", []) if e["shard"] not in tocados]
+
+    todos = previos + entries
+    anios = sorted({int(e["shard"].split("_")[1]) for e in todos})
     manifest = {
         "source": "hmda",
         "acquired_at": datetime.now(UTC).isoformat(timespec="seconds"),
-        "years": list(years),
+        "years": anios,
+        "years_this_run": list(years),
         "n_states": len(states),
-        "total_rows": total_rows,
-        "total_bytes": total_bytes,
+        "total_rows": sum(e["rows"] for e in todos),
+        "total_bytes": sum(e.get("bytes", 0) for e in todos),
+        "rows_this_run": total_rows,
         "seconds": round(time.perf_counter() - t0, 1),
         "columns_kept": len(KEEP),
         "excluded": {
@@ -286,9 +346,8 @@ def acquire(
             "lender_decision": list(FORBIDDEN_LENDER_DECISION),
             "protected_proxy": list(FORBIDDEN_PROXY),
         },
-        "shards": entries,
+        "shards": sorted(todos, key=lambda e: e["shard"]),
     }
-    path = resolve_path("manifests") / "hmda.json"
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"\n{total_rows:,} filas, {total_bytes / 1e9:.2f} GB en Parquet")
     print(f"Manifiesto -> {path.relative_to(repo_root())}")

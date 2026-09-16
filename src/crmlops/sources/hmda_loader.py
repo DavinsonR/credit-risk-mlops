@@ -42,7 +42,8 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-from crmlops.config import load_config, resolve_path
+from crmlops.config import load_config
+from crmlops.sources.hmda import shard_list_sql
 
 TARGET = "is_denied"
 YEAR = "activity_year"
@@ -108,17 +109,11 @@ def _shards(years: tuple[int, ...] | None = None, root: Path | None = None) -> s
     particion antes de tocar disco. Sin esto, cargar el split de prueba leia y
     transformaba las 62.4M filas para despues descartar el 88%: la primera
     version tardaba mas de 15 minutos y no terminaba.
+
+    Sin `years`, la ventana es la de `sources.hmda.years` y NO todo lo que haya
+    en el directorio: ver crmlops.sources.hmda.shard_paths.
     """
-    root = root or (resolve_path("parquet") / "hmda")
-    files = sorted(root.glob("*.parquet"))
-    if years:
-        wanted = {str(y) for y in years}
-        files = [f for f in files if f.stem.split("_")[1] in wanted]
-    if not files:
-        raise FileNotFoundError(
-            "No hay particiones HMDA para esos anios. Correr: uv run python -m crmlops.sources.hmda"
-        )
-    return "[" + ", ".join(f"'{f.as_posix()}'" for f in files) + "]"
+    return shard_list_sql(tuple(years) if years else None, root)
 
 
 def _dti_case() -> str:

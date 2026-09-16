@@ -25,6 +25,7 @@ import pandas as pd
 
 from crmlops.config import resolve_path
 from crmlops.fairness.metrics import FOUR_FIFTHS
+from crmlops.sources.hmda import shard_list_sql
 
 # Categorias que no son grupos demograficos coherentes: agrupan a quienes no
 # declararon, o a solicitudes conjuntas de personas de razas distintas.
@@ -32,8 +33,9 @@ NON_GROUPS = ("Race Not Available", "Joint", "Free Form Text Only")
 
 
 def _shards() -> str:
-    files = sorted((resolve_path("parquet") / "hmda").glob("*.parquet"))
-    return "[" + ", ".join(f"'{f.as_posix()}'" for f in files) + "]"
+    # Los anios vienen de config.yaml, no de lo que haya en el directorio: ver
+    # crmlops.sources.hmda.shard_paths. Estas cifras son las publicadas.
+    return shard_list_sql()
 
 
 def denial_rates_by(dimension: str, *, min_n: int = 5000) -> pd.DataFrame:

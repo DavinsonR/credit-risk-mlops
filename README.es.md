@@ -31,8 +31,10 @@ alguien. Cada fila enlaza al artefacto que lo prueba.
 | 8 | **CI estuvo rojo 8 commits seguidos** mientras yo escribía "lint verde, N tests" en cinco mensajes. Un test asertaba configuración local de git que CI nunca pone | Corregido · y [`run ci-local`](scripts/ci_local.py), que reproduce CI antes de empujar |
 | 9 | Dos números publicados **no replicaron en otra máquina**: el benchmark DuckDB/PySpark (29.3x → 14.3x) y la consistencia del LLM (0.83 → 0.33). Había presentado mediciones de un equipo como propiedades del sistema | Los dos retractados y reformulados como rangos |
 | 10 | `MODEL_CARD.md` listaba **7 gates de 8**: su generador nunca llamaba al de equidad, el único que el modelo no cumple. Y `VALIDATION_REPORT.md` imprimía `PASA` para ese gate en §3.1 mientras §5 decía "promoción bloqueada" | La causa era mía: un booleano significaba dos cosas. Ahora `passed` ≠ `threshold_met` |
+| 11 | Tres módulos definían su muestra de análisis con `glob("*.parquet")`. **El sistema de archivos decidía qué significaba "62.4M solicitudes".** Descargar tres años más para el estudio de evento habría movido en silencio la disparidad observada, el benchmark de backends y ese encabezado — y ningún test habría fallado, porque todos leen el mismo directorio que el código | Encontrado al ir a tropezarlo · la ventana sale de `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
+| 12 | La instrumentación del híbrido pasaba sus campos nuevos **solo en la rama de error** de `evaluate()`. En cada éxito —o sea, en todos los casos a analizar— llegaban vacíos, pandas leyó `NaN`, `.astype(bool)` lo hizo `False`, y el reporte publicó una conclusión sobre un campo que nunca se llenó | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · el análisis ahora se niega a concluir sin instrumentación |
 
-Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Tres de
+Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Cinco de
 estos **fallaban en silencio o reportaban éxito** — que es el modo de fallo que el
 proyecto entero persigue, encontrado en su propio tooling.
 
@@ -44,6 +46,10 @@ proyecto entero persigue, encontrado en su propio tooling.
 |---|---|---|---|
 | **A — Default / Pérdida** | SBA 7(a) FOIA · 1.96M préstamos, FY1991–2026 | Charge-off (PD) + severidad (LGD) | [SR 26-2](docs/adr/0012-el-ancla-regulatoria-cambio.md) |
 | **B — Underwriting / Acceso** | HMDA · **62.4M solicitudes**, FY2020–2024 | Denegación | ECOA / Reg B |
+
+El estudio de evento corre sobre una ventana más ancha —**93.4M solicitudes,
+FY2018–2025**— declarada aparte en `config.yaml` para que ampliarla no pueda mover las
+cifras del modelo publicado. Esa separación existe porque una vez no existió: defecto 11.
 
 Los conteos de HMDA se verifican contra las agregaciones publicadas por el CFPB: una
 descarga que termina no es una descarga **completa**.
@@ -92,6 +98,46 @@ Esto también nombra el supuesto dentro del propio titular del proyecto: los $27
 se calculan rankeando por PD predicha y suponiendo que rechazar elimina la pérdida.
 Dos afirmaciones causales dentro de un número presentado como predicción.
 
+### El shock de tasas de 2022: la brecha no se amplió, volvió
+
+El ADR 0013 dejó dicho que el diseño alternativo era el shock de tasas de 2022 sobre
+HMDA: exógeno, grande, con clases protegidas en el dato y **con períodos previos
+contra los cuales falsificar**. `run event-study` es ese diseño, sobre **93.4M
+solicitudes, FY2018–2025**.
+
+Su primer resultado no es un coeficiente: es que el hallazgo que el propio proyecto
+publicó en la semana 6 estaba medido contra la línea base equivocada.
+
+| | Brecha de denegación negros–blancos |
+|---|---|
+| FY2018–2019 — tasas corrientes | **15.70 pp** |
+| FY2020–2021 — auge de refinanciación | 13.14 pp |
+| FY2023–2025 — post-shock | **15.73 pp** |
+
+**La brecha post-shock está a 0.03 pp de la pre-pandemia.** Contra 2021 la ampliación
+es de +2.59 pp, y ese es el número que circula: mide el auge acabándose. Con cinco
+años de panel había exactamente un año pre-shock comparable, así que no había forma
+de verlo.
+
+De ese movimiento, una descomposición de Kitagawa —exacta, sin residuo— atribuye el
+**65% a la recomposición del pool**: la refinanciación se desplomó 92% y era el
+segmento con la denegación más baja. En FY2024 el término de tasas es **negativo**: la
+brecha se cerró dentro de los segmentos mientras el agregado subía.
+
+Y no se publica ningún efecto causal, por tres razones medidas:
+
+| Comprobación | Resultado |
+|---|---|
+| Tendencias previas paralelas (umbral declarado **antes** de estimar) | **Falla**: +2.37 pp en 2018, y monótona — una tendencia, no ruido |
+| El arreglo de manual: extrapolar la tendencia previa | Fabrica **+5.61 pp**, porque lo que extrapola *es* el auge que el shock termina |
+| Selección diferencial en el pool de solicitantes | **17.2 pp**: las solicitudes negras cayeron 40%, las blancas 57% |
+
+[ADR 0014](docs/adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md). La
+conclusión se parece a la del ADR 0013 —no se publica un efecto— pero el contenido es
+el contrario. En SBA no había **con qué** falsificar. Aquí sí, el test corrió, y **la
+falsificación es la que cierra el caso**. Un diseño que no puede fallar su propio test
+no está identificando nada: solo no ha mirado.
+
 ## Monitoreo
 
 Un charge-off tarda una **mediana de 51 meses** en aparecer. A los 12 meses se ve
@@ -111,6 +157,22 @@ interpretable (0.0536, detrás de `initial_rate` con 0.1461), y el serving manda
 visto a "desconocido" — así que el modelo no se degrada: **pierde la variable entera y
 sigue respondiendo con el mismo aplomo**.
 [ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
+
+**Y cuánto costó arreglarlo.** El ADR 0011 argumentaba que armonizar el vocabulario
+cuesta resolución: cuatro tramos de antigüedad colapsan en uno. Argumentar no es
+medir, así que `run harmonize` entrena el modelo de producción dos veces, mismo split
+y misma semilla, cambiando solo ese vocabulario:
+
+| | AUC (test) | Cobertura de FY2024–2026 |
+|---|---|---|
+| Vocabulario crudo | 0.7005 | **15.4%** |
+| Armonizado | 0.6990 | **90.1%** |
+
+**0.0015 de AUC compra 74.7 puntos de cobertura.** La intuición era correcta en
+dirección y despreciable en magnitud — y escrita sin medir, esa misma frase habría
+servido para no hacer nada. Lo que no se mueve: el 9.7% sigue sin soporte, porque
+`Change of Ownership` no es una antigüedad sino una forma de adquisición, y mapearla
+sería inventar el dato.
 
 ## Gates de promoción
 
@@ -163,7 +225,7 @@ El alcance de las diez semanas está cerrado. Lo que queda está escrito y prior
 por cuánto cambia el resultado, no por cuándo apareció —
 **[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
 descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
-Power BI que necesita Desktop, y cinco párrafos deliberadamente vacíos en la bitácora
+Power BI que necesita Desktop, y dieciocho párrafos deliberadamente vacíos en la bitácora
 que solo su autor puede llenar.
 
 ## Licencia

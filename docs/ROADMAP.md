@@ -1,11 +1,31 @@
 # Lo que falta
 
-Estado al 15 de septiembre de 2026. El alcance de las diez semanas está cerrado: CI
-verde, 188 tests, 10 gates, 13 ADRs, y el proyecto ya está enlazado desde el perfil y
-el portafolio. **Nada de esta lista bloquea mostrarlo.**
+Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 212 tests,
+10 gates, 14 ADRs, y el proyecto ya está enlazado desde el perfil y el portafolio.
+**Nada de esta lista bloquea mostrarlo.**
 
 El orden no es cronológico: es por cuánto cambia el resultado. Cada entrada dice quién
 puede hacerla, porque cuatro de ellas no dependen del código.
+
+## Cerrado en la semana 11
+
+Tres puntos que estaban en esta lista salieron, y el primero cambió una cifra que el
+proyecto venía citando:
+
+- **El estudio de evento sobre el shock de tasas de 2022.** Sobre 93.4M solicitudes
+  (FY2018–2025, tres años más que el panel publicado). La brecha post-shock está a
+  **0.03 pp** de la pre-pandemia: no se amplió, revirtió. El +2.59 pp que circulaba
+  mide el auge de refinanciación acabándose, porque estaba anclado a 2021. No se
+  publica efecto causal, y las tres razones están medidas —
+  [ADR 0014](adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md).
+- **El costo de armonizar `business_age`.** 0.0015 de AUC a cambio de +74.7 pp de
+  cobertura. El argumento cualitativo del ADR 0011 era correcto en dirección y
+  despreciable en magnitud.
+- **La instrumentación del híbrido.** Cero cambios de camino: la hipótesis del ADR
+  0009 era mía y era falsa.
+
+Y dejaron dos defectos en la bitácora: la muestra de análisis la definía el sistema de
+archivos, y el manifiesto de procedencia se sobrescribía en vez de fusionarse.
 
 ---
 
@@ -96,45 +116,7 @@ verificar que el `wasmPaths` funcione desde esa ruta, que ya dio problemas una v
 
 ## Abierto — trabajo de verdad, no acabados
 
-### 7. El estudio de evento sobre HMDA en el shock de tasas de 2022
-**Quién:** yo · **Esfuerzo:** una a dos semanas
-
-Es el mejor diseño causal que tiene el proyecto y está nombrado en el ADR 0013
-precisamente para que se vea que no estimar el efecto de la garantía fue una decisión de
-identificación y no falta de alternativas.
-
-Tiene 62,4M de solicitudes, un shock exógeno a mitad del panel, dos períodos previos para
-falsificar tendencias paralelas, y clases protegidas que SBA no trae. El gradiente
-descriptivo ya está medido: la razón de cuatro quintos cayó de 0.827 en 2020 a 0.729 en
-2023. Y el ajuste por covariables de alta dimensión aporta algo real aquí, porque el
-proyecto ya midió que la composición del pool cambió de forma estructural (PSI de forma
-0.2099).
-
-**Puede salir nulo, y eso está bien**: con este diseño un nulo está identificado, que es
-exactamente lo que el ADR 0013 dice que el de la garantía no estaba. Hay que declarar el
-MDE antes de estimar.
-
-### 8. Armonizar el vocabulario de `business_age`
-**Quién:** yo · **Esfuerzo:** dos a tres días
-
-El ADR 0011 lo deja abierto a propósito. Reentrenar no lo arregla: la ventana vieja tiene
-el vocabulario viejo, y la nueva choca con la madurez de la etiqueta. Armonizar tampoco
-es mecánico — `Existing or more than 2 years old` agrupa cuatro buckets viejos, así que el
-mapeo **pierde** resolución, y `Change of Ownership` no existía como antigüedad: no es un
-renombre, es un concepto nuevo.
-
-Lo honesto es medir cuánto cuesta el mapeo grueso en AUC y publicar las dos versiones, no
-elegir una y callar la otra.
-
-### 9. Instrumentar la decisión de fallback del híbrido
-**Quién:** yo · **Esfuerzo:** un día
-
-La pregunta abierta del ADR 0009: los híbridos salen **menos** consistentes que el modelo
-solo. La hipótesis es que validar-y-caer introduce varianza en el borde, y está escrita
-como hipótesis porque no se midió. Cerrarla es registrar por caso si se usó el LLM o el
-fallback y comparar esa decisión entre corridas.
-
-### 10. Los brazos de Groq y Gemini
+### 7. Los brazos de Groq y Gemini
 **Quién:** Davirson pone las claves, yo corro el harness · **Esfuerzo:** 10 minutos suyos
 
 Tiers gratuitos sin tarjeta en `console.groq.com` y `aistudio.google.com`, formato en
@@ -144,10 +126,10 @@ Vale por una razón concreta: la segunda revisión del ADR 0009 concluyó que **
 consistencia de un LLM local no es reproducible entre máquinas**. Dos modelos hospedados
 pondrían a prueba si eso es de la inferencia local o del problema.
 
-### 11. Los `_(escribir: ...)_` de NOTES.md
-**Quién:** solo Davirson · **Esfuerzo:** una hora
+### 8. Los `_(escribir: ...)_` de NOTES.md
+**Quién:** solo Davirson · **Esfuerzo:** dos horas
 
-Cinco huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
+Dieciocho huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
 algo. **Están vacíos a propósito**: son lo que hay que poder defender en una entrevista, y
 escritos por otro no sirven para eso.
 

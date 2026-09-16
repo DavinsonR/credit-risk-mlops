@@ -139,6 +139,50 @@ monitoring:
   # La población lleva derivando desde FY2016.
   matched_maturity_tolerance: 0.32
 
+# Estudio de evento: el shock de tasas de 2022 sobre la brecha racial de denegación.
+#
+# VENTANA PROPIA, A PROPÓSITO. El panel publicado (sources.hmda.years) es 2020-2024
+# y no se mueve: con él se entrenó el modelo B y se midió la disparidad observada.
+# El estudio de evento necesita años que ese panel no tiene y que NO deben entrar a
+# las cifras publicadas, así que declara su ventana aquí y la selección de
+# particiones la respeta (crmlops.sources.hmda.shard_paths).
+#
+# POR QUÉ 2018-2019 SON IMPRESCINDIBLES. Con 2020-2024 hay exactamente un año
+# pre-shock comparable (2021) y por tanto UNA diferencia pre-tratamiento: no alcanza
+# para falsificar tendencias paralelas. Peor: 2020-21 es el auge de refinanciación,
+# un régimen anómalo. Tomarlo como línea base supone que lo anormal era lo normal.
+# 2018-2019 son años de tasas corrientes (~4.5% y ~3.9%) y dan la única base contra
+# la cual se puede distinguir "el shock amplió la brecha" de "el auge la había
+# comprimido y revirtió".
+event_study:
+  years: [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025]
+  # Año de normalización. 2021 es el último completo antes del shock.
+  base_year: 2021
+  # El shock: la Fed subió de 0.25% a 4.50% durante 2022 y la tasa hipotecaria a 30
+  # años pasó de ~3.1% a ~6.4%. 2022 es año de transición (aplicaciones de enero se
+  # deciden con tasas viejas), así que el efecto limpio se lee en 2023-2025.
+  shock_year: 2022
+  # Contraste principal. Es el más grande y el que los exámenes de fair lending
+  # miran primero; etnia y Asian van como robustez.
+  focal_group: "Black or African American"
+  reference_group: "White"
+  # Celdas del estimador intra-celda. Condado x propósito x gravamen x ocupación:
+  # comparar dentro de ellas es comparar solicitudes del mismo mercado local, para
+  # el mismo tipo de operación.
+  cell_keys: [county_code, loan_purpose, lien_status, occupancy_type]
+  # Mínimo de solicitudes de CADA grupo en una celda-año para que aporte.
+  # Con menos, la brecha de la celda es ruido con peso.
+  min_per_cell_group: 25
+  # MAGNITUD ECONÓMICAMENTE RELEVANTE, declarada antes de estimar.
+  #
+  # No es un p-valor: con ~85M solicitudes cualquier efecto es "significativo" y el
+  # umbral estadístico no informa nada. La derivación es regulatoria. En 2021 la
+  # denegación blanca fue 14.49%, así que la regla de cuatro quintos se rompía con
+  # una brecha de 17.1 pp ((1-d_B)/(1-d_W) = 0.80 => d_B = 31.6%). La brecha
+  # observada era 13.0 pp: quedaban 4.1 pp de margen. Un efecto de 1.0 pp consume
+  # una cuarta parte de esa distancia en un solo shock.
+  meaningful_pp: 1.0
+
 # Gate de viabilidad de la Semana 1.
 # Criterio fijado ANTES de ver resultados finales: eso lo hace de-risking, no p-hacking.
 signal_gate:

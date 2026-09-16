@@ -1,4 +1,4 @@
-﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal web-exports web-check maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
+﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal event-study harmonize web-exports web-check maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -34,6 +34,12 @@ economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
 
 causal:  ## Identificacion causal: se puede estimar el efecto de la garantia?
 	$(UV) run python -m crmlops.causal.identification
+
+event-study:  ## Estudio de evento: el shock de tasas de 2022 sobre la brecha racial
+	$(UV) run python -m crmlops.causal.event_study
+
+harmonize:  ## Cuanto cuesta armonizar business_age y cuanta cobertura recupera
+	$(UV) run python -m crmlops.monitoring.harmonize
 
 web-exports:  ## Bundle JSON para el sitio, desde los exports existentes
 	$(UV) run python -m crmlops.export.web

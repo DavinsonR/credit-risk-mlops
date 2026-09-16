@@ -1,0 +1,709 @@
+{
+  "pregunta": "El shock de tasas de 2022 amplio la brecha racial de denegacion, o la brecha agregada se movio por recomposicion del pool?",
+  "ventana": [
+    2018,
+    2019,
+    2020,
+    2021,
+    2022,
+    2023,
+    2024,
+    2025
+  ],
+  "grupos": {
+    "focal": "Black or African American",
+    "referencia": "White"
+  },
+  "n_solicitudes": 92860926,
+  "umbral_economico_pp": 1.0,
+  "regimen": {
+    "por_anio": [
+      {
+        "anio": 2018,
+        "n_focal": 699217,
+        "n_ref": 7210452,
+        "tasa_focal": 0.3829011594397733,
+        "tasa_ref": 0.22050947707577834,
+        "brecha_pp": 16.239168236399497,
+        "ratio_4_5": 0.7916694589758573
+      },
+      {
+        "anio": 2019,
+        "n_focal": 787092,
+        "n_ref": 8207896,
+        "tasa_focal": 0.34145944819665297,
+        "tasa_ref": 0.1898340329848234,
+        "brecha_pp": 15.162541521182957,
+        "ratio_4_5": 0.8128464766664418
+      },
+      {
+        "anio": 2020,
+        "n_focal": 1002932,
+        "n_ref": 12006810,
+        "tasa_focal": 0.27890624688413573,
+        "tasa_ref": 0.14441287902448693,
+        "brecha_pp": 13.44933678596488,
+        "ratio_4_5": 0.842805759270542
+      },
+      {
+        "anio": 2021,
+        "n_focal": 1209736,
+        "n_ref": 11828926,
+        "tasa_focal": 0.2723230523023205,
+        "tasa_ref": 0.14394654256861528,
+        "brecha_pp": 12.837650973370524,
+        "ratio_4_5": 0.8500368071418074
+      },
+      {
+        "anio": 2022,
+        "n_focal": 889386,
+        "n_ref": 6999198,
+        "tasa_focal": 0.3537833966354316,
+        "tasa_ref": 0.2022063099229369,
+        "brecha_pp": 15.157708671249473,
+        "ratio_4_5": 0.8100046558429748
+      },
+      {
+        "anio": 2023,
+        "n_focal": 684239,
+        "n_ref": 4965443,
+        "tasa_focal": 0.39548169572327796,
+        "tasa_ref": 0.23469768961198426,
+        "brecha_pp": 16.07840061112937,
+        "ratio_4_5": 0.7899078521927176
+      },
+      {
+        "anio": 2024,
+        "n_focal": 721287,
+        "n_ref": 5295303,
+        "tasa_focal": 0.37600844046821863,
+        "tasa_ref": 0.2235807847067486,
+        "brecha_pp": 15.242765576147002,
+        "ratio_4_5": 0.8036786664226251
+      },
+      {
+        "anio": 2025,
+        "n_focal": 725511,
+        "n_ref": 5782677,
+        "tasa_focal": 0.36673737544985535,
+        "tasa_ref": 0.20791495011739372,
+        "brecha_pp": 15.882242533246163,
+        "ratio_4_5": 0.7994881668881385
+      }
+    ],
+    "brecha_prepandemia": 15.700854878791226,
+    "brecha_auge": 13.143493879667702,
+    "brecha_post": 15.734469573507512,
+    "compresion_del_auge_pp": -2.5573609991235244,
+    "ampliacion_vs_auge_pp": 2.5909756938398107,
+    "ampliacion_vs_prepandemia_pp": 0.03361469471628631,
+    "es_reversion": true
+  },
+  "descomposicion": [
+    {
+      "anio_base": 2021,
+      "anio_final": 2023,
+      "segmentos": 36,
+      "cambio_brecha_pp": 3.2407496377588467,
+      "composicion_pp": 2.1007120664768104,
+      "tasas_pp": 1.140037571282039,
+      "detalle": [
+        {
+          "seg": "31|1|1",
+          "dw_focal": -0.2658964909749822,
+          "comp_focal_pp": -8.71072829228039,
+          "tasa_focal_pp": 3.1834926452914822,
+          "dw_ref": -0.28707108044228025,
+          "comp_ref_pp": -5.336017940323065,
+          "tasa_ref_pp": 2.282732929815884
+        },
+        {
+          "seg": "2|2|1",
+          "dw_focal": 0.0681714284300142,
+          "comp_focal_pp": 4.09943807835752,
+          "tasa_focal_pp": -0.09602601018667802,
+          "dw_ref": 0.07315837817195237,
+          "comp_ref_pp": 2.503216125975929,
+          "tasa_ref_pp": 0.047962017329218065
+        },
+        {
+          "seg": "4|2|1",
+          "dw_focal": 0.07262762469634604,
+          "comp_focal_pp": 4.434733104347869,
+          "tasa_focal_pp": 0.006529517839869392,
+          "dw_ref": 0.08222584630934208,
+          "comp_ref_pp": 3.214253350746558,
+          "tasa_ref_pp": 0.40710940954031183
+        },
+        {
+          "seg": "32|1|1",
+          "dw_focal": -0.03954069835489922,
+          "comp_focal_pp": -1.5092649004645242,
+          "tasa_focal_pp": 2.3736699146666975,
+          "dw_ref": -0.10394008196431892,
+          "comp_ref_pp": -2.3886243295584797,
+          "tasa_ref_pp": 2.2978754243093724
+        },
+        {
+          "seg": "2|1|1",
+          "dw_focal": 0.01312424041109548,
+          "comp_focal_pp": 0.8722856154065808,
+          "tasa_focal_pp": 0.09672422511082653,
+          "dw_ref": 0.012755618368600669,
+          "comp_ref_pp": 0.46852759273248584,
+          "tasa_ref_pp": 0.15246523489215233
+        },
+        {
+          "seg": "1|1|1",
+          "dw_focal": 0.09323192998612723,
+          "comp_focal_pp": 2.2335593460091654,
+          "tasa_focal_pp": 2.0494639681701794,
+          "dw_ref": 0.16105077183160993,
+          "comp_ref_pp": 1.8560347508999029,
+          "tasa_ref_pp": 1.1049382116812378
+        },
+        {
+          "seg": "32|2|1",
+          "dw_focal": 0.021013664527716355,
+          "comp_focal_pp": 0.8060657740505227,
+          "tasa_focal_pp": -0.043487107364088826,
+          "dw_ref": 0.02425717278556002,
+          "comp_ref_pp": 0.4988739600019358,
+          "tasa_ref_pp": 0.07509890060177847
+        },
+        {
+          "seg": "4|1|1",
+          "dw_focal": 0.013315397605906868,
+          "comp_focal_pp": 0.8871999804435373,
+          "tasa_focal_pp": -0.017035274249402366,
+          "dw_ref": 0.016584981368145516,
+          "comp_ref_pp": 0.622214064713949,
+          "tasa_ref_pp": 0.1041583184903728
+        },
+        {
+          "seg": "2|2|3",
+          "dw_focal": 0.0022383627551827425,
+          "comp_focal_pp": 0.1590664869181156,
+          "tasa_focal_pp": 0.007268889990285909,
+          "dw_ref": 0.0012831614453852008,
+          "comp_ref_pp": 0.0667796492428762,
+          "tasa_ref_pp": 0.004435968520683776
+        },
+        {
+          "seg": "31|1|3",
+          "dw_focal": -0.008936130612275599,
+          "comp_focal_pp": -0.28511746448715775,
+          "tasa_focal_pp": 0.09170694274700256,
+          "dw_ref": -0.011313487074164767,
+          "comp_ref_pp": -0.20699941572724806,
+          "tasa_ref_pp": 0.05670518310490506
+        },
+        {
+          "seg": "32|1|3",
+          "dw_focal": -0.0001419872144404772,
+          "comp_focal_pp": -0.005082786437378445,
+          "tasa_focal_pp": 0.14877026371547997,
+          "dw_ref": -0.0033236134222080094,
+          "comp_ref_pp": -0.075060971595928,
+          "tasa_ref_pp": 0.10372498063469773
+        },
+        {
+          "seg": "2|1|3",
+          "dw_focal": 0.0018026846345673127,
+          "comp_focal_pp": 0.10215308575806774,
+          "tasa_focal_pp": 0.012918192706842364,
+          "dw_ref": 0.001103890467695592,
+          "comp_ref_pp": 0.03694296066775035,
+          "tasa_ref_pp": 0.008691696672820803
+        }
+      ],
+      "share_composicion": 0.6482179437747515,
+      "cuadra": true
+    },
+    {
+      "anio_base": 2021,
+      "anio_final": 2024,
+      "segmentos": 36,
+      "cambio_brecha_pp": 2.4051146027764787,
+      "composicion_pp": 2.905948517337002,
+      "tasas_pp": -0.5008339145605223,
+      "detalle": [
+        {
+          "seg": "31|1|1",
+          "dw_focal": -0.2332120836276267,
+          "comp_focal_pp": -6.321765879843998,
+          "tasa_focal_pp": 1.3383179772061196,
+          "dw_ref": -0.2598050173437106,
+          "comp_ref_pp": -4.20753241896066,
+          "tasa_ref_pp": 1.4717296236180921
+        },
+        {
+          "seg": "4|2|1",
+          "dw_focal": 0.07680327681504476,
+          "comp_focal_pp": 4.5667868687799995,
+          "tasa_focal_pp": -0.17587802015561166,
+          "dw_ref": 0.07926061683144736,
+          "comp_ref_pp": 3.0274056411982624,
+          "tasa_ref_pp": 0.281438170866588
+        },
+        {
+          "seg": "2|2|1",
+          "dw_focal": 0.058876362779929914,
+          "comp_focal_pp": 3.4388060047764313,
+          "tasa_focal_pp": -0.2968005813855985,
+          "dw_ref": 0.059749768651034686,
+          "comp_ref_pp": 1.9843884758398125,
+          "tasa_ref_pp": -0.08809728703408012
+        },
+        {
+          "seg": "32|1|1",
+          "dw_focal": -0.03872196920157636,
+          "comp_focal_pp": -1.4582881358008952,
+          "tasa_focal_pp": 2.234869072516327,
+          "dw_ref": -0.09895333234392022,
+          "comp_ref_pp": -2.213665746363687,
+          "tasa_ref_pp": 2.172522910817023
+        },
+        {
+          "seg": "32|2|1",
+          "dw_focal": 0.02709728306973091,
+          "comp_focal_pp": 1.0217458969791406,
+          "tasa_focal_pp": -0.07475996039411066,
+          "dw_ref": 0.030602882350540945,
+          "comp_ref_pp": 0.6372141184239126,
+          "tasa_ref_pp": 0.09970678228061747
+        },
+        {
+          "seg": "2|1|1",
+          "dw_focal": 0.011683616946127854,
+          "comp_focal_pp": 0.7649568037128929,
+          "tasa_focal_pp": 0.05043558657884155,
+          "dw_ref": 0.011227533153299949,
+          "comp_ref_pp": 0.4033038443616523,
+          "tasa_ref_pp": 0.11431686228055023
+        },
+        {
+          "seg": "1|1|1",
+          "dw_focal": 0.05242371541829455,
+          "comp_focal_pp": 1.2258478572257645,
+          "tasa_focal_pp": 1.490006991912638,
+          "dw_ref": 0.136105832635056,
+          "comp_ref_pp": 1.5213347330528117,
+          "tasa_ref_pp": 0.8176672447533405
+        },
+        {
+          "seg": "4|1|1",
+          "dw_focal": 0.013002148387809486,
+          "comp_focal_pp": 0.8523436671124776,
+          "tasa_focal_pp": -0.05546998160044457,
+          "dw_ref": 0.01596668186119305,
+          "comp_ref_pp": 0.5924421923545675,
+          "tasa_ref_pp": 0.08494460768409413
+        },
+        {
+          "seg": "32|1|3",
+          "dw_focal": 0.0019836460948978226,
+          "comp_focal_pp": 0.06655346423109586,
+          "tasa_focal_pp": 0.10449002597291301,
+          "dw_ref": -0.0017141702416831241,
+          "comp_ref_pp": -0.036617616823100316,
+          "tasa_ref_pp": 0.09260062332027394
+        },
+        {
+          "seg": "31|1|3",
+          "dw_focal": -0.009238047320794703,
+          "comp_focal_pp": -0.2928846850374782,
+          "tasa_focal_pp": 0.08613755792391133,
+          "dw_ref": -0.010617218467926574,
+          "comp_ref_pp": -0.1940167118377668,
+          "tasa_ref_pp": 0.058162594970405664
+        },
+        {
+          "seg": "1|2|1",
+          "dw_focal": 0.013479057071527367,
+          "comp_focal_pp": 0.26803466356305494,
+          "tasa_focal_pp": 0.08542488502969463,
+          "dw_ref": 0.010901112606967292,
+          "comp_ref_pp": 0.17314229239753043,
+          "tasa_ref_pp": 0.030364865061549035
+        },
+        {
+          "seg": "2|2|3",
+          "dw_focal": 0.0020782376576853096,
+          "comp_focal_pp": 0.14583716006808986,
+          "tasa_focal_pp": 0.0041248633175209925,
+          "dw_ref": 0.0012585471353705909,
+          "comp_ref_pp": 0.06478787755089276,
+          "tasa_ref_pp": 0.0032597452321036155
+        }
+      ],
+      "share_composicion": 1.208237027034952,
+      "cuadra": true
+    },
+    {
+      "anio_base": 2021,
+      "anio_final": 2025,
+      "segmentos": 36,
+      "cambio_brecha_pp": 3.0445915598756397,
+      "composicion_pp": 2.4173802809386697,
+      "tasas_pp": 0.627211278936969,
+      "detalle": [
+        {
+          "seg": "31|1|1",
+          "dw_focal": -0.21123307125760693,
+          "comp_focal_pp": -5.752672942953218,
+          "tasa_focal_pp": 1.4665743927340498,
+          "dw_ref": -0.23132430291562545,
+          "comp_ref_pp": -3.586998707961876,
+          "tasa_ref_pp": 1.274502898063254
+        },
+        {
+          "seg": "4|2|1",
+          "dw_focal": 0.06717109758265116,
+          "comp_focal_pp": 3.8474096776849223,
+          "tasa_focal_pp": -0.38916246661111,
+          "dw_ref": 0.0657955781236486,
+          "comp_ref_pp": 2.3799197123724674,
+          "tasa_ref_pp": 0.01586352513587009
+        },
+        {
+          "seg": "2|2|1",
+          "dw_focal": 0.04771553326726609,
+          "comp_focal_pp": 2.77313009007639,
+          "tasa_focal_pp": -0.30080708316686083,
+          "dw_ref": 0.0501683430617605,
+          "comp_ref_pp": 1.6176897340971244,
+          "tasa_ref_pp": -0.1989788827253128
+        },
+        {
+          "seg": "32|1|1",
+          "dw_focal": -0.037638503492799735,
+          "comp_focal_pp": -1.4188814237509415,
+          "tasa_focal_pp": 2.2539908593627356,
+          "dw_ref": -0.09471660220955318,
+          "comp_ref_pp": -2.069265286337248,
+          "tasa_ref_pp": 2.0596632428294117
+        },
+        {
+          "seg": "32|2|1",
+          "dw_focal": 0.03665709155227552,
+          "comp_focal_pp": 1.3518402662601188,
+          "tasa_focal_pp": -0.1316286905546321,
+          "dw_ref": 0.040184758486593336,
+          "comp_ref_pp": 0.7996124908678528,
+          "tasa_ref_pp": 0.0795758405647583
+        },
+        {
+          "seg": "1|1|1",
+          "dw_focal": 0.03399174829564877,
+          "comp_focal_pp": 0.8095552833836932,
+          "tasa_focal_pp": 1.7951041131805516,
+          "dw_ref": 0.11107215028334277,
+          "comp_ref_pp": 1.2098985855769335,
+          "tasa_ref_pp": 0.5910065540064352
+        },
+        {
+          "seg": "2|1|1",
+          "dw_focal": 0.01085148635607711,
+          "comp_focal_pp": 0.6889185041066846,
+          "tasa_focal_pp": -0.0354492712706364,
+          "dw_ref": 0.012004207343717292,
+          "comp_ref_pp": 0.40553398884599884,
+          "tasa_ref_pp": 0.02890886533113333
+        },
+        {
+          "seg": "4|1|1",
+          "dw_focal": 0.012206541762288482,
+          "comp_focal_pp": 0.7874636609701712,
+          "tasa_focal_pp": -0.0908048080192992,
+          "dw_ref": 0.015511657104449468,
+          "comp_ref_pp": 0.5492839129826417,
+          "tasa_ref_pp": 0.011850952176026148
+        },
+        {
+          "seg": "32|1|3",
+          "dw_focal": 0.0051311669361507346,
+          "comp_focal_pp": 0.16170233932636824,
+          "tasa_focal_pp": 0.058550029865987036,
+          "dw_ref": 0.00045876801084149266,
+          "comp_ref_pp": 0.009282214490719698,
+          "tasa_ref_pp": 0.08166673467979588
+        },
+        {
+          "seg": "1|2|1",
+          "dw_focal": 0.015522735056433295,
+          "comp_focal_pp": 0.2998716696268208,
+          "tasa_focal_pp": 0.06300618841512604,
+          "dw_ref": 0.010472865421223684,
+          "comp_ref_pp": 0.15783162139939652,
+          "tasa_ref_pp": 0.0076080789330473545
+        },
+        {
+          "seg": "31|1|3",
+          "dw_focal": -0.0077911549115015025,
+          "comp_focal_pp": -0.2456026786876482,
+          "tasa_focal_pp": 0.08791943694428275,
+          "dw_ref": -0.009019756124424815,
+          "comp_ref_pp": -0.16382770789516743,
+          "tasa_ref_pp": 0.0600722505599315
+        },
+        {
+          "seg": "2|2|3",
+          "dw_focal": 0.002140249600195398,
+          "comp_focal_pp": 0.14576486860809051,
+          "tasa_focal_pp": -0.0024010540805418203,
+          "dw_ref": 0.0013192805205091858,
+          "comp_ref_pp": 0.06702915484819684,
+          "tasa_ref_pp": 0.0019857421326730336
+        }
+      ],
+      "share_composicion": 0.7939916515558529,
+      "cuadra": true
+    }
+  ],
+  "estudio_evento": {
+    "base_year": 2021,
+    "balanceado": true,
+    "celdas_balanceadas": 2284,
+    "celdas_sin_balancear": 5243,
+    "coeficientes": [
+      {
+        "anio": 2018,
+        "theta_pp": 14.493132174815877,
+        "gamma_pp": 2.367362347886062,
+        "se_pp": 0.14126661558730272,
+        "celdas": 2284,
+        "n": 4641083,
+        "ic95_lo": 2.090479781334949,
+        "ic95_hi": 2.6442449144371754
+      },
+      {
+        "anio": 2019,
+        "theta_pp": 13.49032189430431,
+        "gamma_pp": 1.364552067374497,
+        "se_pp": 0.13169154205455033,
+        "celdas": 2284,
+        "n": 5216053,
+        "ic95_lo": 1.1064366449475784,
+        "ic95_hi": 1.6226674898014157
+      },
+      {
+        "anio": 2020,
+        "theta_pp": 12.442088636708535,
+        "gamma_pp": 0.3163188097787206,
+        "se_pp": 0.10439016117332361,
+        "celdas": 2284,
+        "n": 7280681,
+        "ic95_lo": 0.11171409387900635,
+        "ic95_hi": 0.5209235256784349
+      },
+      {
+        "anio": 2021,
+        "theta_pp": 12.125769826929814,
+        "gamma_pp": 0.0,
+        "se_pp": 0.0,
+        "celdas": 2284,
+        "n": 7402058,
+        "ic95_lo": 0.0,
+        "ic95_hi": 0.0
+      },
+      {
+        "anio": 2022,
+        "theta_pp": 13.881778926499006,
+        "gamma_pp": 1.7560090995691917,
+        "se_pp": 0.14242751251216187,
+        "celdas": 2284,
+        "n": 4527796,
+        "ic95_lo": 1.4768511750453546,
+        "ic95_hi": 2.035167024093029
+      },
+      {
+        "anio": 2023,
+        "theta_pp": 14.07924877271397,
+        "gamma_pp": 1.9534789457841568,
+        "se_pp": 0.21561560647776093,
+        "celdas": 2284,
+        "n": 3178575,
+        "ic95_lo": 1.5308723570877454,
+        "ic95_hi": 2.376085534480568
+      },
+      {
+        "anio": 2024,
+        "theta_pp": 13.36407511055484,
+        "gamma_pp": 1.238305283625027,
+        "se_pp": 0.22280697712858313,
+        "celdas": 2284,
+        "n": 3297891,
+        "ic95_lo": 0.801603608453004,
+        "ic95_hi": 1.67500695879705
+      },
+      {
+        "anio": 2025,
+        "theta_pp": 14.264810049972576,
+        "gamma_pp": 2.1390402230427625,
+        "se_pp": 0.22253639569701955,
+        "celdas": 2284,
+        "n": 3445056,
+        "ic95_lo": 1.7028688874766043,
+        "ic95_hi": 2.575211558608921
+      }
+    ],
+    "tendencias_paralelas": false,
+    "efecto_maximo_pp": 2.1390402230427625,
+    "veredicto": "NO IDENTIFICADO: el coeficiente previo de 2018 vale +2.37 pp, por encima del umbral de 1.0 pp. La tendencia previa no es plana, asi que el post-shock no se puede leer como efecto."
+  },
+  "tendencia_ajustada": {
+    "pendiente_pp_anio": -0.8150320301253798,
+    "r2": 0.9573327922818214,
+    "anios_previos": [
+      2018,
+      2019,
+      2020,
+      2021
+    ],
+    "desviaciones": [
+      {
+        "anio": 2022,
+        "observado_pp": 13.881778926499006,
+        "contrafactual_pp": 11.100248057875888,
+        "desviacion_pp": 2.7815308686231184
+      },
+      {
+        "anio": 2023,
+        "observado_pp": 14.07924877271397,
+        "contrafactual_pp": 10.285216027750494,
+        "desviacion_pp": 3.794032744963477
+      },
+      {
+        "anio": 2024,
+        "observado_pp": 13.36407511055484,
+        "contrafactual_pp": 9.4701839976251,
+        "desviacion_pp": 3.89389111292974
+      },
+      {
+        "anio": 2025,
+        "observado_pp": 14.264810049972576,
+        "contrafactual_pp": 8.655151967499933,
+        "desviacion_pp": 5.609658082472643
+      }
+    ],
+    "desviacion_maxima_pp": 5.609658082472643,
+    "extrapolacion_creible": false,
+    "por_que_no": "La tendencia previa es la compresion de la brecha durante el auge de refinanciacion. Extrapolarla supone que la brecha habria seguido cayendo, y contra esa linea el fin del auge aparece como efecto del shock."
+  },
+  "seleccion": {
+    "por_anio": [
+      {
+        "anio": 2018,
+        "n_focal": 559862,
+        "n_ref": 3970156,
+        "lti_focal": 2.5833333333333335,
+        "lti_ref": 2.44,
+        "retencion_focal_pct": -36.47186712085349,
+        "retencion_ref_pct": -34.03577214159321,
+        "retencion_dif_pp": -2.4360949792602753,
+        "lti_dif": -0.08544857162620145
+      },
+      {
+        "anio": 2019,
+        "n_focal": 595333,
+        "n_ref": 4353137,
+        "lti_focal": 2.661290322580645,
+        "lti_ref": 2.5280898876404496,
+        "retencion_focal_pct": -32.44693526022318,
+        "retencion_ref_pct": -27.672534538476235,
+        "retencion_dif_pp": -4.774400721746943,
+        "lti_dif": -0.09558147001933959
+      },
+      {
+        "anio": 2020,
+        "n_focal": 698876,
+        "n_ref": 5968134,
+        "lti_focal": 2.843137254901961,
+        "lti_ref": 2.619047619047619,
+        "retencion_focal_pct": -20.697801611742893,
+        "retencion_ref_pct": -0.8393244332200789,
+        "retencion_dif_pp": -19.858477178522815,
+        "lti_dif": -0.004692269105193159
+      },
+      {
+        "anio": 2021,
+        "n_focal": 881282,
+        "n_ref": 6018650,
+        "lti_focal": 2.9746835443037973,
+        "lti_ref": 2.7459016393442623,
+        "retencion_focal_pct": 0.0,
+        "retencion_ref_pct": 0.0,
+        "retencion_dif_pp": 0.0,
+        "lti_dif": 0.0
+      },
+      {
+        "anio": 2022,
+        "n_focal": 699259,
+        "n_ref": 3682908,
+        "lti_focal": 2.892156862745098,
+        "lti_ref": 2.657142857142857,
+        "retencion_focal_pct": -20.654342196935826,
+        "retencion_ref_pct": -38.80840387794605,
+        "retencion_dif_pp": 18.154061681010223,
+        "lti_dif": 0.006232100642705962
+      },
+      {
+        "anio": 2023,
+        "n_focal": 528839,
+        "n_ref": 2578029,
+        "lti_focal": 2.6,
+        "lti_ref": 2.4074074074074074,
+        "retencion_focal_pct": -39.99207972022576,
+        "retencion_ref_pct": -57.165992373705066,
+        "retencion_dif_pp": 17.173912653479306,
+        "lti_dif": -0.03618931236694234
+      },
+      {
+        "anio": 2024,
+        "n_focal": 528808,
+        "n_ref": 2637680,
+        "lti_focal": 2.566666666666667,
+        "lti_ref": 2.4193548387096775,
+        "retencion_focal_pct": -39.995597322990825,
+        "retencion_ref_pct": -56.17488971779385,
+        "retencion_dif_pp": 16.179292394803028,
+        "lti_dif": -0.0814700770025456
+      },
+      {
+        "anio": 2025,
+        "n_focal": 513831,
+        "n_ref": 2764991,
+        "lti_focal": 2.590909090909091,
+        "lti_ref": 2.442622950819672,
+        "retencion_focal_pct": -41.69505334274387,
+        "retencion_ref_pct": -54.05961469764815,
+        "retencion_dif_pp": 12.364561354904282,
+        "lti_dif": -0.08049576487011612
+      }
+    ],
+    "retencion_diferencial_pp": 17.173912653479306,
+    "carga_diferencial": 0.0814700770025456,
+    "contamina": true
+  },
+  "conclusion": {
+    "reversion_no_ampliacion": true,
+    "brecha_prepandemia_pp": 15.700854878791226,
+    "brecha_post_pp": 15.734469573507512,
+    "distancia_pp": 0.03361469471628631,
+    "ampliacion_vs_2021_pp": 2.5909756938398107,
+    "share_composicion_2023": 0.6482179437747515,
+    "efecto_publicado": null,
+    "razones_de_no_identificacion": [
+      "tendencias previas no planas",
+      "retencion diferencial entre los pools de solicitantes",
+      "el ajuste por tendencia extrapola el regimen que el shock termina"
+    ]
+  },
+  "limitaciones": [
+    "HMDA no trae puntaje de credito, el determinante mas fuerte de la suscripcion. Nada de esto prueba discriminacion.",
+    "El shock es comun: no hay grupo sin tratar. La segunda diferencia es entre grupos raciales, no entre tratados y controles.",
+    "derived_race='White' incluye solicitantes hispanos blancos; etnia es una dimension separada en HMDA.",
+    "El panel balanceado esta poblado sobre todo por compra de vivienda: las celdas de refinanciacion no sobreviven porque el segmento se desplomo. El efecto se estima donde queda con que comparar."
+  ]
+}

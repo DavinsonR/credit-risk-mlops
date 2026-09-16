@@ -105,6 +105,24 @@ class EvalResult:
     consistent: bool
     seconds: float
     error: str | None = None
+    # --- instrumentacion del hibrido (ADR 0009, pregunta abierta) -------------
+    # El hibrido decide POR CORRIDA si acepta la reescritura del LLM o cae a la
+    # plantilla. Esa decision se calculaba y se tiraba, asi que la hipotesis de
+    # que los hibridos salen menos consistentes PORQUE la compuerta cambia de
+    # opinion entre corridas quedo escrita sin poder contrastarse. Ahora se
+    # registra: `fallback_flip` es exactamente ese cambio de opinion.
+    used_llm_a: bool | None = None
+    used_llm_b: bool | None = None
+    rejection_reason: str | None = None
+
+    @property
+    def fallback_flip(self) -> bool:
+        """Las dos corridas del mismo caso tomaron caminos distintos."""
+        return (
+            self.used_llm_a is not None
+            and self.used_llm_b is not None
+            and self.used_llm_a != self.used_llm_b
+        )
 
     @property
     def passes(self) -> bool:
@@ -118,7 +136,9 @@ class EvalResult:
         )
 
     def as_dict(self) -> dict:
-        return asdict(self)
+        # fallback_flip es una property y asdict() no la ve. Se agrega a mano
+        # porque es la columna por la que existe esta instrumentacion.
+        return {**asdict(self), "fallback_flip": self.fallback_flip}
 
 
 def faithfulness(text: str, reasons: list[Reason], language: str = "es") -> Faithfulness:
@@ -212,6 +232,9 @@ def evaluate(
     seconds: float = 0.0,
     second_run: str | None = None,
     error: str | None = None,
+    used_llm_a: bool | None = None,
+    used_llm_b: bool | None = None,
+    rejection_reason: str | None = None,
 ) -> EvalResult:
     """Evalúa un aviso. `second_run` permite medir consistencia."""
     if error or not text.strip():
@@ -230,6 +253,9 @@ def evaluate(
             consistent=False,
             seconds=seconds,
             error=error or "salida vacia",
+            used_llm_a=used_llm_a,
+            used_llm_b=used_llm_b,
+            rejection_reason=rejection_reason,
         )
 
     f = faithfulness(text, reasons, language)
@@ -253,4 +279,12 @@ def evaluate(
         consistent=(second_run is None and provider == "template")
         or (second_run is not None and _norm(second_run) == _norm(text)),
         seconds=round(seconds, 2),
+        # La rama de exito tambien los propaga. La primera version solo los puso en
+        # la rama de error, asi que la columna llegaba vacia JUSTO en los casos que
+        # se querian analizar y el reporte concluyo "la hipotesis no se sostiene"
+        # a partir de un NaN interpretado como False. Un campo que no se llena no
+        # refuta nada.
+        used_llm_a=used_llm_a,
+        used_llm_b=used_llm_b,
+        rejection_reason=rejection_reason,
     )

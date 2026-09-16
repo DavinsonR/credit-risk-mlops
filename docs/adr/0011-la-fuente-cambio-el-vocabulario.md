@@ -112,3 +112,47 @@ día uno aplicándose a una población cuya variable principal ya no hablaba su
 idioma. No lo encontró ningún test, ni el gate de fairness, ni el de integridad, ni
 los 131 tests de la suite. **Lo encontró la primera corrida del monitoreo, mirando
 datos que el modelado nunca mira: las cosechas que no tienen etiqueta.**
+
+---
+
+## Cierre parcial (2026-09-16): el mapeo, medido
+
+`run harmonize` → [`exports/business_age_harmonization.json`](../../exports/business_age_harmonization.json)
+
+Lo anterior argumentaba que armonizar tiene un costo. Argumentar no es medir, así que
+se midió: el modelo de producción entrenado **dos veces** sobre el mismo split, la
+misma semilla y el mismo código, cambiando una sola cosa —el vocabulario de
+`business_age`—.
+
+| | AUC test | Categorías |
+|---|---|---|
+| Vocabulario crudo | **0.7005** | 8 |
+| Vocabulario armonizado | **0.6990** | 4 |
+| **Costo** | **0.0015** | |
+
+Y la contrapartida, sobre FY2024–2026 (189.144 préstamos), con el mismo criterio de
+soporte que usa `drift` (≥0.5% de la masa de entrenamiento, no mera presencia):
+
+| | Cobertura |
+|---|---|
+| Con el vocabulario crudo | **15.4%** |
+| Con el vocabulario armonizado | **90.1%** |
+| Recuperado | **+74.7 pp** |
+| Irreducible | **9.7%** |
+
+**Armonizar cuesta 0.0015 de AUC y recupera 74.7 puntos de cobertura.** La intuición
+de arriba —"el mapeo pierde resolución, así que el modelo nuevo tendría menos
+información"— es correcta en dirección y **despreciable en magnitud**: el gradiente
+entre 2, 3, 4 y 5+ años valía milésimas. Escrita sin medir, esa misma frase habría
+servido para no hacer nada.
+
+Lo que **no** cambia: el 9.7% de `Change of Ownership` sigue sin soporte y seguirá
+sin soporte. No es una antigüedad sino una forma de adquisición, y mapearla a
+"existente" sería inventar el dato. Ese residuo es el límite honesto de cualquier
+mapeo, y la razón por la que este ADR queda abierto en su parte de fondo: **la fuente
+cambió de concepto, no de etiqueta.**
+
+Una nota sobre cómo se midió, porque el primer intento se equivocó igual que la
+primera versión de la métrica: contó *presencia* en vez de *soporte*, y sobre
+FY2016+ en vez de la ventana reciente. Daba 81.4% de cobertura donde la respuesta es
+15.4%. El mismo error, dos veces, en el mismo ADR.

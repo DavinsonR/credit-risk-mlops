@@ -1,31 +1,31 @@
-caso,modelo,provider,language,faithfulness,recall,precision,hallucinated,compliant,prohibited_found,readability,words,within_length,consistent,seconds,error,pasa
-startup_alto_riesgo,deterministic,template,es,1.0,1.0,1.0,[],True,[],62.6,87,True,True,0.0,,True
-startup_alto_riesgo,deterministic,template,en,1.0,1.0,1.0,[],True,[],33.4,77,True,True,0.0,,True
-monto_alto_una_razon,deterministic,template,es,1.0,1.0,1.0,[],True,[],55.4,69,True,True,0.0,,True
-monto_alto_una_razon,deterministic,template,en,1.0,1.0,1.0,[],True,[],31.6,63,True,True,0.0,,True
-sin_colateral,deterministic,template,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,0.0,,True
-sin_colateral,deterministic,template,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,0.0,,True
-startup_alto_riesgo,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.74,,False
-startup_alto_riesgo,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],62.5,159,False,False,14.21,,False
-monto_alto_una_razon,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.42,,False
-monto_alto_una_razon,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],61.8,87,True,False,9.07,,False
-sin_colateral,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.21,,False
-sin_colateral,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],60.1,104,True,False,10.17,,False
-startup_alto_riesgo,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],62.5,83,True,False,12.59,,False
-startup_alto_riesgo,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.5,80,True,False,9.4,,False
-monto_alto_una_razon,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.6,72,True,True,10.17,,True
-monto_alto_una_razon,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],52.0,74,True,False,7.87,,False
-sin_colateral,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.0,71,True,False,10.36,,False
-sin_colateral,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],61.4,71,True,True,7.74,,True
-startup_alto_riesgo,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],74.7,69,True,True,15.16,,True
-startup_alto_riesgo,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],50.5,102,True,False,19.95,,False
-monto_alto_una_razon,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],61.3,39,True,True,10.24,,True
-monto_alto_una_razon,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],44.9,53,True,True,10.97,,True
-sin_colateral,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],63.6,56,True,True,13.35,,True
-sin_colateral,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],51.7,69,True,True,12.83,,True
-startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],66.6,56,True,False,17.17,,False
-startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],33.2,58,True,False,13.86,,False
-monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],66.0,46,True,True,13.79,,True
-monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],47.7,63,True,True,12.98,,True
-sin_colateral,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],65.8,49,True,True,14.76,,True
-sin_colateral,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],41.2,53,True,False,11.99,,False
+caso,modelo,provider,language,faithfulness,recall,precision,hallucinated,compliant,prohibited_found,readability,words,within_length,consistent,seconds,error,used_llm_a,used_llm_b,rejection_reason,fallback_flip,pasa
+startup_alto_riesgo,deterministic,template,es,1.0,1.0,1.0,[],True,[],62.6,87,True,True,0.0,,,,,False,True
+startup_alto_riesgo,deterministic,template,en,1.0,1.0,1.0,[],True,[],33.4,77,True,True,0.0,,,,,False,True
+monto_alto_una_razon,deterministic,template,es,1.0,1.0,1.0,[],True,[],55.4,69,True,True,0.0,,,,,False,True
+monto_alto_una_razon,deterministic,template,en,1.0,1.0,1.0,[],True,[],31.6,63,True,True,0.0,,,,,False,True
+sin_colateral,deterministic,template,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,0.0,,,,,False,True
+sin_colateral,deterministic,template,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,0.0,,,,,False,True
+startup_alto_riesgo,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.29,,,,,False,False
+startup_alto_riesgo,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],62.5,159,False,False,16.17,,,,,False,False
+monto_alto_una_razon,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.92,,,,,False,False
+monto_alto_una_razon,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],61.8,87,True,False,9.66,,,,,False,False
+sin_colateral,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,5.4,,,,,False,False
+sin_colateral,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],60.1,104,True,False,10.78,,,,,False,False
+startup_alto_riesgo,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],62.5,83,True,False,13.45,,True,True,,False,False
+startup_alto_riesgo,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.5,80,True,False,9.89,,True,True,,False,False
+monto_alto_una_razon,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.6,72,True,True,10.72,,True,True,,False,True
+monto_alto_una_razon,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],52.0,74,True,False,8.31,,True,True,,False,False
+sin_colateral,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.0,71,True,False,10.98,,True,True,,False,False
+sin_colateral,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],61.4,71,True,True,8.14,,True,True,,False,True
+startup_alto_riesgo,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],76.8,63,True,False,20.39,,,,,False,False
+startup_alto_riesgo,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],58.8,102,True,False,21.72,,,,,False,False
+monto_alto_una_razon,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],61.3,37,True,False,14.29,,,,,False,False
+monto_alto_una_razon,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],46.5,53,True,False,14.4,,,,,False,False
+sin_colateral,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],63.1,70,True,True,20.46,,,,,False,True
+sin_colateral,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],49.8,63,True,True,15.55,,,,,False,True
+startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],66.6,56,True,False,19.92,,True,True,,False,False
+startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],33.2,58,True,True,16.02,,True,True,,False,True
+monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],68.3,45,True,False,14.12,,True,True,,False,False
+monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],47.7,63,True,True,13.54,,True,True,,False,True
+sin_colateral,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],65.8,49,True,True,15.15,,True,True,,False,True
+sin_colateral,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.8,55,True,True,12.96,,True,True,,False,True

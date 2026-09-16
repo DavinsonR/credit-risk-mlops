@@ -1245,6 +1245,110 @@ venta, y por qué funciona mejor que el AUC)_
 ### Pendiente
 - PBIP con páginas de desempeño, equidad, pérdida y monitoreo. `powerbi/` sigue vacía.
 - Los brazos de Groq y Gemini del harness de avisos (faltan las claves gratuitas).
-- Instrumentar la decisión de fallback del híbrido (pregunta abierta del ADR 0009).
-- El estudio de evento sobre HMDA en el shock de tasas de 2022, que es el diseño
-  causal con mejor pinta y no está implementado.
+- ~~Instrumentar la decisión de fallback del híbrido~~ → cerrado en la semana 11.
+- ~~El estudio de evento sobre HMDA en el shock de tasas de 2022~~ → semana 11.
+
+---
+
+## Semana 11 — El estudio de evento, y la línea base equivocada
+
+La semana 10 cerró el alcance. Esta abre el punto 7 del [ROADMAP](docs/ROADMAP.md) —el
+estudio de evento sobre el shock de tasas de 2022— y termina cerrando tres preguntas
+abiertas de golpe. La más incómoda es una que no estaba en la lista: **un número que
+el proyecto venía citando estaba anclado al año equivocado.**
+
+### Lo primero que hizo falta no fue econometría: fueron tres años de datos
+
+Con el panel publicado (FY2020–2024) hay **un solo año pre-shock comparable**, 2021, y
+por tanto una sola diferencia previa. Cero grados de libertad para falsificar
+tendencias paralelas. Y peor: 2020–21 es el auge de refinanciación, un régimen
+anómalo. Usarlo de línea base es suponer que lo anormal era lo normal.
+
+Así que bajé FY2018, FY2019 y FY2025: 93.4M solicitudes en ocho años. 2018 y 2019 son
+años de tasas corrientes y son la única base contra la cual se puede separar *"el
+shock amplió la brecha"* de *"el auge la había comprimido y revirtió"*.
+
+**Era lo segundo.** La brecha post-shock (15.73 pp) está a **0.03 pp** de la
+pre-pandemia (15.70 pp). Contra 2021 la ampliación es de +2.59 pp, que es el número
+que yo mismo publiqué en la semana 6 como *"la razón de cuatro quintos cayó de 0.827 a
+0.729"*. Las dos cifras son correctas. Lo que estaba mal era el ancla.
+
+_(escribir: qué cambia en cómo leo un gradiente temporal cuando el período base es un
+régimen y no un año)_
+
+### El defecto que la descarga casi provoca
+
+Antes de descargar miré quién lee esos Parquet. Tres módulos hacían
+`glob("*.parquet")` sin filtrar por año: la disparidad observada, el benchmark de
+backends y el cargador del panel. **El sistema de archivos definía la muestra de
+análisis.** Bajar 2018 habría movido en silencio tres números publicados, incluido el
+encabezado "62.4M solicitudes", y ningún test lo habría visto porque todos leen el
+mismo directorio que el código.
+
+Es el defecto número 11 y es de la familia de siempre: un control cuya corrección
+dependía de que nadie hiciera algo razonable. Ahora la ventana sale de `config.yaml` y
+hay un test que prohíbe volver a expandir el directorio a mano.
+
+Y no vino solo: `acquire()` **sobrescribía** el manifiesto en vez de fusionarlo, así
+que descargar tres años borró el registro de procedencia de los otros cinco. Los
+Parquet seguían en disco; lo que se perdió fue la evidencia de dónde salieron.
+
+_(escribir: por qué el registro de procedencia es más frágil que el dato, y qué lo
+hace fácil de destruir sin que nada falle)_
+
+### El estudio no encontró un efecto, y esta vez eso es un resultado
+
+Cuatro pasos, en orden, y cada uno puede matar al siguiente:
+
+1. **Régimen.** La reversión de arriba.
+2. **Descomposición** de Kitagawa, exacta y verificada contra el cambio observado: el
+   **65%** del movimiento contra 2021 es recomposición del pool, no cambio de tasas
+   dentro de segmento. En FY2024 el término de tasas es **negativo**.
+3. **Estimador intra-celda** con efectos fijos saturados de celda-año y errores
+   agrupados por condado. Tiene forma cerrada —media armónica de brechas
+   intra-celda— y hay un test que la compara contra mínimos cuadrados por fuerza
+   bruta. **Las tendencias previas no pasan**: +2.37 pp en 2018, monótono.
+4. **Selección diferencial**: 17.2 pp. Las solicitudes negras cayeron 40% y las
+   blancas 57%. El pool de 2023 no es el de 2021 con menos gente.
+
+Y un paso 3b que me importa más que los otros: implementé el arreglo de manual
+—extrapolar la tendencia previa— y da **+5.61 pp**, grande y significativo. No se
+publica, porque la tendencia que extrapola *es* el auge que el shock termina. La
+técnica es correcta y el número está mal.
+
+_(escribir: por qué un ajuste por tendencia previa es tan fácil de defender en un
+seminario y tan difícil de justificar aquí)_
+
+### La hipótesis del híbrido era mía y era falsa
+
+El ADR 0009 dejó escrito, marcado como no verificado, que el híbrido sale menos
+consistente porque la compuerta de validación cambia de opinión entre corridas. Lo
+instrumenté. **Cero flips: la compuerta aceptó el 100% de las reescrituras.** Toda la
+inconsistencia ocurre dentro del mismo camino.
+
+Y el instrumento casi publica el número correcto por el motivo equivocado: pasé los
+campos nuevos **solo en la rama de error** de `evaluate()`, así que en todos los casos
+que quería analizar llegaban vacíos. Pandas los leyó como NaN, `.astype(bool)` los
+hizo `False`, y el reporte imprimió "aceptada en 0% de las corridas". Lo delató que el
+0% no cuadraba con la legibilidad del híbrido: si siempre cayera a la plantilla,
+tendría 44.8 y tenía 53.4.
+
+Ahora el análisis se niega a concluir si falta instrumentación. **Un campo que no se
+llena no refuta una hipótesis.**
+
+### Armonizar `business_age` cuesta 0.0015
+
+El ADR 0011 argumentaba que el mapeo pierde resolución. Medido: **0.0015 de AUC** a
+cambio de **+74.7 pp de cobertura** sobre FY2024–2026 (de 15.4% a 90.1%). La intuición
+era correcta en dirección y despreciable en magnitud, y escrita sin medir habría
+servido de excusa para no hacer nada.
+
+Queda un 9.7% irreducible: `Change of Ownership` no es una antigüedad. Hay un test que
+prohíbe mapearla a una, para que nadie suba la cobertura inventando el dato.
+
+_(escribir: cuándo un argumento cualitativo correcto conduce a la decisión equivocada)_
+
+### Pendiente al cierre de la semana 11
+- El layout del informe de Power BI (necesita Desktop).
+- Los brazos de Groq y Gemini (faltan las claves gratuitas).
+- Página propia del proyecto en el portafolio y la demo WASM publicada.

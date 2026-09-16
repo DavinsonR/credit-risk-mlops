@@ -220,3 +220,62 @@ Esto vale para todo el proyecto: las métricas del modelo **sí** reproducen —
 mismo commit, en el clon nuevo de otro equipo, dio AUC test 0.7005 y margen
 +0.0311, idénticos a los publicados—. Las del LLM, no. Es una diferencia de
 naturaleza entre los dos artefactos y merece decirse en vez de promediarse.
+
+---
+
+# Tercera revisión — 2026-09-16: la hipótesis del híbrido era falsa
+
+La revisión anterior dejó una hipótesis escrita y marcada como **no verificada**: el
+híbrido saldría menos consistente porque *"el mecanismo de validar-y-caer introduce
+su propia varianza en el borde"* — una corrida acepta la reescritura, la siguiente la
+rechaza, y se emiten dos documentos distintos. Y dejó dicho qué haría falta para
+contestarla: registrar por caso si se usó el LLM o el fallback.
+
+Ahora está registrado (`used_llm_a`, `used_llm_b`, `fallback_flip` en
+`exports/llm_evals_detail.csv`). El resultado:
+
+| Brazo | Casos | Inconsistentes | **Corridas que cambiaron de camino** | Reescritura aceptada |
+|---|---|---|---|---|
+| qwen2.5:7b (híbrido) | 6 | 2 | **0** | **100%** |
+| llama3.2:3b (híbrido) | 6 | 4 | **0** | **100%** |
+
+**Cero flips.** La compuerta aceptó la reescritura en las doce corridas de cada brazo,
+así que nunca hubo dos caminos entre los cuales oscilar. Toda la inconsistencia del
+híbrido ocurre **dentro del mismo camino**: el LLM redacta distinto la misma entrada.
+
+La hipótesis era mía, era plausible, y era falsa. La varianza es del modelo, no del
+control.
+
+## Lo que sí queda en evidencia, y no es mejor
+
+Si la compuerta aceptó el 100% de las reescrituras, **en esta corrida no rechazó
+ninguna**. Un control que no se dispara en la muestra observada no está demostrando
+que funciona: está demostrando que no se ejerció. Su corrección aquí descansa en los
+tests unitarios de `validate_rewrite`, no en la evidencia de la corrida.
+
+Es el mismo patrón que la bitácora ya registró tres veces —el hook de autoría, el
+verificador de `\b`, `run all` en verde con el entrenamiento roto—: un control
+silencioso es indistinguible de un control que pasa.
+
+## Lo que el instrumento casi publica
+
+La primera versión de esta medición añadió los campos a `EvalResult` y los pasó
+**solo en la rama de error** de `evaluate()`. En la rama de éxito —o sea, en todos los
+casos que se querían analizar— llegaban vacíos. `pandas` los leyó como NaN, `.astype(bool)`
+los convirtió en `False`, y el reporte imprimió *"reescritura del LLM aceptada en 0% de
+las corridas"* con la misma conclusión que arriba: **el número correcto por el motivo
+equivocado.**
+
+Se detectó porque el 0% no cuadraba con el resto de la tabla: si el híbrido siempre
+cayera a la plantilla, su legibilidad tendría que ser 44.8 y sus palabras 73, y eran
+53.4 y 54.3.
+
+`fallback_analysis` ahora exige instrumentación completa y, si falta, imprime
+`SIN INSTRUMENTACION` y **no concluye nada**. Un campo que no se llena no refuta una
+hipótesis.
+
+## Estado de la pregunta
+
+**Cerrada.** El híbrido no es menos consistente por su compuerta. Sigue siendo menos
+consistente que la plantilla, que es lo que decide el resultado del ADR, y la decisión
+no cambia: la plantilla determinista se queda en producción.

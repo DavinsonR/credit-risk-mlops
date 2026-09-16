@@ -122,6 +122,11 @@ def run_case(
         # si falla: por construccion nunca es peor que el baseline.
         a = hybrid_generate(request, provider)
         b = hybrid_generate(request, provider)
+        # Las dos decisiones de compuerta se REGISTRAN. Antes se descartaban, y
+        # con ellas la unica evidencia que podia contestar la pregunta abierta
+        # del ADR 0009: por que el hibrido sale menos consistente que el LLM
+        # solo. Si las corridas de un mismo caso difieren en `used_llm`, la
+        # varianza la mete la compuerta, no el modelo.
         return evaluate(
             a.text,
             reasons,
@@ -129,6 +134,9 @@ def run_case(
             language=language,
             seconds=a.seconds,
             second_run=b.text,
+            used_llm_a=a.used_llm,
+            used_llm_b=b.used_llm,
+            rejection_reason=a.rejection_reason or b.rejection_reason,
         )
 
     if provider.name == "template":
@@ -203,6 +211,59 @@ def summarize(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def fallback_analysis(df: pd.DataFrame) -> pd.DataFrame:
+    """Cierra la pregunta abierta del ADR 0009 con datos en vez de hipotesis.
+
+    La hipotesis escrita era: el hibrido sale menos consistente que el LLM solo
+    porque la compuerta de validacion cambia de opinion entre corridas --acepta la
+    reescritura una vez y la rechaza la otra-- y entonces un caso devuelve texto
+    del LLM y el otro devuelve la plantilla. Dos textos completamente distintos por
+    una decision binaria, no por la temperatura del modelo.
+
+    La prueba es directa: entre los casos hibridos INCONSISTENTES, que fraccion
+    tuvo `fallback_flip`. Si es alta, la varianza la mete la compuerta. Si es baja,
+    la hipotesis era falsa y la varianza es del modelo reescribiendo distinto
+    dentro del mismo camino.
+    """
+    hib = df[df["modelo"].str.contains(r"\(hibrido\)", regex=True)]
+    if hib.empty:
+        return pd.DataFrame()
+    filas = []
+    for arm, part in hib.groupby("modelo", observed=True):
+        # SIN INSTRUMENTACION NO HAY CONCLUSION. La primera version leia una columna
+        # que `evaluate` no estaba llenando --el kwarg solo llegaba a la rama de
+        # error-- y los NaN se convertian en False: el reporte concluyo "la
+        # hipotesis del ADR 0009 no se sostiene" a partir de un campo vacio. Ahora
+        # la ausencia se declara en vez de promediarse.
+        instrumentado = part["used_llm_a"].notna().all()
+        inconsist = part[~part["consistent"].astype(bool)]
+        flips = part[part["fallback_flip"].astype(bool)] if instrumentado else part.iloc[:0]
+        filas.append(
+            {
+                "brazo": arm,
+                "casos": len(part),
+                "inconsistentes": len(inconsist),
+                "con_flip": int(flips.shape[0]),
+                # La cifra que contesta la pregunta.
+                "instrumentado": bool(instrumentado),
+                "inconsistencias_explicadas_por_flip": (
+                    float(inconsist["fallback_flip"].astype(bool).mean())
+                    if instrumentado and len(inconsist)
+                    else float("nan")
+                ),
+                "uso_llm": (
+                    float(part["used_llm_a"].astype(bool).mean()) if instrumentado else float("nan")
+                ),
+                "motivo_rechazo_mas_comun": (
+                    part["rejection_reason"].dropna().mode().iloc[0]
+                    if part["rejection_reason"].notna().any()
+                    else None
+                ),
+            }
+        )
+    return pd.DataFrame(filas)
+
+
 def main() -> int:
     providers = available_providers()
     print("=" * 92)
@@ -254,15 +315,61 @@ def main() -> int:
         print("\n  La plantilla no alucina, no depende de red y cuesta cero.")
         print("  Un LLM solo se justifica si aporta algo medible sobre eso.")
 
+    fb = fallback_analysis(df)
+    if not fb.empty:
+        print("\n" + "=" * 92)
+        print("POR QUE EL HIBRIDO ES MENOS CONSISTENTE - la compuerta, o el modelo?")
+        print("=" * 92)
+        for r in fb.itertuples():
+            print(f"  {r.brazo}")
+            print(
+                f"    casos={r.casos}  inconsistentes={r.inconsistentes}  "
+                f"corridas que cambiaron de camino={r.con_flip}"
+            )
+            if r.instrumentado:
+                print(f"    reescritura del LLM aceptada en {r.uso_llm:.0%} de las corridas")
+            if r.motivo_rechazo_mas_comun:
+                print(f"    motivo de rechazo mas comun: {r.motivo_rechazo_mas_comun}")
+            frac = r.inconsistencias_explicadas_por_flip
+            if not r.instrumentado:
+                print(
+                    "    -> SIN INSTRUMENTACION: la decision de la compuerta no llego "
+                    "al registro.\n"
+                    "       No se concluye nada; ver crmlops.llm.evals.evaluate."
+                )
+            elif r.inconsistentes == 0:
+                print("    -> sin inconsistencias que explicar en esta corrida")
+            elif frac >= 0.5:
+                print(
+                    f"    -> {frac:.0%} de las inconsistencias vienen de que la compuerta "
+                    "cambio de opinion."
+                )
+                print(
+                    "       La varianza es del CONTROL, no del modelo: la hipotesis del "
+                    "ADR 0009 se sostiene."
+                )
+            else:
+                print(
+                    f"    -> solo {frac:.0%} de las inconsistencias coinciden con un cambio "
+                    "de camino."
+                )
+                print(
+                    "       La hipotesis del ADR 0009 NO se sostiene: la varianza esta "
+                    "dentro del mismo camino."
+                )
+
     out = resolve_path("exports")
     df.to_csv(out / "llm_evals_detail.csv", index=False)
     resumen.to_csv(out / "llm_evals_summary.csv")
+    if not fb.empty:
+        fb.to_csv(out / "llm_fallback_analysis.csv", index=False)
     (out / "llm_evals.json").write_text(
         json.dumps(
             {
                 "providers": [p.name for p in providers],
                 "n_cases": len(CASES) * len(LANGUAGES),
                 "summary": resumen.reset_index().to_dict(orient="records"),
+                "fallback_analysis": fb.to_dict(orient="records") if not fb.empty else [],
             },
             indent=2,
             default=float,

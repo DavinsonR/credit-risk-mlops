@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "fuente": "exports/business_age_harmonization.json",
+  "variable": "business_age",
+  "costo_auc": 0.001505302408366993,
+  "auc_crudo": 0.7004661352641914,
+  "auc_armonizado": 0.6989608328558244,
+  "cobertura": {
+    "fy_desde": 2024,
+    "fy_hasta": 2026,
+    "soportado_crudo": 0.15419468764539188,
+    "soportado_armonizado": 0.901461320475405,
+    "recuperado_pp": 74.7266632830013,
+    "sin_origen": 0.09706361290868333
+  },
+  "sin_origen": [
+    "Change of Ownership"
+  ],
+  "conclusion": "Armonizar cuesta 0.0015 de AUC y recupera 74.7 pp de cobertura. Queda 9.7% irreducible porque 'Change of Ownership' no es una antiguedad."
+}

@@ -18,26 +18,26 @@
       "pasa": 1.0
     },
     {
-      "arm": "ollama / qwen2.5:7b",
-      "casos": 6,
-      "fidelidad": 1.0,
-      "cumple": 1.0,
-      "legibilidad": 57.7833,
-      "palabras": 64.6667,
-      "consistente": 0.8333,
-      "segundos": 13.75,
-      "pasa": 0.8333
-    },
-    {
       "arm": "ollama / qwen2.5:7b (hibrido)",
       "casos": 6,
       "fidelidad": 1.0,
       "cumple": 1.0,
-      "legibilidad": 53.4167,
-      "palabras": 54.1667,
-      "consistente": 0.5,
-      "segundos": 14.0917,
-      "pasa": 0.5
+      "legibilidad": 53.4,
+      "palabras": 54.3333,
+      "consistente": 0.6667,
+      "segundos": 15.285,
+      "pasa": 0.6667
+    },
+    {
+      "arm": "ollama / qwen2.5:7b",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 59.3833,
+      "palabras": 64.6667,
+      "consistente": 0.3333,
+      "segundos": 17.8017,
+      "pasa": 0.3333
     },
     {
       "arm": "ollama / llama3.2:3b (hibrido)",
@@ -47,7 +47,7 @@
       "legibilidad": 53.1667,
       "palabras": 75.1667,
       "consistente": 0.3333,
-      "segundos": 9.6883,
+      "segundos": 10.2483,
       "pasa": 0.3333
     },
     {
@@ -58,8 +58,30 @@
       "legibilidad": 74.5833,
       "palabras": 67.3333,
       "consistente": 0.5,
-      "segundos": 8.3033,
+      "segundos": 9.0367,
       "pasa": 0.0
+    }
+  ],
+  "fallback_analysis": [
+    {
+      "brazo": "llama3.2:3b (hibrido)",
+      "casos": 6,
+      "inconsistentes": 4,
+      "con_flip": 0,
+      "instrumentado": true,
+      "inconsistencias_explicadas_por_flip": 0.0,
+      "uso_llm": 1.0,
+      "motivo_rechazo_mas_comun": null
+    },
+    {
+      "brazo": "qwen2.5:7b (hibrido)",
+      "casos": 6,
+      "inconsistentes": 2,
+      "con_flip": 0,
+      "instrumentado": true,
+      "inconsistencias_explicadas_por_flip": 0.0,
+      "uso_llm": 1.0,
+      "motivo_rechazo_mas_comun": null
     }
   ]
 }

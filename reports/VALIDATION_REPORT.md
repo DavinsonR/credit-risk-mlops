@@ -1,6 +1,6 @@
 # Reporte de Validación de Modelos
 
-> Generado por `crmlops.governance.validation_report` el 2026-09-12 05:51 UTC.
+> Generado por `crmlops.governance.validation_report` el 2026-09-16 04:14 UTC.
 > **No editar a mano**: se regenera en cada corrida.
 >
 > Vintage de datos `260630` · configuración `969867602d1192cc` ·

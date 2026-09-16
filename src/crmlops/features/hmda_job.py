@@ -23,6 +23,7 @@ from pathlib import Path
 import pandas as pd
 
 from crmlops.config import resolve_path
+from crmlops.sources.hmda import shard_paths
 
 # HMDA codifica DTI y LTV como texto con rangos ("20%-<30%"), asi que la logica
 # de limpieza no es trivial y el benchmark no queda midiendo solo lectura de IO.
@@ -45,10 +46,6 @@ class BackendResult:
     frame: pd.DataFrame
 
 
-def hmda_glob() -> str:
-    return (resolve_path("parquet") / "hmda" / "*.parquet").as_posix()
-
-
 def resolve_shards() -> list[str]:
     """Lista CONCRETA de archivos, fijada una sola vez.
 
@@ -57,9 +54,12 @@ def resolve_shards() -> list[str]:
     escribiendo --por ejemplo, una descarga en curso-- ven conjuntos distintos y
     la verificacion de equivalencia falla por una razon que no tiene nada que ver
     con los motores.
+
+    Y la lista sale de `sources.hmda.years`, no del directorio: el benchmark
+    publicado dice sobre cuantas filas corrio, asi que un anio de mas en disco
+    cambiaria el numero sin que nadie tocara el codigo.
     """
-    files = sorted((resolve_path("parquet") / "hmda").glob("*.parquet"))
-    return [f.as_posix() for f in files]
+    return [f.as_posix() for f in shard_paths()]
 
 
 def shard_count() -> int:

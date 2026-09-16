@@ -1,0 +1,3 @@
+brazo,casos,inconsistentes,con_flip,instrumentado,inconsistencias_explicadas_por_flip,uso_llm,motivo_rechazo_mas_comun
+llama3.2:3b (hibrido),6,4,0,True,0.0,1.0,
+qwen2.5:7b (hibrido),6,2,0,True,0.0,1.0,

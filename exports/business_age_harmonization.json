@@ -1,0 +1,169 @@
+{
+  "variable": "business_age",
+  "mapeo": {
+    "Existing, 5 or more years": "Existing or more than 2 years old",
+    "Less than 5 years old but at least 4": "Existing or more than 2 years old",
+    "Less than 4 years old but at least 3": "Existing or more than 2 years old",
+    "Less than 3 years old but at least 2": "Existing or more than 2 years old",
+    "New, Less than 1 Year old": "New Business or 2 years or less",
+    "New Business or Less than 2 Years Old": "New Business or 2 years or less",
+    "Startup, Loan Funds will Open Business": "Startup, Loan Funds will Open Business",
+    "Existing or more than 2 years old": "Existing or more than 2 years old",
+    "New Business or 2 years or less": "New Business or 2 years or less",
+    "Change of Ownership": "Change of Ownership"
+  },
+  "destino": [
+    "Existing or more than 2 years old",
+    "New Business or 2 years or less",
+    "Startup, Loan Funds will Open Business",
+    "Change of Ownership"
+  ],
+  "sin_origen": [
+    "Change of Ownership"
+  ],
+  "vocabulario_entrenamiento": {
+    "Existing or more than 2 years old": 7.4e-05,
+    "Existing, 5 or more years": 0.501232,
+    "Less than 3 years old but at least 2": 0.062063,
+    "Less than 4 years old but at least 3": 0.071085,
+    "Less than 5 years old but at least 4": 0.047132,
+    "New, Less than 1 Year old": 0.105311,
+    "Startup, Loan Funds will Open Business": 0.146363,
+    "Unanswered": 0.06674
+  },
+  "costo": {
+    "auc_crudo": 0.7004661352641914,
+    "auc_armonizado": 0.6989608328558244,
+    "categorias_crudo": 8,
+    "categorias_armonizado": 4,
+    "n_train": 217060,
+    "n_test": 89313,
+    "seed": 42,
+    "costo_auc": 0.001505302408366993
+  },
+  "cobertura": {
+    "fy_desde": 2024,
+    "fy_hasta": 2026,
+    "n": 189144,
+    "soportado_crudo": 0.15419468764539188,
+    "soportado_armonizado": 0.901461320475405,
+    "sin_origen": 0.09706361290868333,
+    "min_support": 0.005,
+    "por_fy": [
+      {
+        "fy": 2011,
+        "n": 53710,
+        "soportado_crudo": 0.9996276298640849,
+        "soportado_armonizado": 0.9153975051200893,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2012,
+        "n": 44376,
+        "soportado_crudo": 0.9994140977104742,
+        "soportado_armonizado": 0.9395393906616188,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2013,
+        "n": 46395,
+        "soportado_crudo": 0.9989007436146137,
+        "soportado_armonizado": 0.9423644789309192,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2014,
+        "n": 52044,
+        "soportado_crudo": 0.9980401198985474,
+        "soportado_armonizado": 0.9377834140342787,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2015,
+        "n": 63461,
+        "soportado_crudo": 0.9971636122973164,
+        "soportado_armonizado": 0.9346212634531444,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2016,
+        "n": 64074,
+        "soportado_crudo": 0.9968942160626775,
+        "soportado_armonizado": 0.9260698567281581,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2017,
+        "n": 62430,
+        "soportado_crudo": 0.9965241069998398,
+        "soportado_armonizado": 0.9276790004805382,
+        "sin_origen": 0.0
+      },
+      {
+        "fy": 2018,
+        "n": 60354,
+        "soportado_crudo": 0.5159392915134042,
+        "soportado_armonizado": 0.7756403883752526,
+        "sin_origen": 0.07035159227226033
+      },
+      {
+        "fy": 2019,
+        "n": 51907,
+        "soportado_crudo": 0.34319070645577665,
+        "soportado_armonizado": 0.6946269289305874,
+        "sin_origen": 0.11830774269366366
+      },
+      {
+        "fy": 2020,
+        "n": 42298,
+        "soportado_crudo": 0.24537803205825334,
+        "soportado_armonizado": 0.7717386164830489,
+        "sin_origen": 0.13123551940990116
+      },
+      {
+        "fy": 2021,
+        "n": 51856,
+        "soportado_crudo": 0.17396251157050294,
+        "soportado_armonizado": 0.8717795433508176,
+        "sin_origen": 0.12764193150262265
+      },
+      {
+        "fy": 2022,
+        "n": 47678,
+        "soportado_crudo": 0.1758253282436344,
+        "soportado_armonizado": 0.8949200889299048,
+        "sin_origen": 0.10451361214816057
+      },
+      {
+        "fy": 2023,
+        "n": 57362,
+        "soportado_crudo": 0.1781492974443011,
+        "soportado_armonizado": 0.9116662598933092,
+        "sin_origen": 0.08791534465325476
+      },
+      {
+        "fy": 2024,
+        "n": 70242,
+        "soportado_crudo": 0.15761225477634463,
+        "soportado_armonizado": 0.9116055920958971,
+        "sin_origen": 0.08618775091825404
+      },
+      {
+        "fy": 2025,
+        "n": 78078,
+        "soportado_crudo": 0.14751914751914752,
+        "soportado_armonizado": 0.9021875560337099,
+        "sin_origen": 0.09648044263428879
+      },
+      {
+        "fy": 2026,
+        "n": 40824,
+        "soportado_crudo": 0.1610817166372722,
+        "soportado_armonizado": 0.882618067803253,
+        "sin_origen": 0.11689202429943171
+      }
+    ],
+    "recuperado_pp": 74.7266632830013
+  },
+  "conclusion": "Armonizar cuesta 0.0015 de AUC y recupera 74.7 pp de cobertura. Queda 9.7% irreducible porque 'Change of Ownership' no es una antiguedad."
+}

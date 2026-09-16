@@ -44,6 +44,18 @@
         "exports/causal_identification.json"
       ]
     },
+    "evento": {
+      "bytes": 3222,
+      "fuentes": [
+        "exports/event_study_hmda.json"
+      ]
+    },
+    "vocabulario": {
+      "bytes": 606,
+      "fuentes": [
+        "exports/business_age_harmonization.json"
+      ]
+    },
     "umbrales": {
       "bytes": 657,
       "fuentes": [
