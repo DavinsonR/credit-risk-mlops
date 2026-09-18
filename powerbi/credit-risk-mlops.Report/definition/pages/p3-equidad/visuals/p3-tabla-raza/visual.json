@@ -1,0 +1,115 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p3-tabla-raza",
+  "position": {
+    "x": 24,
+    "y": 96,
+    "z": 0,
+    "width": 760,
+    "height": 300
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadRaza"
+                    }
+                  },
+                  "Property": "grupo"
+                }
+              },
+              "queryRef": "EquidadRaza.grupo",
+              "nativeQueryRef": "grupo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadRaza"
+                    }
+                  },
+                  "Property": "n"
+                }
+              },
+              "queryRef": "EquidadRaza.n",
+              "nativeQueryRef": "n"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadRaza"
+                    }
+                  },
+                  "Property": "tasa_aprobacion"
+                }
+              },
+              "queryRef": "EquidadRaza.tasa_aprobacion",
+              "nativeQueryRef": "tasa_aprobacion"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadRaza"
+                    }
+                  },
+                  "Property": "tasa_denegacion_real"
+                }
+              },
+              "queryRef": "EquidadRaza.tasa_denegacion_real",
+              "nativeQueryRef": "tasa_denegacion_real"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadRaza"
+                    }
+                  },
+                  "Property": "ratio_calibracion"
+                }
+              },
+              "queryRef": "EquidadRaza.ratio_calibracion",
+              "nativeQueryRef": "ratio_calibracion"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Todos los grupos protegidos'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

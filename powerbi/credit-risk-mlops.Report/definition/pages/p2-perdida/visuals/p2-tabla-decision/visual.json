@@ -1,0 +1,101 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p2-tabla-decision",
+  "position": {
+    "x": 896,
+    "y": 256,
+    "z": 0,
+    "width": 360,
+    "height": 320
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Decision"
+                    }
+                  },
+                  "Property": "decline_rate"
+                }
+              },
+              "queryRef": "Decision.decline_rate",
+              "nativeQueryRef": "decline_rate"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Decision"
+                    }
+                  },
+                  "Property": "loss_avoided"
+                }
+              },
+              "queryRef": "Decision.loss_avoided",
+              "nativeQueryRef": "loss_avoided"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Decision"
+                    }
+                  },
+                  "Property": "good_volume_foregone"
+                }
+              },
+              "queryRef": "Decision.good_volume_foregone",
+              "nativeQueryRef": "good_volume_foregone"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Decision"
+                    }
+                  },
+                  "Property": "lift"
+                }
+              },
+              "queryRef": "Decision.lift",
+              "nativeQueryRef": "lift"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'La curva, en números'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

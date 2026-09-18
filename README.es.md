@@ -36,8 +36,9 @@ alguien. Cada fila enlaza al artefacto que lo prueba.
 | 13 | La demo del navegador **nunca se había pulsado.** El campo de la garantía SBA traía `step="1000"` y un valor por defecto de `187500` —el 75% del préstamo, la cifra correcta— que no es múltiplo de 1000. El formulario nacía inválido y el botón no hacía nada. El modelo ONNX cargaba, la paridad estaba verificada, y lo único que nadie había hecho era pulsar el botón | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · ahora publicada y bilingüe |
 | 14 | **Nadie leía `.env`.** `.env.example` decía "copiar a .env", el harness decía "claves en .env", y los proveedores hacían `os.environ.get(...)`, que solo ve variables de entorno reales. Seguir la instrucción oficial del repo dejaba Groq y Gemini en "no disponibles" — sin error y sin pista | Encontrado al escribir [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
 | 15 | El `.pbip` declaraba un artefacto de informe que **no existía**: solo se había escrito el modelo semántico. Power BI Desktop no abre un proyecto cuyo informe falta, así que la primera línea de la guía era inejecutable. El test del scaffold no lo veía porque comprobaba una lista de archivos escrita a mano, no lo que el propio `.pbip` declara | Encontrado al escribir [docs/POWERBI.md](docs/POWERBI.md) · el test ahora sigue la cadena de artefactos |
+| 16 | `run ci-local` copiaba el árbol de trabajo sobre un clon limpio de HEAD pero **nunca borraba nada**, así que un archivo que el commit elimina seguía vivo en el clon. Una eliminación que rompiera CI era invisible para el control hecho justo para eso. Y mirar si el archivo de origen existe tampoco basta: `git ls-files` lista el índice, y un archivo ya eliminado con `git add -A` no está ahí | Encontrado al borrar el `report.json` clásico · ahora compara contra `HEAD` |
 
-Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Ocho de
+Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Nueve de
 estos **fallaban en silencio o reportaban éxito** — que es el modo de fallo que el
 proyecto entero persigue, encontrado en su propio tooling.
 
@@ -238,7 +239,7 @@ El alcance de las diez semanas está cerrado. Lo que queda está escrito y prior
 por cuánto cambia el resultado, no por cuándo apareció —
 **[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
 descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
-Power BI que necesita Desktop, y veinte párrafos deliberadamente vacíos en la bitácora
+Power BI que necesita Desktop, y veintiún párrafos deliberadamente vacíos en la bitácora
 que solo su autor puede llenar.
 
 ## Licencia

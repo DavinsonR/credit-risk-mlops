@@ -80,6 +80,9 @@ $Tasks = [ordered]@{
     "causal"       = @{ desc = "Identificacion causal: se puede estimar el efecto de la garantia?"; cmd = { uv run python -m crmlops.causal.identification } }
     "event-study"  = @{ desc = "Estudio de evento: el shock de tasas de 2022 sobre la brecha racial"; cmd = { uv run python -m crmlops.causal.event_study } }
     "harmonize"    = @{ desc = "Costo de armonizar business_age vs. cobertura recuperada"; cmd = { uv run python -m crmlops.monitoring.harmonize } }
+    # --with jsonschema: la validacion contra los esquemas de Microsoft no vale una
+    # dependencia permanente, pero sin ella el script dice SALTADO en vez de aprobar.
+    "pbir"         = @{ desc = "Regenera el informe de Power BI (PBIR) y lo valida"; cmd = { uv run --with jsonschema python scripts/build_pbir_report.py } }
     # `web-exports` y no `web`: `web` ya es la demo WASM en el navegador.
     "web-exports"  = @{ desc = "Bundle JSON para el sitio, desde los exports existentes"; cmd = { uv run python -m crmlops.export.web } }
     "web-check"    = @{ desc = "Verifica que el bundle coincida con sus fuentes, sin escribir"; cmd = { uv run python -m crmlops.export.web --check } }

@@ -1,6 +1,6 @@
 # Lo que falta
 
-Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 233 tests,
+Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 239 tests,
 10 gates, 14 ADRs, y el proyecto tiene su propia página en el portafolio con la demo
 corriendo en el navegador. **Nada de esta lista bloquea mostrarlo.**
 
@@ -31,8 +31,11 @@ proyecto venía citando:
 - **Página propia en el portafolio**, con el acantilado de vocabulario, la curva de
   decisión, el gate bloqueando y el estudio de evento. Ningún número se teclea: la
   página lee el mismo bundle que el repositorio verifica.
+- **El informe de Power BI, escrito en PBIR** y validado contra los esquemas de
+  Microsoft: cuatro páginas, veinte visuales, cada campo comprobado contra el TMDL.
+  Falta abrirlo en Desktop, que es el punto 3.
 
-Y dejaron cinco defectos en la bitácora: la muestra de análisis la definía el sistema de
+Y dejaron seis defectos en la bitácora: la muestra de análisis la definía el sistema de
 archivos, el manifiesto de procedencia se sobrescribía en vez de fusionarse, la demo del
 navegador nunca se había pulsado, `.env` no lo leía nadie, y el `.pbip` apuntaba a un
 artefacto inexistente. Los dos últimos salieron de escribir los instructivos, que es
@@ -106,24 +109,26 @@ las dos cosas encuentra la única inconsistencia del conjunto justo en la creden
 
 ## Después — lo que queda a medias
 
-### 3. El informe de Power BI
-**Quién:** solo Davirson (hace falta Power BI Desktop) · **Esfuerzo:** medio día
+### 3. Abrir el informe de Power BI y verificarlo
+**Quién:** solo Davirson (hace falta Power BI Desktop) · **Esfuerzo:** una hora
 
-El modelo semántico está escrito en TMDL y sus enlaces están verificados por test —
-cada `sourceColumn` se compara contra el encabezado real del CSV. **Lo que falta es el
-layout**, y no puede escribirse a ciegas: `powerbi/README.md` trae la especificación de
-las cuatro páginas, qué archivo alimenta cada visual y la lista de lo que no debe
-mostrarse.
+El modelo semántico estaba escrito en TMDL y verificado por test. **Ahora el informe
+también está escrito**: cuatro páginas y veinte visuales en PBIR —el formato de
+metadatos mejorado, un archivo por página y uno por visual— generados por
+`run pbir`, que valida cada archivo contra los esquemas publicados de Microsoft y
+comprueba que cada campo existe en el TMDL leyéndolo del TMDL.
 
-Es la capacidad que el portafolio ya reclama con TMDL y DAX, y aquí está a medio camino.
+**Lo que falta es abrirlo.** Cumplir un esquema no es cargar en Desktop, y nadie lo ha
+abierto. Puede fallar por un tipo de visual, por un rol que ese visual no acepta, o
+porque PBIR es vista previa y exige una versión reciente.
 
-**Procedimiento completo: [docs/POWERBI.md](POWERBI.md)** — instalar Desktop, activar la
-bandera de PBIP, los seis exports que tienen que existir, qué hacer si no abre, los
-campos de cada una de las cuatro páginas, y qué mirar en el diff al guardar.
+**Procedimiento: [docs/POWERBI.md](POWERBI.md)** — las dos banderas de vista previa que
+hay que activar, los seis exports que tienen que existir, los tres fallos posibles al
+abrir, qué mirar en cada página, qué formato vas a tener que ajustar a mano, y qué
+revisar en el diff al guardar.
 
-Escribir esa guía destapó un defecto: el `.pbip` declaraba un artefacto de informe que
-**no existía**, así que la primera instrucción —"abrir el .pbip"— era inejecutable. Ya
-está el andamiaje, y un test comprueba lo que el propio `.pbip` declara.
+Si algo no abre, **apunta el mensaje tal cual**: es el dato que yo no puedo obtener y
+con él corrijo el generador.
 
 ---
 
@@ -149,7 +154,7 @@ pondrían a prueba si eso es de la inferencia local o del problema.
 ### 5. Los `_(escribir: ...)_` de NOTES.md
 **Quién:** solo Davirson · **Esfuerzo:** dos horas
 
-Veinte huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
+Veintiún huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
 algo. **Están vacíos a propósito**: son lo que hay que poder defender en una entrevista, y
 escritos por otro no sirven para eso.
 

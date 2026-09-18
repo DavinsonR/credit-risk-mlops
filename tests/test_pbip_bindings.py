@@ -223,3 +223,116 @@ def test_el_informe_referencia_al_modelo_semantico_por_ruta_relativa():
 def test_el_informe_declara_su_tipo_en_platform():
     p = json.loads((PBIP / "credit-risk-mlops.Report" / ".platform").read_text(encoding="utf-8"))
     assert p["metadata"]["type"] == "Report"
+
+
+# --- el informe PBIR: cada campo que dibuja existe en el modelo ---
+
+REPORTE = PBIP / "credit-risk-mlops.Report"
+PAGINAS = REPORTE / "definition" / "pages"
+
+
+def _visuales_pbir() -> list[tuple[Path, dict]]:
+    return [
+        (p, json.loads(p.read_text(encoding="utf-8")))
+        for p in sorted(PAGINAS.rglob("visuals/*/visual.json"))
+    ]
+
+
+def _campos_referenciados(obj) -> set[tuple[str, str]]:
+    fuera: set[tuple[str, str]] = set()
+    if isinstance(obj, dict):
+        for clave in ("Column", "Measure"):
+            if clave in obj:
+                ent = obj[clave]["Expression"]["SourceRef"]["Entity"]
+                fuera.add((ent, obj[clave]["Property"]))
+        for v in obj.values():
+            fuera |= _campos_referenciados(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            fuera |= _campos_referenciados(v)
+    return fuera
+
+
+def _campos_del_modelo() -> dict[str, set[str]]:
+    modelo: dict[str, set[str]] = {}
+    tablas = PBIP / "credit-risk-mlops.SemanticModel" / "definition" / "tables"
+    for archivo in sorted(tablas.glob("*.tmdl")):
+        tabla = None
+        for linea in archivo.read_text(encoding="utf-8").splitlines():
+            if m := re.match(r"^table\s+'?([^'\s]+)'?", linea):
+                tabla = m.group(1)
+                modelo.setdefault(tabla, set())
+            elif tabla and (m := re.match(r"^\tcolumn\s+'?([^'\n]+?)'?\s*$", linea)):
+                modelo[tabla].add(m.group(1))
+            elif tabla and (m := re.match(r"^\tmeasure\s+'?([^'=]+?)'?\s*=", linea)):
+                modelo[tabla].add(m.group(1).strip())
+    return modelo
+
+
+def test_el_informe_solo_dibuja_campos_que_existen():
+    """Cada columna y cada medida del informe existe en el TMDL.
+
+    Es el mismo principio que `test_cada_columna_enlazada_existe_en_su_csv` una capa
+    mas arriba: el modelo se enlaza al CSV y el informe se enlaza al modelo. Sin esto,
+    renombrar una medida deja un visual roto que solo se ve al abrir Desktop.
+    """
+    visuales = _visuales_pbir()
+    assert visuales, "el informe PBIR no tiene visuales"
+    modelo = _campos_del_modelo()
+
+    rotos = []
+    for ruta, v in visuales:
+        for ent, prop in sorted(_campos_referenciados(v)):
+            if ent not in modelo:
+                rotos.append(f"{ruta.parent.name}: tabla '{ent}' no existe")
+            elif prop not in modelo[ent]:
+                rotos.append(f"{ruta.parent.name}: {ent}[{prop}] no existe")
+    assert not rotos, "campos rotos en el informe:\n  " + "\n  ".join(rotos)
+
+
+def test_cada_visual_cabe_en_su_pagina():
+    """Un visual que se sale del lienzo no da error: queda cortado y nadie lo nota."""
+    for ruta, v in _visuales_pbir():
+        assert v["visual"]["visualType"], ruta
+        pos = v["position"]
+        assert all(k in pos for k in ("x", "y", "width", "height")), ruta
+        pagina = json.loads((ruta.parents[2] / "page.json").read_text(encoding="utf-8"))
+        assert pos["x"] + pos["width"] <= pagina["width"], f"{v['name']} se sale a la derecha"
+        assert pos["y"] + pos["height"] <= pagina["height"], f"{v['name']} se sale abajo"
+
+
+def test_los_nombres_de_visual_son_unicos_en_todo_el_informe():
+    nombres = [v["name"] for _, v in _visuales_pbir()]
+    dup = sorted({n for n in nombres if nombres.count(n) > 1})
+    assert not dup, f"nombres repetidos: {dup}"
+
+
+def test_el_orden_de_paginas_coincide_con_las_carpetas():
+    meta = json.loads((PAGINAS / "pages.json").read_text(encoding="utf-8"))
+    carpetas = {p.name for p in PAGINAS.iterdir() if p.is_dir()}
+    assert set(meta["pageOrder"]) == carpetas, (
+        f"pageOrder {meta['pageOrder']} no coincide con las carpetas {sorted(carpetas)}"
+    )
+    assert meta["activePageName"] in carpetas
+
+
+def test_las_cuatro_paginas_llevan_la_procedencia():
+    """El pie con vintage y huellas va en TODAS.
+
+    Es lo que permite a un validador cruzar el tablero con exports/metrics.json y con
+    el commit. Una pagina sin el es una captura de pantalla.
+    """
+    carpetas = sorted(p for p in PAGINAS.iterdir() if p.is_dir())
+    assert len(carpetas) == 4, f"se esperaban cuatro paginas, hay {len(carpetas)}"
+    for pagina in carpetas:
+        campos: set[tuple[str, str]] = set()
+        for v in (pagina / "visuals").rglob("visual.json"):
+            campos |= _campos_referenciados(json.loads(v.read_text(encoding="utf-8")))
+        assert ("Medidas", "Procedencia") in campos, f"{pagina.name} no muestra la procedencia"
+
+
+def test_el_informe_no_conserva_el_formato_clasico():
+    """PBIR reemplaza a `report.json`. Dejar los dos deja que Desktop elija, y el que
+    elija no tiene por que ser el que este repositorio revisa en el diff."""
+    assert not (REPORTE / "report.json").exists()
+    assert (REPORTE / "definition" / "report.json").exists()

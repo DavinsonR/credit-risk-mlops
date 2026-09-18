@@ -32,8 +32,9 @@ works. Each row links to the artifact that proves it.
 | 13 | The browser demo **had never been clicked.** The SBA-guarantee field carried `step="1000"` and a default of `187500` — 75% of the loan, the correct figure — which is not a multiple of 1000. The form was born invalid, so the button did nothing. The ONNX model loaded, parity was verified, and the one thing nobody had done was press the button | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · now live and bilingual |
 | 14 | **Nothing read `.env`.** `.env.example` said "copy to .env", the harness said "keys in .env", and the providers called `os.environ.get(...)`, which only sees real environment variables. Following the repo's own instruction left Groq and Gemini "unavailable" — no error, no hint | Found while writing [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
 | 15 | The `.pbip` declared a report artifact that **did not exist** — only the semantic model had been written. Power BI Desktop cannot open a project whose report is missing, so the first line of the guide was unrunnable. The scaffold test missed it because it checked a hand-written file list instead of what the `.pbip` itself declares | Found while writing [docs/POWERBI.md](docs/POWERBI.md) · the test now follows the artifact chain |
+| 16 | `run ci-local` copied the working tree over a clean clone of HEAD but **never deleted anything**, so a file the commit removes stayed alive in the clone. A deletion that breaks CI was invisible to the control built to catch exactly that. Checking whether the source file exists is not enough either: `git ls-files` lists the index, and a file already removed with `git add -A` is not in it | Found by deleting the legacy `report.json` · it now diffs against `HEAD` |
 
-Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Eight of these
+Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Nine of these
 **failed silently or reported success** — which is the failure mode the whole project
 is built to hunt, found in its own tooling.
 
@@ -254,7 +255,7 @@ Gemini arms).
 The ten-week scope is closed. What remains is written down and prioritised by how
 much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**.
 Four of the eleven items are not code: a repository description, a GitHub bio that
-contradicts this one, a Power BI report layout that needs Desktop, and twenty
+contradicts this one, a Power BI report layout that needs Desktop, and twenty-one
 deliberately empty paragraphs in the engineering log that only their author can fill.
 
 ## License

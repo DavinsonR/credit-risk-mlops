@@ -1,0 +1,129 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p1-tabla-modelos",
+  "position": {
+    "x": 24,
+    "y": 96,
+    "z": 0,
+    "width": 760,
+    "height": 400
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Modelos"
+                    }
+                  },
+                  "Property": "modelo"
+                }
+              },
+              "queryRef": "Modelos.modelo",
+              "nativeQueryRef": "modelo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Modelos"
+                    }
+                  },
+                  "Property": "auc_test"
+                }
+              },
+              "queryRef": "Modelos.auc_test",
+              "nativeQueryRef": "auc_test"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Modelos"
+                    }
+                  },
+                  "Property": "drop_oot"
+                }
+              },
+              "queryRef": "Modelos.drop_oot",
+              "nativeQueryRef": "drop_oot"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Modelos"
+                    }
+                  },
+                  "Property": "brier_test"
+                }
+              },
+              "queryRef": "Modelos.brier_test",
+              "nativeQueryRef": "brier_test"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Modelos"
+                    }
+                  },
+                  "Property": "ece_test"
+                }
+              },
+              "queryRef": "Modelos.ece_test",
+              "nativeQueryRef": "ece_test"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Es produccion"
+                }
+              },
+              "queryRef": "Medidas.Es produccion",
+              "nativeQueryRef": "Es produccion"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Los tres modelos, baseline incluido'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

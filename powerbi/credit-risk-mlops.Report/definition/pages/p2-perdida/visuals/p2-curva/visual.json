@@ -1,0 +1,91 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p2-curva",
+  "position": {
+    "x": 24,
+    "y": 96,
+    "z": 0,
+    "width": 848,
+    "height": 480
+  },
+  "visual": {
+    "visualType": "lineChart",
+    "query": {
+      "queryState": {
+        "Category": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Decision"
+                    }
+                  },
+                  "Property": "decline_rate"
+                }
+              },
+              "queryRef": "Decision.decline_rate",
+              "nativeQueryRef": "decline_rate"
+            }
+          ]
+        },
+        "Y": {
+          "projections": [
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Perdida evitada al corte"
+                }
+              },
+              "queryRef": "Medidas.Perdida evitada al corte",
+              "nativeQueryRef": "Perdida evitada al corte"
+            },
+            {
+              "field": {
+                "Measure": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Medidas"
+                    }
+                  },
+                  "Property": "Volumen bueno sacrificado"
+                }
+              },
+              "queryRef": "Medidas.Volumen bueno sacrificado",
+              "nativeQueryRef": "Volumen bueno sacrificado"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Pérdida evitada y volumen sano sacrificado, en el mismo eje'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1417,6 +1417,42 @@ verifica su propia lista en vez de la del artefacto no verifica el artefacto.
 _(escribir: por qué escribir el instructivo encuentra cosas que correr el código no
 encuentra)_
 
+### El informe de Power BI, escrito en vez de clicado
+
+El punto que decía "medio día de Power BI Desktop" resultó ser dos cosas distintas:
+**armar** el informe y **abrirlo**. Lo primero no necesita Desktop si el formato es
+texto, y PBIR lo es: un archivo por página, uno por visual, y esquemas JSON publicados
+por Microsoft contra los cuales validar.
+
+El formato clásico de PBIP no servía —guarda la configuración de cada visual como una
+CADENA de JSON escapado dentro de otro JSON, que no se escribe a mano de forma
+defendible— y esa era la razón real por la que el informe se había quedado fuera.
+
+`scripts/build_pbir_report.py` genera las cuatro páginas y los veinte visuales, y antes
+de escribir comprueba dos cosas: que **cada campo existe en el TMDL** —leyéndolo del
+TMDL, no de una lista escrita a mano— y que cada archivo cumple el esquema que declara.
+La validación atrapó dos errores míos en la primera pasada: un tema sin
+`reportVersionAtImport` y una versión `"1.0"` donde el esquema exige `MAYOR.MENOR.0`.
+
+**Lo que no demuestra, y está escrito en el propio script:** cumplir un esquema no es
+cargar en Desktop. Puede fallar por un tipo de visual, por un rol que ese visual no
+acepta, o porque PBIR es vista previa. Esa verificación sigue siendo de quien tenga
+Desktop instalado.
+
+_(escribir: por qué un formato de texto cambia quién puede hacer el trabajo)_
+
+### Y el control que probaba solo la mitad de un commit
+
+Al borrar el `report.json` del formato clásico, `run ci-local` falló por una razón al
+revés de lo esperado: el test que exige que ese archivo **no** exista pasaba en el árbol
+de trabajo y fallaba en el clon. El script copiaba los archivos trackeados sobre un clon
+de HEAD y **nunca borraba nada**, así que lo que el commit elimina seguía vivo allá.
+
+Un control hecho para atrapar "esto pasa aquí y falla en CI" no veía las eliminaciones.
+Y el primer arreglo tampoco servía: mirar si el archivo de origen existe no basta, porque
+`git ls-files` lista el índice y un archivo ya eliminado con `git add -A` no está en él.
+Hay que comparar contra `HEAD`.
+
 ### Pendiente al cierre de la semana 11
-- El layout del informe de Power BI (necesita Desktop) — [docs/POWERBI.md](docs/POWERBI.md).
+- Abrir el informe en Power BI Desktop y verificarlo — [docs/POWERBI.md](docs/POWERBI.md).
 - Los brazos de Groq y Gemini (faltan las claves) — [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md).

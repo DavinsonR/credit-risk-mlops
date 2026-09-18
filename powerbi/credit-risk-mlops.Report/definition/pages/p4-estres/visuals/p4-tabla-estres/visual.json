@@ -1,0 +1,129 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p4-tabla-estres",
+  "position": {
+    "x": 24,
+    "y": 96,
+    "z": 0,
+    "width": 760,
+    "height": 420
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "cohorte"
+                }
+              },
+              "queryRef": "Estres.cohorte",
+              "nativeQueryRef": "cohorte"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "n"
+                }
+              },
+              "queryRef": "Estres.n",
+              "nativeQueryRef": "n"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "tasa_base"
+                }
+              },
+              "queryRef": "Estres.tasa_base",
+              "nativeQueryRef": "tasa_base"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "auc"
+                }
+              },
+              "queryRef": "Estres.auc",
+              "nativeQueryRef": "auc"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "predicho"
+                }
+              },
+              "queryRef": "Estres.predicho",
+              "nativeQueryRef": "predicho"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Estres"
+                    }
+                  },
+                  "Property": "ratio_calibracion"
+                }
+              },
+              "queryRef": "Estres.ratio_calibracion",
+              "nativeQueryRef": "ratio_calibracion"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'El modelo fuera de su régimen'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

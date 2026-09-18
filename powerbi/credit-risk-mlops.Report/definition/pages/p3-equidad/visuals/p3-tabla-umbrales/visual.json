@@ -1,0 +1,87 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p3-tabla-umbrales",
+  "position": {
+    "x": 808,
+    "y": 448,
+    "z": 0,
+    "width": 448,
+    "height": 172
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Umbrales"
+                    }
+                  },
+                  "Property": "gate"
+                }
+              },
+              "queryRef": "Umbrales.gate",
+              "nativeQueryRef": "gate"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Umbrales"
+                    }
+                  },
+                  "Property": "direccion"
+                }
+              },
+              "queryRef": "Umbrales.direccion",
+              "nativeQueryRef": "direccion"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "Umbrales"
+                    }
+                  },
+                  "Property": "valor"
+                }
+              },
+              "queryRef": "Umbrales.valor",
+              "nativeQueryRef": "valor"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Umbrales, leídos de config.yaml'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

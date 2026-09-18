@@ -1,0 +1,10 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/pagesMetadata/1.0.0/schema.json",
+  "pageOrder": [
+    "p1-desempeno",
+    "p2-perdida",
+    "p3-equidad",
+    "p4-estres"
+  ],
+  "activePageName": "p1-desempeno"
+}

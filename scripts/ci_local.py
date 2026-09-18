@@ -96,13 +96,42 @@ def _sobrescribir_con_arbol_de_trabajo(clon: Path) -> bool:
     copiados = 0
     for rel in rutas:
         origen = REPO / rel
-        if not origen.is_file():  # borrado en el arbol de trabajo
+        if not origen.is_file():  # en el indice pero borrado del disco
             continue
         destino = clon / rel
         destino.parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(origen, destino)
         copiados += 1
-    print(f"    {copiados} archivos trackeados copiados")
+
+    # LO QUE EL COMMIT BORRARIA, se borra tambien aqui.
+    #
+    # Copiar el arbol de trabajo sobre un clon de HEAD deja vivos los archivos que
+    # el commit eliminaria, asi que una ELIMINACION que rompa CI no se detecta: el
+    # clon todavia tiene el archivo. Y no basta con mirar si el origen existe --
+    # `git ls-files` lista el INDICE, y un archivo ya eliminado con `git rm` o con
+    # `git add -A` no aparece ahi. Hay que comparar contra HEAD.
+    #
+    # Salio al borrar el `report.json` del formato clasico de PBIP: el test que
+    # exige que no exista pasaba en el arbol de trabajo y fallaba en este script,
+    # por el motivo contrario al que uno esperaria. Un control que solo prueba
+    # adiciones prueba la mitad de un commit.
+    h = subprocess.run(
+        ["git", "ls-tree", "-r", "-z", "--name-only", "HEAD"],
+        cwd=REPO,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    borrados = 0
+    if h.returncode == 0:
+        en_head = {p for p in h.stdout.split("\0") if p}
+        for rel in sorted(en_head - set(rutas)):
+            destino = clon / rel
+            if destino.is_file():
+                destino.unlink()
+                borrados += 1
+
+    print(f"    {copiados} archivos trackeados copiados, {borrados} eliminados")
     return True
 
 

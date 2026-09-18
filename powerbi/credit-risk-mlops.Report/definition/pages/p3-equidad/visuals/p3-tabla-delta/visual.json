@@ -1,0 +1,101 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/fabric/item/report/definition/visualContainer/1.0.0/schema.json",
+  "name": "p3-tabla-delta",
+  "position": {
+    "x": 24,
+    "y": 420,
+    "z": 0,
+    "width": 760,
+    "height": 200
+  },
+  "visual": {
+    "visualType": "tableEx",
+    "query": {
+      "queryState": {
+        "Values": {
+          "projections": [
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadDelta"
+                    }
+                  },
+                  "Property": "dimension"
+                }
+              },
+              "queryRef": "EquidadDelta.dimension",
+              "nativeQueryRef": "dimension"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadDelta"
+                    }
+                  },
+                  "Property": "dir_observado"
+                }
+              },
+              "queryRef": "EquidadDelta.dir_observado",
+              "nativeQueryRef": "dir_observado"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadDelta"
+                    }
+                  },
+                  "Property": "dir_modelo"
+                }
+              },
+              "queryRef": "EquidadDelta.dir_modelo",
+              "nativeQueryRef": "dir_modelo"
+            },
+            {
+              "field": {
+                "Column": {
+                  "Expression": {
+                    "SourceRef": {
+                      "Entity": "EquidadDelta"
+                    }
+                  },
+                  "Property": "delta"
+                }
+              },
+              "queryRef": "EquidadDelta.delta",
+              "nativeQueryRef": "delta"
+            }
+          ]
+        }
+      }
+    },
+    "drillFilterOtherVisuals": true,
+    "visualContainerObjects": {
+      "title": [
+        {
+          "properties": {
+            "text": {
+              "expr": {
+                "Literal": {
+                  "Value": "'Cuánta disparidad AGREGA el modelo sobre la histórica'"
+                }
+              }
+            },
+            "show": {
+              "expr": {
+                "Literal": {
+                  "Value": "true"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
