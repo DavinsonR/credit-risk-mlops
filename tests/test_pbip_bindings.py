@@ -78,6 +78,57 @@ def test_los_json_del_scaffold_son_validos():
         json.loads((base / nombre).read_text(encoding="utf-8"))
 
 
+def test_el_pbism_declara_una_version_que_admite_TMDL():
+    """La version del `.pbism` decide que formato busca Desktop, y solo hay dos.
+
+    Segun la tabla de Microsoft: la version 1.0 obliga a que el modelo este en
+    `model.bim` (TMSL); de la 4.0 en adelante se admite tambien la carpeta
+    `definition/` (TMDL). Este proyecto envia la carpeta.
+
+    Lo aprendimos por el camino largo. El `.pbism` decia 1.0 con una carpeta
+    `definition/` al lado, y Desktop no abrio el proyecto: pidio un `model.bim`
+    que no existe ni tiene por que existir. Un archivo de cuatro lineas, valido
+    como JSON, coherente consigo mismo, y contradictorio con la carpeta que tenia
+    al lado. Ninguna prueba miraba esa contradiccion porque ninguna pieza estaba
+    mal por separado.
+
+    https://learn.microsoft.com/power-bi/developer/projects/projects-dataset
+    """
+    base = PBIP / "credit-risk-mlops.SemanticModel"
+    pbism = json.loads((base / "definition.pbism").read_text(encoding="utf-8"))
+    version = pbism.get("version", "")
+    mayor = int(version.split(".")[0]) if version.split(".")[0].isdigit() else 0
+
+    if (base / "definition").is_dir():
+        assert mayor >= 4, (
+            f"el modelo esta en TMDL (definition/) pero definition.pbism declara "
+            f"version {version!r}: Desktop exigira un model.bim inexistente"
+        )
+    else:
+        assert (base / "model.bim").exists(), "sin definition/ hace falta model.bim"
+
+
+def test_cada_archivo_del_andamiaje_declara_su_esquema():
+    """Sin `$schema` un archivo no se valida contra nada, y eso no es aprobar.
+
+    El validador de `build_pbir_report.py` saltaba los archivos que no declaran
+    esquema. Un archivo se libraba de la revision con solo no pedirla.
+    """
+    base = PBIP / "credit-risk-mlops.SemanticModel"
+    informe = PBIP / "credit-risk-mlops.Report"
+    sin_esquema = [
+        ruta.name
+        for ruta in (
+            base / "definition.pbism",
+            base / ".platform",
+            informe / "definition.pbir",
+            informe / ".platform",
+        )
+        if "$schema" not in json.loads(ruta.read_text(encoding="utf-8"))
+    ]
+    assert not sin_esquema, f"no declaran $schema: {sin_esquema}"
+
+
 def test_el_modelo_referencia_todas_las_tablas_declaradas():
     """Una tabla sin `ref table` en model.tmdl no se carga, y no avisa."""
     modelo = (PBIP / "credit-risk-mlops.SemanticModel" / "definition" / "model.tmdl").read_text(

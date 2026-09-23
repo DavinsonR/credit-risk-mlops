@@ -389,8 +389,35 @@ def verificar_campos(pags: list[dict]) -> list[str]:
     return problemas
 
 
+# JSON que no termina en `.json`. Son los cuatro archivos del andamiaje, los
+# unicos que escribi a mano, y por eso son exactamente los que hay que mirar.
+ANDAMIAJE = ("*.pbip", "*.pbism", "*.pbir", ".platform")
+
+# El `.pbip` es un archivo de Desktop, no un item de Fabric: Microsoft no publica
+# esquema para el. Es la unica excepcion, y esta escrita, no supuesta.
+SIN_ESQUEMA_PUBLICADO = (".pbip",)
+
+
+def archivos_json(raiz: Path) -> list[Path]:
+    hallados: set[Path] = set()
+    for patron in ("*.json", *ANDAMIAJE):
+        hallados.update(raiz.rglob(patron))
+    return sorted(hallados)
+
+
 def validar_esquemas(raiz: Path) -> list[str]:
     """Valida cada archivo contra el esquema que el propio archivo declara.
+
+    Dos reglas que este validador no tenia, y que le costaron al proyecto el
+    defecto 22 --Desktop rechazo el proyecto entero por una linea--:
+
+    1. Mira TODO el JSON del proyecto, no solo lo que termina en `.json`. Los
+       cuatro archivos del andamiaje no terminan en `.json`, asi que el validador
+       anterior comprobaba unicamente lo que el generador escribia: justo lo que
+       ya estaba bien.
+    2. Un archivo sin `$schema` es un problema, no un archivo aprobado. Antes se
+       hacia `continue`, y un archivo se libraba de la revision con solo no
+       pedirla.
 
     Los esquemas se descargan; sin red, se salta y se dice que se salto en vez de
     dar un visto bueno que no se comprobo.
@@ -403,10 +430,12 @@ def validar_esquemas(raiz: Path) -> list[str]:
 
     cache: dict[str, dict] = {}
     problemas = []
-    for archivo in sorted(raiz.rglob("*.json")):
+    for archivo in archivos_json(raiz):
         datos = json.loads(archivo.read_text(encoding="utf-8"))
         url = datos.get("$schema")
         if not url:
+            if archivo.suffix not in SIN_ESQUEMA_PUBLICADO:
+                problemas.append(f"{archivo.relative_to(raiz)}: no declara $schema")
             continue
         if url not in cache:
             try:
@@ -515,7 +544,7 @@ def main(argv: list[str] | None = None) -> int:
         escribir(pags)
         print(f"\nEscrito en {REPORT.relative_to(REPO)}/definition/")
 
-    problemas = validar_esquemas(REPORT)
+    problemas = validar_esquemas(PBIP)
     saltado = [p for p in problemas if p.startswith("SALTADO")]
     print()
     if saltado:
