@@ -279,3 +279,84 @@ hipótesis.
 **Cerrada.** El híbrido no es menos consistente por su compuerta. Sigue siendo menos
 consistente que la plantilla, que es lo que decide el resultado del ADR, y la decisión
 no cambia: la plantilla determinista se queda en producción.
+
+---
+
+# Cuarta revisión — 2026-09-23: un modelo hospedado empata y mejora la legibilidad
+
+Las claves de Groq y Gemini llegaron (punto 1 del ROADMAP). Con ellas, dos cosas que
+las tres revisiones anteriores no podían saber.
+
+## Groq es el primer brazo que no pierde
+
+| Brazo | Fidelidad | Cumple | Consistencia | Legibilidad | Pasa |
+|---|---|---|---|---|---|
+| **plantilla determinista** | 1.00 | 1.00 | **1.00** | 44.8 | **100%** |
+| **gpt-oss-120b (híbrido)** | 1.00 | 1.00 | **1.00** | **52.5** | **100%** |
+| gpt-oss-120b (solo) | 1.00 | 1.00 | 0.83 | 62.9 | 83% |
+| qwen2.5:7b (híbrido) | 1.00 | 1.00 | 0.67 | 53.4 | 67% |
+| llama3.2:3b (híbrido) | 1.00 | 1.00 | 0.33 | 53.2 | 33% |
+| llama3.2:3b (solo) | 0.50 | 1.00 | 0.50 | 74.6 | 0% |
+
+El híbrido sobre Groq **iguala a la plantilla en las cuatro métricas de la compuerta** y
+la supera en legibilidad. Y no es el artefacto del fallback: `uso_llm = 100%` en las seis
+corridas, cero flips. El LLM escribió los seis avisos.
+
+La mejora se sostiene en los **dos idiomas**, que es lo que evita que un promedio la
+invente:
+
+| | Español | Inglés |
+|---|---|---|
+| Plantilla | 58.2 | 31.3 |
+| gpt-oss-120b (híbrido) | **67.7** | **37.3** |
+
+El inglés de la plantilla —31.3 en Flesch— es el punto más débil de todo el harness:
+para un documento que lee un solicitante sin formación financiera, 31 es prosa de
+contrato. Subirlo a 37 no lo arregla, pero es la primera vez que algo lo mueve sin
+romper la fidelidad.
+
+## Qué cambia en la decisión, y qué no
+
+**Cambia el argumento métrico.** Las tres revisiones anteriores decían que el LLM pierde
+en fidelidad o en consistencia. Sobre un modelo hospedado con semilla fija, eso dejó de
+ser cierto.
+
+**No cambia el argumento de gobierno.** La plantilla no depende de red, no depende de un
+tercero, no tiene cuota, cuesta cero y un validador la lee entera en un minuto. El
+híbrido sobre Groq depende de las cinco cosas — y la corrida de al lado lo demuestra:
+**Gemini no produjo una sola salida** en 24 llamadas, todas 429 por cuota del tier
+gratuito.
+
+**La plantilla se queda en producción**, y ahora por una razón distinta y mejor: no
+porque el retador sea peor, sino porque el retador es **igual de bueno y más frágil**.
+Eso es una decisión de arquitectura con su medición al lado, que es lo que el ADR debía
+producir.
+
+## Y la pregunta abierta desde la segunda revisión
+
+La segunda revisión concluyó que **la consistencia de un LLM local no es reproducible
+entre máquinas** —0.83 aquí, 0.33 en otro equipo— y dejó abierto si eso era de la
+inferencia local o del problema.
+
+| Inferencia | Consistencia (solo) |
+|---|---|
+| Local (llama3.2:3b) | 0.50 |
+| Local (qwen2.5:7b) | 0.33 |
+| **Hospedada (gpt-oss-120b)** | **0.83** |
+
+La evidencia apunta a **la inferencia local**: el mismo harness, los mismos casos, la
+misma semilla, y el brazo hospedado es el único que se acerca a repetir.
+
+**No se declara resuelta.** Es una corrida en una máquina, y esta es justamente la clase
+de afirmación que la segunda revisión tuvo que retractar por publicarla con una sola
+medición. Lo que se publica es la observación y su n.
+
+## Lo que Gemini enseñó sin responder nada
+
+Su brazo híbrido marca **pasa 100%**, idéntico al baseline. No porque funcione: porque
+el fallback disparó las seis veces y devolvió la plantilla. La columna `uso_llm = 0%` es
+lo único que lo distingue.
+
+Sin esa columna —que existe desde la tercera revisión, y por otro motivo— un LLM caído se
+habría leído como **un híbrido que funciona perfecto**. Es el modo de fallo que el
+proyecto entero persigue, encontrado en su propia tabla de resultados.
