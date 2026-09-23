@@ -1,12 +1,12 @@
 # Lo que falta
 
-Estado al 23 de septiembre de 2026. El alcance está cerrado: CI verde, 239 tests,
+Estado al 23 de septiembre de 2026. El alcance está cerrado: CI verde, 261 tests,
 10 gates, 14 ADRs, y el proyecto tiene su propia página en el portafolio con la demo
 corriendo en el navegador. **Nada de esta lista bloquea mostrarlo.**
 
-El orden no es cronológico: es por cuánto cambia el resultado. Los tres que quedan
-son de su autor: dos necesitan una cuenta o un programa que yo no tengo, y el tercero
-no tendría sentido escrito por otro.
+El orden no es cronológico: es por cuánto cambia el resultado. Los dos que quedan son
+de su autor: uno necesita un programa que yo no tengo, y el otro no tendría sentido
+escrito por otro.
 
 ## Cerrado en la semana 11
 
@@ -34,7 +34,7 @@ proyecto venía citando:
   página lee el mismo bundle que el repositorio verifica.
 - **El informe de Power BI, escrito en PBIR** y validado contra los esquemas de
   Microsoft: cuatro páginas, veinte visuales, cada campo comprobado contra el TMDL.
-  Falta abrirlo en Desktop, que es el punto 2.
+  Falta abrirlo en Desktop, que es el punto 1.
 
 Y dejaron seis defectos en la bitácora: la muestra de análisis la definía el sistema de
 archivos, el manifiesto de procedencia se sobrescribía en vez de fusionarse, la demo del
@@ -47,37 +47,23 @@ Y el 23 de septiembre salieron dos más, verificados contra la API de GitHub y n
 supuestos: **los cinco repositorios ya tienen descripción**, los cuatro de proyecto
 tienen topics, y **la bio de la cuenta dejó de contradecir al perfil**.
 
-**De los once puntos originales quedan tres, y todos son tuyos.**
+El 23 de septiembre, además, **los brazos de Groq y Gemini quedaron corriendo**. Su
+resultado está en la [quinta revisión del ADR 0009](adr/0009-la-plantilla-gana-al-llm.md)
+y costó cuatro defectos: una clave real escrita en tres artefactos que se commitean, un
+redactor que nació con el defecto 4 adentro, dos identificadores de modelo caducados, y
+un presupuesto de tokens a punto de publicarse como fidelidad del modelo. El quinto vino
+después: publiqué una consistencia medida una sola vez y la segunda corrida la mató.
+
+**De los once puntos originales quedan dos, y los dos son tuyos.**
 
 > **Paso a paso, con los clics: [docs/CHECKLIST.md](CHECKLIST.md).** Esta página explica
 > por qué importa cada cosa; esa dice qué hacer y en qué orden.
 
 ---
 
-## Ahora — quince minutos y dos cuentas gratuitas
-
-### 1. Los brazos de Groq y Gemini
-**Quién:** Davirson pone las claves, yo corro el harness · **Esfuerzo:** 10 minutos suyos
-
-**Procedimiento completo: [docs/LLM_PROVIDERS.md](LLM_PROVIDERS.md)** — dónde sacar cada
-clave, dónde pegarla, cómo verificar que llegó, y qué mirar en la corrida.
-
-Tiers gratuitos sin tarjeta en `console.groq.com` y `aistudio.google.com`.
-
-Y otro defecto destapado al escribirlo: **nada leía `.env`**. El repo decía "copiar a
-.env" y el harness decía "claves en .env", pero los proveedores solo miraban variables de
-entorno reales. Seguir la instrucción oficial dejaba los dos brazos en "no disponibles",
-sin error. Ahora lo carga `crmlops.env`, con ocho tests.
-
-Vale por una razón concreta: la segunda revisión del ADR 0009 concluyó que **la
-consistencia de un LLM local no es reproducible entre máquinas**. Dos modelos hospedados
-pondrían a prueba si eso es de la inferencia local o del problema.
-
----
-
 ## Después — lo que queda a medias
 
-### 2. Abrir el informe de Power BI y verificarlo
+### 1. Abrir el informe de Power BI y verificarlo
 **Quién:** solo Davirson (hace falta Power BI Desktop) · **Esfuerzo:** una hora
 
 El modelo semántico estaba escrito en TMDL y verificado por test. **Ahora el informe
@@ -102,7 +88,7 @@ con él corrijo el generador.
 
 ## Abierto — trabajo de verdad, no acabados
 
-### 3. Los `_(escribir: ...)_` de NOTES.md
+### 2. Los `_(escribir: ...)_` de NOTES.md
 **Quién:** solo Davirson · **Esfuerzo:** dos horas
 
 Veinticuatro huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió

@@ -183,6 +183,54 @@ servido para no hacer nada. Lo que no se mueve: el 9.7% sigue sin soporte, porqu
 `Change of Ownership` no es una antigüedad sino una forma de adquisición, y mapearla
 sería inventar el dato.
 
+## La capa LLM, y el número que no aguantó
+
+Denegar crédito bajo ECOA/Reg B **obliga legalmente** a dar las razones principales
+específicas. Es el único sitio donde un modelo de lenguaje tiene un trabajo real aquí:
+SHAP elige los factores y el modelo solo los reescribe en lenguaje claro — y **su salida
+se valida contra la plantilla antes de usarse**, así que el peor caso es exactamente el
+baseline.
+
+El harness compara cinco brazos sobre los mismos seis avisos, con cuatro métricas
+programáticas (ningún LLM como juez) y **dos corridas por caso**, porque un documento
+legal que cambia entre ejecuciones es indefendible.
+
+| Brazo | Fidelidad | Cumple | Legibilidad | Consistencia | Pasa |
+|---|---|---|---|---|---|
+| **Plantilla determinista** | 1.00 | 1.00 | 44.8 | **1.00** | **100%** |
+| **gpt-oss-120b · híbrido (Groq)** | 1.00 | 1.00 | **52.3** | **1.00** | **100%** |
+| gemini-flash-lite · solo | 1.00 | 1.00 | 57.8 | **0.00** | 0% |
+| qwen2.5:7b · híbrido (local) | 1.00 | 1.00 | 53.4 | 0.67 | 67% |
+| llama3.2:3b · solo (local) | 0.50 | 1.00 | 74.6 | 0.50 | 0% |
+
+**Gemini contestó las doce llamadas con fidelidad perfecta y nunca produjo el mismo
+texto dos veces**, con temperatura 0. Para un documento cuya obligatoriedad es legal eso
+descalifica por sí solo, sin necesidad de discutir la calidad de la prosa.
+
+El híbrido sobre Groq es el único brazo que empata a la plantilla en todas las métricas
+de la compuerta y la supera en legibilidad, en los dos idiomas. **La plantilla se queda
+en producción**, ahora por una razón mejor: no porque el retador sea peor, sino porque es
+igual de bueno y más frágil — necesita red, un tercero y una cuota.
+
+### El número que este proyecto no pudo sostener
+
+Consistencia en la misma máquina, misma semilla, mismo commit, minutos de diferencia:
+
+| | Corrida 1 | Corrida 2 |
+|---|---|---|
+| gpt-oss-120b (hospedado, solo) | **0.83** | **0.33** |
+| llama3.2:3b (local, solo) | 0.50 | 0.50 |
+| qwen2.5:7b (local, solo) | 0.33 | 0.33 |
+
+Publiqué el 0.83 como evidencia de que la inferencia hospedada reproduce mejor que la
+local. No es así: **los brazos locales aguantaron, el hospedado se movió.** Fue la
+tercera vez que este proyecto publicó una sola medición como propiedad del sistema, y
+sobrevivió una hora hasta que la segunda corrida la mató
+([ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md), cinco revisiones, tres de ellas
+retractaciones).
+
+Aquí ya no se publica ninguna cifra de consistencia con n=1.
+
 ## Gates de promoción
 
 Diez gates. Un modelo no se promueve si no los pasa, y CI los corre en cada PR.
@@ -218,9 +266,9 @@ mismo aplomo.
 
 Paso a paso completo, extras opcionales y problemas conocidos:
 **[docs/INSTALL.md](docs/INSTALL.md)**. Y al lado, dos procedimientos más:
-**[docs/POWERBI.md](docs/POWERBI.md)** (armar el informe) y
-**[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (encender los brazos de Groq y
-Gemini).
+**[docs/POWERBI.md](docs/POWERBI.md)** (abrir el informe en Desktop) y
+**[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (los brazos hospedados, ya
+corriendo).
 
 ## Qué NO es
 
@@ -245,9 +293,9 @@ por cuánto cambia el resultado, no por cuándo apareció —
 **[docs/ROADMAP.md](docs/ROADMAP.md)**, y el paso a paso con los clics en
 **[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
 
-De los once puntos originales quedan **tres, y ninguno es código**: dos claves gratuitas
-de API, abrir en Power BI Desktop un informe que ya está escrito y validado contra los
-esquemas de Microsoft, y veinticuatro párrafos deliberadamente vacíos en la bitácora que
+De los once puntos originales quedan **dos, y ninguno es código**: abrir en Power BI
+Desktop un informe que ya está escrito y validado contra los esquemas de Microsoft, y
+veinticuatro párrafos deliberadamente vacíos en la bitácora que
 solo su autor puede llenar — y que escritos por otro no servirían para lo que existen.
 
 ## Licencia

@@ -179,6 +179,53 @@ sentence would have justified doing nothing. What does not move: 9.7% stays
 unsupported, because `Change of Ownership` is not an age but a form of acquisition,
 and mapping it would be inventing the data.
 
+## The LLM layer, and the number it could not hold
+
+Denying credit under ECOA/Reg B **legally obliges** you to state the specific principal
+reasons. That is the one place a language model has a real job here: SHAP picks the
+factors, the model only rewrites them in plain language — and **its output is validated
+against the template before being used**, so the worst case is exactly the baseline.
+
+The harness compares five arms on the same six notices, with four programmatic metrics
+(no LLM-as-judge) and **two runs per case**, because a legal document that changes
+between executions is indefensible.
+
+| Arm | Faithfulness | Compliant | Readability | Consistency | Passes |
+|---|---|---|---|---|---|
+| **Deterministic template** | 1.00 | 1.00 | 44.8 | **1.00** | **100%** |
+| **gpt-oss-120b · hybrid (Groq)** | 1.00 | 1.00 | **52.3** | **1.00** | **100%** |
+| gemini-flash-lite · alone | 1.00 | 1.00 | 57.8 | **0.00** | 0% |
+| qwen2.5:7b · hybrid (local) | 1.00 | 1.00 | 53.4 | 0.67 | 67% |
+| llama3.2:3b · alone (local) | 0.50 | 1.00 | 74.6 | 0.50 | 0% |
+
+**Gemini answered all twelve calls faithfully and never produced the same text twice**,
+at temperature 0. For a document whose obligation is legal, that disqualifies on its own
+— no argument about prose quality required.
+
+The hybrid over Groq is the only arm that ties the template on every gate and beats it
+on readability, in both languages. **The template still ships**, and now for a better
+reason: not because the challenger is worse, but because it is equally good and more
+fragile — it needs a network, a third party and a quota.
+
+### The number this project could not hold
+
+Consistency on the same machine, same seed, same commit, minutes apart:
+
+| | Run 1 | Run 2 |
+|---|---|---|
+| gpt-oss-120b (hosted, alone) | **0.83** | **0.33** |
+| llama3.2:3b (local, alone) | 0.50 | 0.50 |
+| qwen2.5:7b (local, alone) | 0.33 | 0.33 |
+
+I published the 0.83 as evidence that hosted inference reproduces better than local. It
+does not — **the local arms held, the hosted one moved.** That was the third time this
+project shipped a single measurement as a property of the system, and it survived an
+hour before the rerun killed it
+([ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md), five revisions, three of them
+retractions).
+
+No consistency figure ships here with n=1 any more.
+
 ## Promotion gates
 
 Ten gates. A model is not promoted unless it passes them, and CI runs them on every
@@ -236,9 +283,9 @@ with the same confidence.
 
 Step-by-step for every level, optional extras and known problems:
 **[docs/INSTALL.md](docs/INSTALL.md)**. On Linux/macOS every task is a `make` target.
-Two more procedures live next to it: **[docs/POWERBI.md](docs/POWERBI.md)** (build the
-report) and **[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (turn on the Groq and
-Gemini arms).
+Two more procedures live next to it: **[docs/POWERBI.md](docs/POWERBI.md)** (open the
+report in Desktop) and **[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (the hosted
+LLM arms, already running).
 
 ## What this is not
 
@@ -261,9 +308,9 @@ The ten-week scope is closed. What remains is written down and prioritised by ho
 much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**,
 with the click-by-click version in **[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
 
-Three of the original eleven items remain, and **none of them is code**: two free API
-keys, opening in Power BI Desktop a report that is already written and validated against
-Microsoft's schemas, and twenty-four
+Two of the original eleven items remain, and **neither is code**: opening in Power BI
+Desktop a report that is already written and validated against Microsoft's schemas, and
+twenty-four
 deliberately empty paragraphs in the engineering log
 that only their author can fill — and that, written by anyone else, would not serve the
 purpose they exist for.
