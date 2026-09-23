@@ -9,14 +9,14 @@
   "n_cases": 6,
   "summary": [
     {
-      "arm": "gemini / gemini-flash-latest (hibrido)",
+      "arm": "groq / openai/gpt-oss-120b (hibrido)",
       "casos": 6,
       "fidelidad": 1.0,
       "cumple": 1.0,
-      "legibilidad": 44.7667,
-      "palabras": 73.0,
+      "legibilidad": 52.2667,
+      "palabras": 65.3333,
       "consistente": 1.0,
-      "segundos": 3.7867,
+      "segundos": 0.9433,
       "pasa": 1.0
     },
     {
@@ -31,28 +31,6 @@
       "pasa": 1.0
     },
     {
-      "arm": "groq / openai/gpt-oss-120b (hibrido)",
-      "casos": 6,
-      "fidelidad": 1.0,
-      "cumple": 1.0,
-      "legibilidad": 52.5,
-      "palabras": 65.6667,
-      "consistente": 1.0,
-      "segundos": 0.8283,
-      "pasa": 1.0
-    },
-    {
-      "arm": "groq / openai/gpt-oss-120b",
-      "casos": 6,
-      "fidelidad": 1.0,
-      "cumple": 1.0,
-      "legibilidad": 62.9667,
-      "palabras": 74.0,
-      "consistente": 0.8333,
-      "segundos": 0.875,
-      "pasa": 0.8333
-    },
-    {
       "arm": "ollama / qwen2.5:7b (hibrido)",
       "casos": 6,
       "fidelidad": 1.0,
@@ -60,19 +38,8 @@
       "legibilidad": 53.4,
       "palabras": 54.3333,
       "consistente": 0.6667,
-      "segundos": 19.6733,
+      "segundos": 17.2583,
       "pasa": 0.6667
-    },
-    {
-      "arm": "ollama / llama3.2:3b (hibrido)",
-      "casos": 6,
-      "fidelidad": 1.0,
-      "cumple": 1.0,
-      "legibilidad": 53.1667,
-      "palabras": 75.1667,
-      "consistente": 0.3333,
-      "segundos": 10.8083,
-      "pasa": 0.3333
     },
     {
       "arm": "ollama / qwen2.5:7b",
@@ -82,18 +49,40 @@
       "legibilidad": 59.3833,
       "palabras": 64.6667,
       "consistente": 0.3333,
-      "segundos": 21.575,
+      "segundos": 20.2167,
       "pasa": 0.3333
     },
     {
-      "arm": "gemini / gemini-flash-latest",
+      "arm": "groq / openai/gpt-oss-120b",
       "casos": 6,
-      "fidelidad": 0.0,
-      "cumple": 0.0,
-      "legibilidad": 0.0,
-      "palabras": 0.0,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 62.5167,
+      "palabras": 69.1667,
+      "consistente": 0.3333,
+      "segundos": 0.88,
+      "pasa": 0.3333
+    },
+    {
+      "arm": "ollama / llama3.2:3b (hibrido)",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 53.1667,
+      "palabras": 75.1667,
+      "consistente": 0.3333,
+      "segundos": 10.9783,
+      "pasa": 0.3333
+    },
+    {
+      "arm": "gemini / gemini-flash-lite-latest",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 57.7833,
+      "palabras": 74.3333,
       "consistente": 0.0,
-      "segundos": 3.9241,
+      "segundos": 53.135,
       "pasa": 0.0
     },
     {
@@ -104,20 +93,31 @@
       "legibilidad": 74.5833,
       "palabras": 67.3333,
       "consistente": 0.5,
-      "segundos": 9.5117,
+      "segundos": 9.4333,
+      "pasa": 0.0
+    },
+    {
+      "arm": "gemini / gemini-flash-lite-latest (hibrido)",
+      "casos": 6,
+      "fidelidad": 1.0,
+      "cumple": 1.0,
+      "legibilidad": 53.5667,
+      "palabras": 76.3333,
+      "consistente": 0.0,
+      "segundos": 39.6467,
       "pasa": 0.0
     }
   ],
   "fallback_analysis": [
     {
-      "brazo": "gemini-flash-latest (hibrido)",
+      "brazo": "gemini-flash-lite-latest (hibrido)",
       "casos": 6,
-      "inconsistentes": 0,
+      "inconsistentes": 6,
       "con_flip": 0,
       "instrumentado": true,
-      "inconsistencias_explicadas_por_flip": NaN,
-      "uso_llm": 0.0,
-      "motivo_rechazo_mas_comun": "HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO]"
+      "inconsistencias_explicadas_por_flip": 0.0,
+      "uso_llm": 1.0,
+      "motivo_rechazo_mas_comun": null
     },
     {
       "brazo": "llama3.2:3b (hibrido)",
@@ -127,7 +127,7 @@
       "instrumentado": true,
       "inconsistencias_explicadas_por_flip": 0.0,
       "uso_llm": 1.0,
-      "motivo_rechazo_mas_comun": NaN
+      "motivo_rechazo_mas_comun": null
     },
     {
       "brazo": "openai/gpt-oss-120b (hibrido)",
@@ -137,7 +137,7 @@
       "instrumentado": true,
       "inconsistencias_explicadas_por_flip": NaN,
       "uso_llm": 1.0,
-      "motivo_rechazo_mas_comun": NaN
+      "motivo_rechazo_mas_comun": null
     },
     {
       "brazo": "qwen2.5:7b (hibrido)",
@@ -147,7 +147,7 @@
       "instrumentado": true,
       "inconsistencias_explicadas_por_flip": 0.0,
       "uso_llm": 1.0,
-      "motivo_rechazo_mas_comun": NaN
+      "motivo_rechazo_mas_comun": null
     }
   ]
 }

@@ -360,3 +360,78 @@ lo único que lo distingue.
 Sin esa columna —que existe desde la tercera revisión, y por otro motivo— un LLM caído se
 habría leído como **un híbrido que funciona perfecto**. Es el modo de fallo que el
 proyecto entero persigue, encontrado en su propia tabla de resultados.
+
+---
+
+# Quinta revisión — 2026-09-23: retracto la conclusión de la cuarta, una hora después
+
+La cuarta revisión, escrita esta misma tarde, decía:
+
+> *"La evidencia apunta a la inferencia local: el mismo harness, los mismos casos, la
+> misma semilla, y el brazo hospedado es el único que se acerca a repetir."*
+
+Volví a correr el harness para ver si Gemini respondía con la cuota fresca. Respondió. Y
+de paso mostró que esa frase es falsa.
+
+## La cifra de 0.83 no reprodujo ni en la misma máquina
+
+| Brazo | Corrida 1 | Corrida 2 |
+|---|---|---|
+| **groq / gpt-oss-120b (solo)** | **0.83** | **0.33** |
+| groq / gpt-oss-120b (híbrido) | 1.00 | 1.00 |
+| ollama / llama3.2:3b | 0.50 | 0.50 |
+| ollama / llama3.2:3b (híbrido) | 0.33 | 0.33 |
+| ollama / qwen2.5:7b | 0.33 | 0.33 |
+| ollama / qwen2.5:7b (híbrido) | 0.67 | 0.67 |
+| plantilla | 1.00 | 1.00 |
+
+Mismo commit, misma máquina, mismo modelo, misma semilla, **minutos de diferencia**.
+
+Y el detalle que da la vuelta al argumento: **los brazos locales dieron el mismo número
+las dos veces.** El que se movió fue el hospedado. La segunda revisión había medido que
+lo local no reproduce *entre máquinas*; esta mide que lo hospedado no reproduce *entre
+corridas*, que es peor.
+
+## Gemini: fiel, conforme y nunca igual dos veces
+
+Con la cuota fresca contestó las doce llamadas sin un solo error.
+
+| | Fidelidad | Cumple | Legibilidad | **Consistencia** | Pasa |
+|---|---|---|---|---|---|
+| gemini-flash-lite (solo) | 1.00 | 1.00 | 57.8 | **0.00** | 0% |
+| gemini-flash-lite (híbrido) | 1.00 | 1.00 | 53.6 | **0.00** | 0% |
+
+Cero de doce. Cita siempre los factores correctos, nunca inventa uno, evita las bases
+prohibidas — y **no produce el mismo texto dos veces seguidas**, con temperatura 0.
+
+Para un aviso de adverse action eso es descalificante por sí solo, y no hace falta
+discutir la calidad de la prosa: un documento cuya obligatoriedad es legal no puede
+cambiar entre ejecuciones.
+
+## Lo que queda en pie
+
+**El híbrido sobre Groq sigue siendo el único brazo que empata a la plantilla**:
+consistencia 1.00 en las dos corridas, fidelidad 1.00, cumplimiento 1.00, pasa 100%, y
+legibilidad 52.3 contra 44.8. Ese resultado sí reprodujo.
+
+Es coherente con el mecanismo: la compuerta valida la reescritura contra los hechos de
+la plantilla y descarta la que no encaja, así que recorta precisamente la variabilidad
+que hace fallar al modelo suelto. El control no mejora al modelo; le pone un piso.
+
+## Lo que retracto
+
+**La frase de la cuarta revisión sobre inferencia local queda retractada.** No es que
+falte evidencia: es que la evidencia dice lo contrario de lo que escribí.
+
+La conclusión correcta es más simple y más incómoda: **la consistencia de un LLM no es
+reproducible, ni entre máquinas ni entre corridas, ni local ni hospedado.** Es una
+propiedad del objeto, no del sitio donde corre.
+
+Y el error que la produjo es el de siempre, cometido por tercera vez en este mismo
+documento: **publiqué una sola medición como si fuera una propiedad.** El benchmark de
+29.3x fue la primera, la consistencia de 0.83 en otra máquina la segunda, y esta
+—también 0.83, también consistencia— la tercera. Sobrevivió una hora.
+
+Lo que cambia en el método: de aquí en adelante, **ninguna cifra de consistencia se
+publica con n=1**. La tabla de arriba tiene dos corridas porque dos es el mínimo que
+permite ver si la cifra se mueve, y ya se vio que se mueve.

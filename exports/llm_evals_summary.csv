@@ -1,10 +1,10 @@
 arm,casos,fidelidad,cumple,legibilidad,palabras,consistente,segundos,pasa
-gemini / gemini-flash-latest (hibrido),6,1.0,1.0,44.7667,73.0,1.0,3.7867,1.0
+groq / openai/gpt-oss-120b (hibrido),6,1.0,1.0,52.2667,65.3333,1.0,0.9433,1.0
 template / deterministic,6,1.0,1.0,44.7667,73.0,1.0,0.0,1.0
-groq / openai/gpt-oss-120b (hibrido),6,1.0,1.0,52.5,65.6667,1.0,0.8283,1.0
-groq / openai/gpt-oss-120b,6,1.0,1.0,62.9667,74.0,0.8333,0.875,0.8333
-ollama / qwen2.5:7b (hibrido),6,1.0,1.0,53.4,54.3333,0.6667,19.6733,0.6667
-ollama / llama3.2:3b (hibrido),6,1.0,1.0,53.1667,75.1667,0.3333,10.8083,0.3333
-ollama / qwen2.5:7b,6,1.0,1.0,59.3833,64.6667,0.3333,21.575,0.3333
-gemini / gemini-flash-latest,6,0.0,0.0,0.0,0.0,0.0,3.9241,0.0
-ollama / llama3.2:3b,6,0.5,1.0,74.5833,67.3333,0.5,9.5117,0.0
+ollama / qwen2.5:7b (hibrido),6,1.0,1.0,53.4,54.3333,0.6667,17.2583,0.6667
+ollama / qwen2.5:7b,6,1.0,1.0,59.3833,64.6667,0.3333,20.2167,0.3333
+groq / openai/gpt-oss-120b,6,1.0,1.0,62.5167,69.1667,0.3333,0.88,0.3333
+ollama / llama3.2:3b (hibrido),6,1.0,1.0,53.1667,75.1667,0.3333,10.9783,0.3333
+gemini / gemini-flash-lite-latest,6,1.0,1.0,57.7833,74.3333,0.0,53.135,0.0
+ollama / llama3.2:3b,6,0.5,1.0,74.5833,67.3333,0.5,9.4333,0.0
+gemini / gemini-flash-lite-latest (hibrido),6,1.0,1.0,53.5667,76.3333,0.0,39.6467,0.0

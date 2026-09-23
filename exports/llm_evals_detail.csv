@@ -6,50 +6,50 @@ monto_alto_una_razon,deterministic,template,en,1.0,1.0,1.0,[],True,[],31.6,63,Tr
 sin_colateral,deterministic,template,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,0.0,,,,,False,True
 sin_colateral,deterministic,template,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,0.0,,,,,False,True
 startup_alto_riesgo,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.78,,,,,False,False
-startup_alto_riesgo,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],62.5,159,False,False,15.83,,,,,False,False
-monto_alto_una_razon,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.6,,,,,False,False
-monto_alto_una_razon,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],61.8,87,True,False,10.36,,,,,False,False
-sin_colateral,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.14,,,,,False,False
+startup_alto_riesgo,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],62.5,159,False,False,16.02,,,,,False,False
+monto_alto_una_razon,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.28,,,,,False,False
+monto_alto_una_razon,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],61.8,87,True,False,10.12,,,,,False,False
+sin_colateral,llama3.2:3b,ollama,es,0.0,0.0,1.0,[],True,[],87.7,18,True,True,6.04,,,,,False,False
 sin_colateral,llama3.2:3b,ollama,en,1.0,1.0,1.0,[],True,[],60.1,104,True,False,11.36,,,,,False,False
-startup_alto_riesgo,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],62.5,83,True,False,14.33,,True,True,,False,False
-startup_alto_riesgo,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.5,80,True,False,10.67,,True,True,,False,False
-monto_alto_una_razon,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.6,72,True,True,11.01,,True,True,,False,True
+startup_alto_riesgo,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],62.5,83,True,False,14.98,,True,True,,False,False
+startup_alto_riesgo,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.5,80,True,False,10.68,,True,True,,False,False
+monto_alto_una_razon,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.6,72,True,True,11.35,,True,True,,False,True
 monto_alto_una_razon,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],52.0,74,True,False,8.69,,True,True,,False,False
-sin_colateral,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.0,71,True,False,11.38,,True,True,,False,False
-sin_colateral,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],61.4,71,True,True,8.77,,True,True,,False,True
-startup_alto_riesgo,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],76.8,63,True,False,26.34,,,,,False,False
-startup_alto_riesgo,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],58.8,102,True,False,28.22,,,,,False,False
-monto_alto_una_razon,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],61.3,37,True,False,16.74,,,,,False,False
-monto_alto_una_razon,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],46.5,53,True,False,15.82,,,,,False,False
-sin_colateral,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],63.1,70,True,True,23.48,,,,,False,True
-sin_colateral,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],49.8,63,True,True,18.85,,,,,False,True
-startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],66.6,56,True,False,28.65,,True,True,,False,False
-startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],33.2,58,True,True,23.25,,True,True,,False,True
-monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],68.3,45,True,False,18.1,,True,True,,False,False
-monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],47.7,63,True,True,16.57,,True,True,,False,True
-sin_colateral,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],65.8,49,True,True,16.85,,True,True,,False,True
-sin_colateral,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.8,55,True,True,14.62,,True,True,,False,True
-startup_alto_riesgo,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],62.5,97,True,True,1.18,,,,,False,True
-startup_alto_riesgo,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],69.6,85,True,True,0.94,,,,,False,True
-monto_alto_una_razon,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],52.8,70,True,True,0.8,,,,,False,True
-monto_alto_una_razon,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],72.8,51,True,False,0.73,,,,,False,False
-sin_colateral,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],61.1,88,True,True,0.97,,,,,False,True
-sin_colateral,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],59.0,53,True,True,0.63,,,,,False,True
+sin_colateral,llama3.2:3b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],52.0,71,True,False,11.66,,True,True,,False,False
+sin_colateral,llama3.2:3b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],61.4,71,True,True,8.51,,True,True,,False,True
+startup_alto_riesgo,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],76.8,63,True,False,23.07,,,,,False,False
+startup_alto_riesgo,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],58.8,102,True,False,23.71,,,,,False,False
+monto_alto_una_razon,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],61.3,37,True,False,16.17,,,,,False,False
+monto_alto_una_razon,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],46.5,53,True,False,17.01,,,,,False,False
+sin_colateral,qwen2.5:7b,ollama,es,1.0,1.0,1.0,[],True,[],63.1,70,True,True,23.37,,,,,False,True
+sin_colateral,qwen2.5:7b,ollama,en,1.0,1.0,1.0,[],True,[],49.8,63,True,True,17.97,,,,,False,True
+startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],66.6,56,True,False,22.9,,True,True,,False,False
+startup_alto_riesgo,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],33.2,58,True,True,18.65,,True,True,,False,True
+monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],68.3,45,True,False,16.2,,True,True,,False,False
+monto_alto_una_razon,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],47.7,63,True,True,14.83,,True,True,,False,True
+sin_colateral,qwen2.5:7b (hibrido),ollama,es,1.0,1.0,1.0,[],True,[],65.8,49,True,True,16.9,,True,True,,False,True
+sin_colateral,qwen2.5:7b (hibrido),ollama,en,1.0,1.0,1.0,[],True,[],38.8,55,True,True,14.07,,True,True,,False,True
+startup_alto_riesgo,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],62.5,97,True,True,1.02,,,,,False,True
+startup_alto_riesgo,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],67.4,71,True,False,0.82,,,,,False,False
+monto_alto_una_razon,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],52.8,70,True,True,0.86,,,,,False,True
+monto_alto_una_razon,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],72.8,51,True,False,0.82,,,,,False,False
+sin_colateral,openai/gpt-oss-120b,groq,es,1.0,1.0,1.0,[],True,[],60.6,73,True,False,0.84,,,,,False,False
+sin_colateral,openai/gpt-oss-120b,groq,en,1.0,1.0,1.0,[],True,[],59.0,53,True,False,0.92,,,,,False,False
 startup_alto_riesgo,openai/gpt-oss-120b (hibrido),groq,es,1.0,1.0,1.0,[],True,[],74.9,75,True,True,0.92,,True,True,,False,True
-startup_alto_riesgo,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],32.8,74,True,True,1.26,,True,True,,False,True
-monto_alto_una_razon,openai/gpt-oss-120b (hibrido),groq,es,1.0,1.0,1.0,[],True,[],63.5,57,True,True,0.81,,True,True,,False,True
-monto_alto_una_razon,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],35.3,62,True,True,0.71,,True,True,,False,True
-sin_colateral,openai/gpt-oss-120b (hibrido),groq,es,1.0,1.0,1.0,[],True,[],64.7,65,True,True,0.67,,True,True,,False,True
-sin_colateral,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],43.8,61,True,True,0.6,,True,True,,False,True
-startup_alto_riesgo,gemini-flash-latest,gemini,es,0.0,0.0,0.0,[],False,[],0.0,0,False,False,3.9201620999956504,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-startup_alto_riesgo,gemini-flash-latest,gemini,en,0.0,0.0,0.0,[],False,[],0.0,0,False,False,3.8596017999807373,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-monto_alto_una_razon,gemini-flash-latest,gemini,es,0.0,0.0,0.0,[],False,[],0.0,0,False,False,4.184185100020841,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-monto_alto_una_razon,gemini-flash-latest,gemini,en,0.0,0.0,0.0,[],False,[],0.0,0,False,False,3.71391059999587,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-sin_colateral,gemini-flash-latest,gemini,es,0.0,0.0,0.0,[],False,[],0.0,0,False,False,4.098038299998734,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-sin_colateral,gemini-flash-latest,gemini,en,0.0,0.0,0.0,[],False,[],0.0,0,False,False,3.7684195999754593,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],,,,False,False
-startup_alto_riesgo,gemini-flash-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],62.6,87,True,True,3.68,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
-startup_alto_riesgo,gemini-flash-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],33.4,77,True,True,3.64,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
-monto_alto_una_razon,gemini-flash-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],55.4,69,True,True,3.79,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
-monto_alto_una_razon,gemini-flash-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],31.6,63,True,True,4.16,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
-sin_colateral,gemini-flash-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],56.6,76,True,True,3.63,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
-sin_colateral,gemini-flash-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],29.0,66,True,True,3.82,,False,False,HTTPError: 429 Client Error: Too Many Requests for url: https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=[REDACTADO],False,True
+startup_alto_riesgo,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],32.8,74,True,True,0.93,,True,True,,False,True
+monto_alto_una_razon,openai/gpt-oss-120b (hibrido),groq,es,1.0,1.0,1.0,[],True,[],63.5,57,True,True,0.79,,True,True,,False,True
+monto_alto_una_razon,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],33.9,60,True,True,1.17,,True,True,,False,True
+sin_colateral,openai/gpt-oss-120b (hibrido),groq,es,1.0,1.0,1.0,[],True,[],64.7,65,True,True,1.03,,True,True,,False,True
+sin_colateral,openai/gpt-oss-120b (hibrido),groq,en,1.0,1.0,1.0,[],True,[],43.8,61,True,True,0.82,,True,True,,False,True
+startup_alto_riesgo,gemini-flash-lite-latest,gemini,es,1.0,1.0,1.0,[],True,[],58.7,96,True,False,114.79,,,,,False,False
+startup_alto_riesgo,gemini-flash-lite-latest,gemini,en,1.0,1.0,1.0,[],True,[],50.3,57,True,False,68.48,,,,,False,False
+monto_alto_una_razon,gemini-flash-lite-latest,gemini,es,1.0,1.0,1.0,[],True,[],55.2,80,True,False,57.24,,,,,False,False
+monto_alto_una_razon,gemini-flash-lite-latest,gemini,en,1.0,1.0,1.0,[],True,[],61.8,57,True,False,23.14,,,,,False,False
+sin_colateral,gemini-flash-lite-latest,gemini,es,1.0,1.0,1.0,[],True,[],60.8,92,True,False,35.33,,,,,False,False
+sin_colateral,gemini-flash-lite-latest,gemini,en,1.0,1.0,1.0,[],True,[],59.9,64,True,False,19.83,,,,,False,False
+startup_alto_riesgo,gemini-flash-lite-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],71.9,85,True,False,33.38,,True,True,,False,False
+startup_alto_riesgo,gemini-flash-lite-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],39.1,76,True,False,20.46,,True,True,,False,False
+monto_alto_una_razon,gemini-flash-lite-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],70.1,85,True,False,47.51,,True,True,,False,False
+monto_alto_una_razon,gemini-flash-lite-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],39.1,63,True,False,67.04,,True,True,,False,False
+sin_colateral,gemini-flash-lite-latest (hibrido),gemini,es,1.0,1.0,1.0,[],True,[],65.2,84,True,False,20.29,,True,True,,False,False
+sin_colateral,gemini-flash-lite-latest (hibrido),gemini,en,1.0,1.0,1.0,[],True,[],36.0,65,True,False,49.2,,True,True,,False,False

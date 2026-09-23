@@ -193,6 +193,25 @@ def run(providers: list[Provider] | None = None) -> pd.DataFrame:
     return pd.DataFrame(filas)
 
 
+def sin_medir(df: pd.DataFrame) -> set[str]:
+    """Brazos donde NINGUNA llamada devolvio texto.
+
+    POR QUE ESTO IMPORTA. Un brazo que nunca respondio sale de `summarize` con
+    fidelidad 0.00, cumplimiento 0.00 y "pasa 0%" -- cifras que se leen como *el
+    modelo es pesimo* cuando lo cierto es *el modelo no dijo nada*. Son dos
+    afirmaciones distintas y solo una es una medicion.
+
+    Paso con Gemini: 24 llamadas, todas 429 por cuota del tier gratuito, y la tabla
+    lo mostraba en el ultimo puesto como si hubiera competido.
+    """
+    solos = df[~df["modelo"].str.contains(r"\(hibrido\)", regex=True)]
+    fuera = set()
+    for arm, part in solos.groupby("modelo", observed=True):
+        if part["error"].notna().all():
+            fuera.add(arm)
+    return fuera
+
+
 def summarize(df: pd.DataFrame) -> pd.DataFrame:
     return (
         df.assign(arm=df["provider"] + " / " + df["modelo"])
@@ -310,8 +329,23 @@ def main() -> int:
             f"  Baseline (plantilla determinista): fidelidad {base.fidelidad:.4f}, "
             f"pasa {base.pasa:.0%}"
         )
+        # NO MEDIDO no es NO SUPERA, y la tabla los mostraba igual.
+        mudos = sin_medir(df)
         for name, row in resumen.iterrows():
             if name == base_key:
+                continue
+            modelo = name.split(" / ", 1)[-1]
+            if modelo in mudos:
+                print(f"  {name:26s} ->  NO MEDIDO: ninguna llamada devolvio texto")
+                continue
+            # Un hibrido cuyo LLM nunca respondio devuelve la plantilla las seis
+            # veces: sus cifras SON las del baseline, y empatar consigo mismo no
+            # significa nada.
+            if modelo.removesuffix(" (hibrido)") in mudos:
+                print(
+                    f"  {name:26s} ->  NO MEDIDO: es la plantilla, el fallback "
+                    "disparo en todos los casos"
+                )
                 continue
             delta = row.fidelidad - base.fidelidad
             veredicto = (
@@ -324,6 +358,12 @@ def main() -> int:
             print(
                 f"  {name:26s} fidelidad {row.fidelidad:.4f} ({delta:+.4f})  "
                 f"pasa {row.pasa:.0%}  {row.segundos:.1f}s  ->  {veredicto}"
+            )
+        if mudos:
+            print(
+                f"\n  Sin medir: {', '.join(sorted(mudos))}. Sus cifras de 0.00 NO son"
+                "\n  una medicion del modelo, son la ausencia de una. Ver la columna"
+                "\n  `error` del detalle."
             )
         print("\n  La plantilla no alucina, no depende de red y cuesta cero.")
         print("  Un LLM solo se justifica si aporta algo medible sobre eso.")

@@ -122,7 +122,10 @@ class Provider(ABC):
     # reporta como fallido cuando lo que paso es que habia cola. No se reintenta un
     # 4xx --esos son errores de la peticion, no del momento-- porque insistir sobre
     # una clave mala solo tarda mas en dar la misma respuesta.
-    REINTENTOS_SATURACION = 3
+    # Cinco y no tres: el tier gratuito de Gemini devuelve 503 "high demand" de forma
+    # sostenida --medido, cinco intentos para un exito-- y con tres el brazo se
+    # reportaba como fallido cuando lo que habia era cola.
+    REINTENTOS_SATURACION = 5
 
     def run(self, prompt: str, **kw) -> Generation:
         import time
@@ -263,7 +266,11 @@ class GeminiProvider(Provider):
     # luego no se pueden llamar. El catalogo no es la verdad; la llamada si. Por eso
     # se usa el alias `-latest`, que Google reapunta, en vez de una version que
     # caduca sin avisar y convierte "el modelo fallo" en el diagnostico equivocado.
-    def __init__(self, model: str = "gemini-flash-latest") -> None:
+    # `-lite` y no `-flash`: la cuota gratuita es POR MODELO, y la de
+    # `gemini-flash-latest` son 20 peticiones AL DIA. El harness gasta 24 solo en este
+    # brazo (3 casos x 2 idiomas x 2 modos x 2 corridas), asi que no cabe ni con la
+    # cuota intacta. El lite tiene su propia cuota y mejor disponibilidad.
+    def __init__(self, model: str = "gemini-flash-lite-latest") -> None:
         self.model = model
         self.key = os.environ.get("GEMINI_API_KEY", "")
 
