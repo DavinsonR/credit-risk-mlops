@@ -1,4 +1,4 @@
-﻿.PHONY: help setup acquire verify signal-check train economics gates card validation reproduce audit causal event-study harmonize pbir web-exports web-check maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
+﻿.PHONY: help setup setup-neural acquire verify signal-check train economics stress all gates card validation reproduce audit causal event-study harmonize pbir web-exports web-check maturity drift drift-build retrain-check monitor hmda hmda-train disparity benchmark onnx llm-evals serve web lint test ci-local clean
 .DEFAULT_GOAL := help
 
 UV := uv
@@ -17,6 +17,12 @@ setup:  ## Crea el entorno (Python 3.12), instala dependencias y el hook de auto
 		&& echo "hook de autoria instalado (core.hooksPath=scripts/hooks)" \
 		|| echo "sin repo git: hook de autoria NO instalado"
 
+setup-neural: setup  ## Igual que setup, mas PyTorch (necesario para train)
+	@# `train` NECESITA este extra: el brazo de red neuronal es parte de la
+	@# comparacion publicada. `setup` no lo instala porque auditar el modelo
+	@# --tests, lint y gates-- no requiere PyTorch, y son ~500 MB en disco.
+	$(UV) sync --extra dev --extra neural
+
 acquire:  ## Descubre y descarga las fuentes; escribe manifiesto con SHA256
 	$(UV) run python -m crmlops.sources.sba
 
@@ -30,6 +36,19 @@ train:  ## Entrena baseline + retadores; escribe exports/metrics.json
 	$(UV) run python -m crmlops.models.train
 
 economics:  ## Traduce el modelo a dolares: perdida evitada y corte optimo
+	$(UV) run python -m crmlops.models.train_economics
+
+stress:  ## Aplica el modelo a cohortes fuera de su regimen
+	$(UV) run python -m crmlops.evaluation.stress
+
+all:  ## train -> gates -> card -> economics (aborta al primer fallo)
+	@# Recetas en secuencia y no prerequisitos: con `make -j` los prerequisitos
+	@# pueden correr en paralelo, y los gates leen exports/metrics.json commiteado,
+	@# asi que pasarian sin haber entrenado nada. make corta en la primera linea
+	@# que falla, igual que `.\run all`.
+	$(UV) run python -m crmlops.models.train
+	$(UV) run python -m crmlops.governance.gates
+	$(UV) run python -m crmlops.governance.model_card
 	$(UV) run python -m crmlops.models.train_economics
 
 causal:  ## Identificacion causal: se puede estimar el efecto de la garantia?
