@@ -253,10 +253,14 @@ Gemini arms).
 ## What is missing
 
 The ten-week scope is closed. What remains is written down and prioritised by how
-much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**.
-Four of the eleven items are not code: a repository description, a GitHub bio that
-contradicts this one, a Power BI report layout that needs Desktop, and twenty-one
-deliberately empty paragraphs in the engineering log that only their author can fill.
+much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**,
+with the click-by-click version in **[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
+
+Three of the original eleven items remain, and **none of them is code**: two free API
+keys, opening in Power BI Desktop a report that is already written and validated against
+Microsoft's schemas, and twenty-one deliberately empty paragraphs in the engineering log
+that only their author can fill — and that, written by anyone else, would not serve the
+purpose they exist for.
 
 ## License
 

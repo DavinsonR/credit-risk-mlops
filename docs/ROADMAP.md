@@ -1,11 +1,12 @@
 # Lo que falta
 
-Estado al 16 de septiembre de 2026. El alcance está cerrado: CI verde, 239 tests,
+Estado al 23 de septiembre de 2026. El alcance está cerrado: CI verde, 239 tests,
 10 gates, 14 ADRs, y el proyecto tiene su propia página en el portafolio con la demo
 corriendo en el navegador. **Nada de esta lista bloquea mostrarlo.**
 
-El orden no es cronológico: es por cuánto cambia el resultado. Cada entrada dice quién
-puede hacerla, y los cinco que quedan son ajustes de cuenta o trabajo que solo puede hacer su autor.
+El orden no es cronológico: es por cuánto cambia el resultado. Los tres que quedan
+son de su autor: dos necesitan una cuenta o un programa que yo no tengo, y el tercero
+no tendría sentido escrito por otro.
 
 ## Cerrado en la semana 11
 
@@ -33,83 +34,50 @@ proyecto venía citando:
   página lee el mismo bundle que el repositorio verifica.
 - **El informe de Power BI, escrito en PBIR** y validado contra los esquemas de
   Microsoft: cuatro páginas, veinte visuales, cada campo comprobado contra el TMDL.
-  Falta abrirlo en Desktop, que es el punto 3.
+  Falta abrirlo en Desktop, que es el punto 2.
 
 Y dejaron seis defectos en la bitácora: la muestra de análisis la definía el sistema de
 archivos, el manifiesto de procedencia se sobrescribía en vez de fusionarse, la demo del
-navegador nunca se había pulsado, `.env` no lo leía nadie, y el `.pbip` apuntaba a un
-artefacto inexistente. Los dos últimos salieron de escribir los instructivos, que es
-exactamente para lo que sirve escribir un instructivo.
+navegador nunca se había pulsado, `.env` no lo leía nadie, el `.pbip` apuntaba a un
+artefacto inexistente, y `ci-local` copiaba el árbol de trabajo sin borrar nada —así que
+no veía las eliminaciones—. Los tres últimos salieron de escribir los instructivos y de
+generar el informe, que es exactamente para lo que sirve escribirlos.
 
-**De los once puntos originales quedan cinco, y todos son tuyos.** Dos de ellos ya
-tienen instructivo paso a paso: [Power BI](POWERBI.md) y
-[Groq + Gemini](LLM_PROVIDERS.md).
+Y el 23 de septiembre salieron dos más, verificados contra la API de GitHub y no
+supuestos: **los cinco repositorios ya tienen descripción**, los cuatro de proyecto
+tienen topics, y **la bio de la cuenta dejó de contradecir al perfil**.
+
+**De los once puntos originales quedan tres, y todos son tuyos.**
+
+> **Paso a paso, con los clics: [docs/CHECKLIST.md](CHECKLIST.md).** Esta página explica
+> por qué importa cada cosa; esa dice qué hacer y en qué orden.
 
 ---
 
-## Ahora — cuestan minutos y el proyecto ya está público
+## Ahora — quince minutos y dos cuentas gratuitas
 
-### 1. Ninguno de los cinco repositorios tiene descripción ni topics
-**Quién:** solo Davirson (son ajustes de cuenta) · **Esfuerzo:** 10 minutos
+### 1. Los brazos de Groq y Gemini
+**Quién:** Davirson pone las claves, yo corro el harness · **Esfuerzo:** 10 minutos suyos
 
-Verificado contra la API de GitHub el 16 de septiembre de 2026: los cinco repos
-públicos tienen `description: null` y `topics: []`. Esa línea es lo que aparece en las
-búsquedas de GitHub y en la lista de repos, y ahora el perfil apunta a `credit-risk-mlops`
-como trabajo principal: un repo sin descripción se lee como abandonado.
+**Procedimiento completo: [docs/LLM_PROVIDERS.md](LLM_PROVIDERS.md)** — dónde sacar cada
+clave, dónde pegarla, cómo verificar que llegó, y qué mirar en la corrida.
 
-Se pone en **Settings → General → Description**, y los topics con el engranaje que hay
-al lado de "About" en la portada del repo.
+Tiers gratuitos sin tarjeta en `console.groq.com` y `aistudio.google.com`.
 
-**`credit-risk-mlops`**
-```
-Credit decisioning with model risk governance on 1.96M SBA loans and 93.4M HMDA applications. Ten promotion gates — one blocks my own model.
-```
-`credit-risk` · `mlops` · `model-governance` · `fairness` · `causal-inference` · `event-study` · `duckdb` · `lightgbm` · `python`
+Y otro defecto destapado al escribirlo: **nada leía `.env`**. El repo decía "copiar a
+.env" y el harness decía "claves en .env", pero los proveedores solo miraban variables de
+entorno reales. Seguir la instrucción oficial dejaba los dos brazos en "no disponibles",
+sin error. Ahora lo carga `crmlops.env`, con ocho tests.
 
-**`financial-inclusion-colombia`**
-```
-MSc thesis, built in public: 19 open sources into a dimensional warehouse, a financial inclusion index, and an econometric battery whose null results are published too.
-```
-`economics` · `reproducible-research` · `econometrics` · `dbt` · `duckdb` · `colombia` · `financial-inclusion` · `open-data`
-
-**`market-data-medallion`**
-```
-Daily market data pipeline into a PostgreSQL medallion warehouse with dbt, plus an honest backtester: of 1,392 strategy variants, one in eight survived out-of-sample.
-```
-`data-engineering` · `medallion-architecture` · `dbt` · `postgresql` · `backtesting` · `github-actions` · `power-bi` · `python`
-
-**`proyecto-davirson`**
-```
-Bilingual portfolio and interactive CV. Next.js, static, no backend — every published figure links to the repository that produces it.
-```
-`portfolio` · `nextjs` · `typescript` · `tailwindcss` · `i18n` · `vercel`
-
-**`DavinsonR`** (el repo del perfil)
-```
-Profile README.
-```
-Sin topics: un repo de perfil no compite en búsquedas y los topics sobran.
-
-**Y la bio de la cuenta**, que es el campo de 160 caracteres del perfil, no del repo
-(Settings → Public profile → Bio). La actual dice *"currently pursuing an MSc in
-Economics"* y contradice al resto — es el punto 2:
-```
-Economist building ML that survives an audit. Credit risk, model governance, causal inference. MSc Economics (Nov 2026). Bogotá, US hours.
-```
-
-### 2. La bio de GitHub se contradice con el perfil
-**Quién:** solo Davirson · **Esfuerzo:** 1 minuto
-
-La bio dice *"currently pursuing an MSc in Economics"*. El README del perfil, el CV del
-sitio y la página de investigación dicen los tres lo mismo y es lo correcto: **tesis
-radicada en agosto de 2026, grado previsto para noviembre de 2026**. Alguien que compare
-las dos cosas encuentra la única inconsistencia del conjunto justo en la credencial.
+Vale por una razón concreta: la segunda revisión del ADR 0009 concluyó que **la
+consistencia de un LLM local no es reproducible entre máquinas**. Dos modelos hospedados
+pondrían a prueba si eso es de la inferencia local o del problema.
 
 ---
 
 ## Después — lo que queda a medias
 
-### 3. Abrir el informe de Power BI y verificarlo
+### 2. Abrir el informe de Power BI y verificarlo
 **Quién:** solo Davirson (hace falta Power BI Desktop) · **Esfuerzo:** una hora
 
 El modelo semántico estaba escrito en TMDL y verificado por test. **Ahora el informe
@@ -134,24 +102,7 @@ con él corrijo el generador.
 
 ## Abierto — trabajo de verdad, no acabados
 
-### 4. Los brazos de Groq y Gemini
-**Quién:** Davirson pone las claves, yo corro el harness · **Esfuerzo:** 10 minutos suyos
-
-**Procedimiento completo: [docs/LLM_PROVIDERS.md](LLM_PROVIDERS.md)** — dónde sacar cada
-clave, dónde pegarla, cómo verificar que llegó, y qué mirar en la corrida.
-
-Tiers gratuitos sin tarjeta en `console.groq.com` y `aistudio.google.com`.
-
-Y otro defecto destapado al escribirlo: **nada leía `.env`**. El repo decía "copiar a
-.env" y el harness decía "claves en .env", pero los proveedores solo miraban variables de
-entorno reales. Seguir la instrucción oficial dejaba los dos brazos en "no disponibles",
-sin error. Ahora lo carga `crmlops.env`, con ocho tests.
-
-Vale por una razón concreta: la segunda revisión del ADR 0009 concluyó que **la
-consistencia de un LLM local no es reproducible entre máquinas**. Dos modelos hospedados
-pondrían a prueba si eso es de la inferencia local o del problema.
-
-### 5. Los `_(escribir: ...)_` de NOTES.md
+### 3. Los `_(escribir: ...)_` de NOTES.md
 **Quién:** solo Davirson · **Esfuerzo:** dos horas
 
 Veintiún huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió

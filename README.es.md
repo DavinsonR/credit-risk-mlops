@@ -237,10 +237,13 @@ Gemini).
 
 El alcance de las diez semanas está cerrado. Lo que queda está escrito y priorizado
 por cuánto cambia el resultado, no por cuándo apareció —
-**[docs/ROADMAP.md](docs/ROADMAP.md)**. Cuatro de los once puntos no son código: una
-descripción de repositorio, una bio de GitHub que contradice a esta, un layout de
-Power BI que necesita Desktop, y veintiún párrafos deliberadamente vacíos en la bitácora
-que solo su autor puede llenar.
+**[docs/ROADMAP.md](docs/ROADMAP.md)**, y el paso a paso con los clics en
+**[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
+
+De los once puntos originales quedan **tres, y ninguno es código**: dos claves gratuitas
+de API, abrir en Power BI Desktop un informe que ya está escrito y validado contra los
+esquemas de Microsoft, y veintiún párrafos deliberadamente vacíos en la bitácora que
+solo su autor puede llenar — y que escritos por otro no servirían para lo que existen.
 
 ## Licencia
 
