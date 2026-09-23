@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Sistema de decisión de crédito con gobierno de riesgo de modelo, sobre datos públicos de EE. UU. Dos modelos: **A** — default/pérdida sobre SBA 7(a) (PD + LGD, ancla SR 26-2); **B** — denegación sobre HMDA (ECOA/Reg B, auditoría de equidad). Python 3.12 con `uv`, paquete `crmlops` en `src/`. Docs, comentarios, ADRs y mensajes de commit están en español.
 
-El argumento del proyecto es que **sobrevive a una auditoría**: el README publica un registro de defectos, casi todos del tipo "falló en silencio o reportó éxito". Un cambio que haga que algo pase sin haberlo verificado es exactamente el tipo de defecto que el repositorio existe para cazar.
+El argumento del proyecto es que **sobrevive a una auditoría**. Los defectos encontrados se registran, numerados, en `docs/DEFECTS.md` y `docs/DEFECTS.es.md` (no en el README, que es la carta de presentación), y casi todos son del tipo "falló en silencio o reportó éxito". Un defecto nuevo va como fila nueva en los dos archivos. Un cambio que haga que algo pase sin haberlo verificado es exactamente el tipo de defecto que el repositorio existe para cazar.
 
 ## Comandos
 

@@ -1,63 +1,62 @@
 # credit-risk-mlops
 
-A credit decisioning system with model risk governance, built on real US public
-data. The model is not the point. **The point is that it survives an audit — and
-that I ran the audit against myself first.**
+A credit decisioning system governed the way a bank's model risk function governs
+one, built end to end on **64M+ real US public records**: ingestion, modeling,
+causal analysis, fair-lending audit, serving, monitoring and an LLM layer for
+regulatory notices.
 
-> 🇪🇸 [Versión en español](README.es.md) · Engineering log: [NOTES.md](NOTES.md) ·
-> Architecture decisions: [docs/adr/](docs/adr/)
+The model is not the point. **The point is that it survives an audit — and that I
+ran the audit against myself first.**
 
----
+> 🇪🇸 [Versión en español](README.es.md) · Architecture decisions: [docs/adr/](docs/adr/) ·
+> Defect log: [docs/DEFECTS.md](docs/DEFECTS.md) · Engineering log: [NOTES.md](NOTES.md)
 
-## What it found
-
-Every project shows the run that worked. This one ships the ledger of what broke,
-because that is the part you cannot fake and the part that predicts how someone
-works. Each row links to the artifact that proves it.
-
-| # | What broke | Why it matters |
-|---|---|---|
-| 1 | **AUC 0.9461** looked great. `TermInMonths` is overwritten when a loan is liquidated — the field leaked the outcome. Remove it and the ablation drops to **0.6621** | [ADR 0002](docs/adr/0002-terminmonths-es-fuga.md) · I deleted my best number on purpose |
-| 2 | The temporal split crossed a cyclical base rate. Validation scored *worse* than test and PSI hit **4.08**. Redesigned around two measured criteria | [ADR 0003](docs/adr/0003-diseno-del-split-temporal.md) |
-| 3 | `exports/metrics.json` was hand-editable. **I wrote AUC 0.95 into it and every gate passed.** The fingerprint did not cover the code either | [docs/AUDIT.md](docs/AUDIT.md) · both closed |
-| 4 | The adverse-action compliance checker used `"\b"` in a non-raw string — that is the **backspace** character, not a word boundary. The control silently matched nothing | Week 8 · found by testing the checker against bad output |
-| 5 | I reported LLM inconsistency as a finding about local inference. It was **my measurement**: the first generation after a model loads is not deterministic. With warm-up, one arm went 0% → 83% | [ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md) |
-| 6 | The authorship hook **failed open**. `grep` returns non-zero both when it finds nothing and when it cannot search. With `sh.exe` lacking `/usr/bin` on PATH: `grep: command not found`, exit 0, **AI trailer accepted silently** | Now fails closed · 18 tests |
-| 7 | `run all` printed **`APPROVED: 8 gates passed`** after training crashed. The gates read committed metrics, so they passed with no new model | [tests/test_run_aborta.py](tests/test_run_aborta.py) |
-| 8 | **CI was red for 8 consecutive commits** while I wrote "lint green, N tests" in five commit messages. A test asserted local git config that CI never sets | Fixed · plus [`run ci-local`](scripts/ci_local.py), which reproduces CI before pushing |
-| 9 | Two published numbers **did not replicate on another machine**: the DuckDB/PySpark benchmark (29.3x → 14.3x) and LLM consistency (0.83 → 0.33). I had presented single-machine measurements as properties of the system | Both retracted and re-stated as ranges |
-| 10 | `MODEL_CARD.md` listed **7 gates of 8** — its generator never called the fairness one, the only gate the model fails. And `VALIDATION_REPORT.md` printed `PASS` for that gate in §3.1 while §5 said "promotion blocked" | Root cause was mine: one boolean meant two things. Now `passed` ≠ `threshold_met` |
-| 11 | Three modules defined their analysis sample with `glob("*.parquet")`. **The filesystem decided what "62.4M applications" meant.** Downloading three more years for the event study would have silently moved the observed-disparity numbers, the backend benchmark and that headline — and no test would have failed, because every test reads the same directory the code does | Found by being about to trip it · the window now comes from `config.yaml` · [tests](tests/test_hmda_shard_selection.py) |
-| 12 | The hybrid-LLM instrumentation passed its new fields **only on the error branch** of `evaluate()`. On every success — i.e. every case being analysed — they arrived empty, pandas read `NaN`, `.astype(bool)` made it `False`, and the report printed a conclusion about a field that was never filled | [ADR 0009 rev. 3](docs/adr/0009-la-plantilla-gana-al-llm.md) · the analysis now refuses to conclude without instrumentation |
-| 13 | The browser demo **had never been clicked.** The SBA-guarantee field carried `step="1000"` and a default of `187500` — 75% of the loan, the correct figure — which is not a multiple of 1000. The form was born invalid, so the button did nothing. The ONNX model loaded, parity was verified, and the one thing nobody had done was press the button | [tests/test_web_demo_form.py](tests/test_web_demo_form.py) · now live and bilingual |
-| 14 | **Nothing read `.env`.** `.env.example` said "copy to .env", the harness said "keys in .env", and the providers called `os.environ.get(...)`, which only sees real environment variables. Following the repo's own instruction left Groq and Gemini "unavailable" — no error, no hint | Found while writing [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
-| 15 | The `.pbip` declared a report artifact that **did not exist** — only the semantic model had been written. Power BI Desktop cannot open a project whose report is missing, so the first line of the guide was unrunnable. The scaffold test missed it because it checked a hand-written file list instead of what the `.pbip` itself declares | Found while writing [docs/POWERBI.md](docs/POWERBI.md) · the test now follows the artifact chain |
-| 16 | `run ci-local` copied the working tree over a clean clone of HEAD but **never deleted anything**, so a file the commit removes stayed alive in the clone. A deletion that breaks CI was invisible to the control built to catch exactly that. Checking whether the source file exists is not enough either: `git ls-files` lists the index, and a file already removed with `git add -A` is not in it | Found by deleting the legacy `report.json` · it now diffs against `HEAD` |
-| 17 | **A live API key was written into three committed artifacts.** Gemini takes the key in the query string, so a 404 from `requests` carries the whole URL inside the exception text — and that text was stored verbatim in `Generation.error`, which ships to `llm_evals_detail.csv`, `llm_evals.json` and `llm_fallback_analysis.csv`. It never reached git because I caught it before the commit, and that is luck, not a control | Errors are now redacted at the boundary · [22 tests](tests/test_redaccion_secretos.py), one of which scans every committed export |
-| 18 | **The redactor was born with defect 4 inside it.** I wrote `"\b"` in a non-raw string — the **backspace** character again, not a word boundary — so the bare-key pattern matched nothing. The same bug the ledger has documented since week 8, repeated inside the security fix, which is the worst possible place for it | Now reuses the `WORD_BOUNDARY` constant that exists in `evals.py` for exactly this reason · a test asserts the compiled pattern does not start with `\x08` |
-| 19 | Both hosted model IDs were **pinned and had expired**: `llama-3.3-70b-versatile` and `gemini-2.0-flash` both 404. The arm read as "the model failed" when what failed was the identifier. And `GET /v1beta/models` **lists models that cannot be called** — `gemini-2.5-flash` appears in the catalogue and answers *"no longer available"* | The catalogue is not the truth, the call is · now uses the `-latest` alias, which the provider repoints |
-| 20 | With `max_tokens: 500`, `gpt-oss-120b` spent **1,887 tokens reasoning**, finished on `length`, and returned empty `content`. The harness logged "empty output" and the arm came out at **fidelity 0.33** — my own configuration about to be published as a property of the model, which is exactly what this project retracted twice before | Reasoning effort capped so the budget goes to the answer · the 500 tokens stay identical across arms |
-| 21 | I published a consistency figure of **0.83 from a single run** as evidence that hosted inference is more reproducible than local — and rerunning the same harness on the same machine minutes later gave **0.33**. The local arms gave the same number both times; the hosted one was the one that moved. **Third time this project published one measurement as a property**, and it survived an hour | [ADR 0009 rev. 5](docs/adr/0009-la-plantilla-gana-al-llm.md) · retracted · no consistency figure ships with n=1 |
-
-Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Twelve of these
-**failed silently or reported success** — which is the failure mode the whole project
-is built to hunt, found in its own tooling.
+**Stack:** Python 3.12 · DuckDB · LightGBM · scikit-learn · optbinning (WoE scorecard) ·
+PyTorch · MLflow · ONNX Runtime · FastAPI · Docker · PySpark · Power BI (PBIP/TMDL) ·
+GitHub Actions · `uv`
 
 ---
 
-## What it is
+## At a glance
+
+| | |
+|---|---|
+| Data | **1.96M** SBA 7(a) loans (FY1991–2026) · **62.4M** HMDA applications (FY2020–2024) · **93.4M** for the event study (FY2018–2025) |
+| Discrimination | **AUC 0.7005** out-of-time, **+0.0311** over an interpretable WoE scorecard |
+| Calibration | **ECE 0.0107** |
+| Business impact | **$276.3M** in charge-offs avoided by declining the riskiest 10% — **2.15x** random |
+| Governance | **10 promotion gates** in CI; metrics are **recomputed** from stored predictions, never trusted |
+| Documentation | **14 ADRs**, a model card, and a validation report structured on SR 26-2 and EU AI Act Annex IV |
+| Serving | One ONNX artifact, **three runtimes** (FastAPI, serverless, in-browser WASM), parity-tested |
+| Try it | [Score a loan in the browser](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=en), no server, nothing leaves the page |
+
+## What it demonstrates
+
+| Capability | Evidence |
+|---|---|
+| **Model risk governance** | Promotion gates that recompute metrics and fingerprint config *and* modeling code; changing either without retraining fails the build |
+| **Leakage detection** | A contamination audit that caught a post-origination field inflating AUC to 0.946 — [ADR 0002](docs/adr/0002-terminmonths-es-fuga.md) |
+| **Out-of-time validation and stress** | Split designed around cyclical base rates and label censoring; a 2007-style regime scored as a deliverable — [ADR 0003](docs/adr/0003-diseno-del-split-temporal.md) |
+| **Causal inference** | Two designs, two measured non-identifications, zero effects published without identification — [ADR 0013](docs/adr/0013-el-efecto-de-la-garantia-no-esta-identificado.md), [ADR 0014](docs/adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md) |
+| **Fair lending** | Four-fifths rule per protected class; the access model is **blocked from promotion** at 0.7639 |
+| **Production monitoring** | Label maturity, PSI and unsupported-mass drift, and an explicit retrain decision |
+| **LLM engineering** | Adverse-action notices with a deterministic fallback, programmatic evals and no LLM-as-judge — [ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md) |
+| **Reproducibility** | `run reproduce` retrains and asserts the metrics are identical to the committed ones; `run ci-local` reproduces CI before a push |
+
+---
+
+## Two models, two regulatory regimes
 
 | Model | Source | Target | Regulatory anchor |
 |---|---|---|---|
 | **A — Default / Loss** | SBA 7(a) FOIA · 1.96M loans, FY1991–2026 | Charge-off (PD) + severity (LGD) | [SR 26-2](docs/adr/0012-el-ancla-regulatoria-cambio.md) |
 | **B — Underwriting / Access** | HMDA · **62.4M applications**, FY2020–2024 | Denial | ECOA / Reg B |
 
-The event study below runs on a wider window — **93.4M applications, FY2018–2025** —
-declared separately in `config.yaml` so that extending it cannot move the published
-model's numbers. That separation exists because it once failed to: see defect 11.
-
+SBA files are acquired through URL discovery and verified against a SHA256 manifest.
 HMDA row counts are verified against the CFPB's own published aggregations: a
-download that finishes is not a download that is **complete**.
+download that finishes is not a download that is **complete**. Every analysis window
+is declared in `config.yaml`, so extending the event-study window cannot move the
+published model's numbers.
 
 ## The numbers, with their counterweight
 
@@ -105,12 +104,10 @@ causal claims inside a number presented as a prediction.
 
 ### The 2022 rate shock: the gap did not widen, it came back
 
-ADR 0013 said the alternative design was the 2022 rate shock on HMDA — exogenous,
-large, with protected classes in the data and **pre-periods to falsify against**.
-`run event-study` is that design, over **93.4M applications, FY2018–2025**.
-
-Its first result is not a coefficient. It is that the project's own week-6 finding
-was measured against the wrong baseline.
+The alternative design is the 2022 rate shock on HMDA — exogenous, large, with
+protected classes in the data and **pre-periods to falsify against**. `run
+event-study` runs it over **93.4M applications, FY2018–2025**, and its first result
+is that the project's own earlier finding was measured against the wrong baseline.
 
 | | Black–White denial gap |
 |---|---|
@@ -120,8 +117,7 @@ was measured against the wrong baseline.
 
 **The post-shock gap sits 0.03 pp from the pre-pandemic gap.** Measured against 2021
 the widening is +2.59 pp — and that is the number in circulation. It measures the refi
-boom ending. The five-year panel had exactly one comparable pre-shock year, so there
-was no way to see this.
+boom ending.
 
 Of the movement against 2021, a Kitagawa decomposition (exact, no residual) puts
 **65% on recomposition of the applicant pool** — refinancing collapsed 92% and it was
@@ -137,9 +133,8 @@ And no causal effect is published, for three measured reasons:
 | The textbook fix — extrapolate the pre-trend | Manufactures **+5.61 pp**, because the trend it extrapolates *is* the boom the shock ends |
 | Differential selection into the applicant pool | **17.2 pp**: Black applications fell 40%, white ones 57% |
 
-[ADR 0014](docs/adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md). The
-conclusion resembles ADR 0013 — no effect published — but the content is the opposite.
-In SBA there was nothing to falsify *with*. Here there was, the test ran, and **the
+[ADR 0014](docs/adr/0014-el-shock-de-tasas-revirtio-la-brecha-no-la-amplio.md). In
+SBA there was nothing to falsify *with*. Here there was, the test ran, and **the
 falsification is what closes the case**. A design that cannot fail its own test is not
 identifying anything; it just has not looked.
 
@@ -163,23 +158,19 @@ unseen categories to "unknown" — so the model does not degrade, it **loses the
 variable entirely and keeps answering with the same confidence**.
 [ADR 0011](docs/adr/0011-la-fuente-cambio-el-vocabulario.md).
 
-**And what it cost to fix.** ADR 0011 argued that harmonising the vocabulary would
-cost resolution — four age bands collapse into one. Arguing is not measuring, so
-`run harmonize` trains the production model twice, same split, same seed, changing
-only that vocabulary:
+**And what it costs to fix.** `run harmonize` trains the production model twice, same
+split, same seed, changing only that vocabulary:
 
 | | AUC (test) | Coverage of FY2024–2026 |
 |---|---|---|
 | Raw vocabulary | 0.7005 | **15.4%** |
 | Harmonised | 0.6990 | **90.1%** |
 
-**0.0015 of AUC buys back 74.7 points of coverage.** The intuition was right in
-direction and negligible in magnitude — and written without measuring, that same
-sentence would have justified doing nothing. What does not move: 9.7% stays
+**0.0015 of AUC buys back 74.7 points of coverage.** What does not move: 9.7% stays
 unsupported, because `Change of Ownership` is not an age but a form of acquisition,
 and mapping it would be inventing the data.
 
-## The LLM layer, and the number it could not hold
+## The LLM layer
 
 Denying credit under ECOA/Reg B **legally obliges** you to state the specific principal
 reasons. That is the one place a language model has a real job here: SHAP picks the
@@ -203,28 +194,10 @@ at temperature 0. For a document whose obligation is legal, that disqualifies on
 — no argument about prose quality required.
 
 The hybrid over Groq is the only arm that ties the template on every gate and beats it
-on readability, in both languages. **The template still ships**, and now for a better
-reason: not because the challenger is worse, but because it is equally good and more
-fragile — it needs a network, a third party and a quota.
+on readability, in both languages. **The template still ships**: the challenger is
+equally good and more fragile — it needs a network, a third party and a quota.
 
-### The number this project could not hold
-
-Consistency on the same machine, same seed, same commit, minutes apart:
-
-| | Run 1 | Run 2 |
-|---|---|---|
-| gpt-oss-120b (hosted, alone) | **0.83** | **0.33** |
-| llama3.2:3b (local, alone) | 0.50 | 0.50 |
-| qwen2.5:7b (local, alone) | 0.33 | 0.33 |
-
-I published the 0.83 as evidence that hosted inference reproduces better than local. It
-does not — **the local arms held, the hosted one moved.** That was the third time this
-project shipped a single measurement as a property of the system, and it survived an
-hour before the rerun killed it
-([ADR 0009](docs/adr/0009-la-plantilla-gana-al-llm.md), five revisions, three of them
-retractions).
-
-No consistency figure ships here with n=1 any more.
+Consistency figures are published only from repeated runs, never from a single one.
 
 ## Promotion gates
 
@@ -247,9 +220,16 @@ PR.
 Every threshold has its derivation written next to it in `config.yaml`. None was
 chosen because the model passed it — see [docs/AUDIT.md](docs/AUDIT.md).
 
-The verdict distinguishes two things that used to be conflated: **`passed`** means
-"the build does not break" and **`threshold_met`** means "the model complies". For
-the fairness gate they differ, and it now reads `NO CUMPLE (build ok: no se promueve)`.
+The verdict separates two questions: **`passed`** means "the build does not break"
+and **`threshold_met`** means "the model complies". For the fairness gate they differ,
+and it reads `NO CUMPLE (build ok: no se promueve)`.
+
+## Engineering discipline
+
+Every defect found during the build is logged with its root cause and the control that
+now prevents it — **[docs/DEFECTS.md](docs/DEFECTS.md)**. The adversarial audit of the
+governance layer lives in [docs/AUDIT.md](docs/AUDIT.md), and each
+design decision has an [ADR](docs/adr/).
 
 ## Verify it yourself
 
@@ -274,20 +254,21 @@ be audited without access to the sources. It is why CI downloads nothing.
 .\run ci-local   # runs what CI runs, in a clean clone, before you push
 ```
 
+On Linux/macOS every task is a `make` target.
+
 **Or just score a loan:** the production ONNX artifact runs in the browser, with no
 server and nothing leaving the page —
 [proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=en).
-Set business age to `Change of Ownership` to watch defect row 11's cousin in action:
-the category is not in the contract, so it scores as unknown and the model answers
-with the same confidence.
+Set business age to `Change of Ownership` to see the monitoring finding live: the
+category is not in the contract, so it scores as unknown and the model answers with
+the same confidence.
 
 Step-by-step for every level, optional extras and known problems:
-**[docs/INSTALL.md](docs/INSTALL.md)**. On Linux/macOS every task is a `make` target.
-Two more procedures live next to it: **[docs/POWERBI.md](docs/POWERBI.md)** (open the
-report in Desktop) and **[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (the hosted
-LLM arms, already running).
+**[docs/INSTALL.md](docs/INSTALL.md)**. Two more procedures live next to it:
+**[docs/POWERBI.md](docs/POWERBI.md)** (open the report in Desktop) and
+**[docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md)** (the hosted LLM arms).
 
-## What this is not
+## Scope
 
 - **Not in production, and its exposure is zero.** Under SR 26-2, materiality follows
   purpose and exposure; this is a reference exercise and says so in its own
@@ -302,18 +283,8 @@ LLM arms, already running).
   bytes. The distinction matters in a project that sells auditability, so it is
   written down.
 
-## What is missing
-
-The ten-week scope is closed. What remains is written down and prioritised by how
-much it changes the outcome, not by when it came up — **[docs/ROADMAP.md](docs/ROADMAP.md)**,
-with the click-by-click version in **[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
-
-Two of the original eleven items remain, and **neither is code**: opening in Power BI
-Desktop a report that is already written and validated against Microsoft's schemas, and
-twenty-four
-deliberately empty paragraphs in the engineering log
-that only their author can fill — and that, written by anyone else, would not serve the
-purpose they exist for.
+What comes next is prioritised by how much it changes the outcome:
+**[docs/ROADMAP.md](docs/ROADMAP.md)**.
 
 ## License
 
