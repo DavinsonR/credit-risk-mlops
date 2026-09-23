@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import contextlib
 import os
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 
@@ -32,7 +33,42 @@ import requests
 
 from crmlops.env import load as load_env
 
+# WORD_BOUNDARY y no "": en una cadena no-raw eso es el caracter BACKSPACE, y el
+# regex deja de hacer lo que dice. Es el defecto 4 del ledger, y acaba de repetirse
+# aqui mismo -- en el arreglo que redacta secretos, que es el peor sitio posible.
+from crmlops.llm.evals import WORD_BOUNDARY
+
 TIMEOUT = 120
+
+# --- Redaccion de secretos en los mensajes de error --------------------------
+# La API de Gemini toma la clave en la QUERY STRING, asi que un 404 de `requests`
+# trae la URL completa --clave incluida-- dentro del texto de la excepcion. Ese
+# texto se guardaba tal cual en `Generation.error`, viajaba a
+# `exports/llm_evals_detail.csv` y a `llm_evals.json`, y esos archivos SE
+# COMMITEAN.
+#
+# Paso: una clave real quedo impresa en la consola y escrita en tres artefactos.
+# No llego a git de milagro --se detecto antes del commit-- y eso no es un
+# control, es suerte.
+#
+# La regla es la de siempre en este proyecto: el control no puede depender de que
+# nadie haga algo razonable. Aqui lo razonable era mirar el error.
+_SECRETO = re.compile(r"(?i)(key=|api[_-]?key=|access_token=|Bearer\s+)[A-Za-z0-9._\-]{8,}")
+# Formatos conocidos de clave, por si aparecen sueltas y no tras un `key=`.
+_CLAVE_SUELTA = re.compile(
+    WORD_BOUNDARY + r"(gsk_[A-Za-z0-9]{20,}|AIza[A-Za-z0-9_\-]{20,}|AQ\.[A-Za-z0-9_\-]{20,})"
+)
+
+
+def redactar(texto: str) -> str:
+    """Quita claves de un texto antes de que se guarde o se imprima.
+
+    Se aplica en el BORDE --donde el error se convierte en dato-- y no en cada
+    sitio que imprime: un solo punto que olvidar es un solo punto que arreglar.
+    """
+    texto = _SECRETO.sub(lambda m: m.group(1) + "[REDACTADO]", texto)
+    return _CLAVE_SUELTA.sub("[REDACTADO]", texto)
+
 
 # `.env` se vuelca al entorno AL IMPORTAR este modulo, que es el unico punto por el
 # que pasan los tres proveedores hospedados. Antes no lo leia nadie: el repo decia
@@ -81,17 +117,34 @@ class Provider(ABC):
         with contextlib.suppress(Exception):
             self.generate("Responde solo: ok", temperature=0.0, seed=42)
 
+    # Reintentos SOLO ante saturacion, y acotados. El tier gratuito de Gemini
+    # devuelve 503 "high demand" de forma intermitente: sin reintento, el brazo se
+    # reporta como fallido cuando lo que paso es que habia cola. No se reintenta un
+    # 4xx --esos son errores de la peticion, no del momento-- porque insistir sobre
+    # una clave mala solo tarda mas en dar la misma respuesta.
+    REINTENTOS_SATURACION = 3
+
     def run(self, prompt: str, **kw) -> Generation:
         import time
 
         t0 = time.perf_counter()
-        try:
-            text = self.generate(prompt, **kw)
-            return Generation(self.name, self.model, text, time.perf_counter() - t0)
-        except Exception as exc:
-            return Generation(
-                self.name, self.model, "", time.perf_counter() - t0, f"{type(exc).__name__}: {exc}"
-            )
+        for intento in range(self.REINTENTOS_SATURACION):
+            try:
+                text = self.generate(prompt, **kw)
+                return Generation(self.name, self.model, text, time.perf_counter() - t0)
+            except Exception as exc:
+                codigo = getattr(getattr(exc, "response", None), "status_code", None)
+                if codigo in (429, 503) and intento < self.REINTENTOS_SATURACION - 1:
+                    time.sleep(2**intento)
+                    continue
+                return Generation(
+                    self.name,
+                    self.model,
+                    "",
+                    time.perf_counter() - t0,
+                    redactar(f"{type(exc).__name__}: {exc}"),
+                )
+        raise AssertionError("inalcanzable")
 
 
 class TemplateProvider(Provider):
@@ -147,9 +200,23 @@ class OllamaProvider(Provider):
 class GroqProvider(Provider):
     name = "groq"
 
-    def __init__(self, model: str = "llama-3.3-70b-versatile") -> None:
+    # MODELOS QUE CADUCAN. `llama-3.3-70b-versatile` estaba fijado aqui y Groq lo
+    # retiro: la API devolvia 404 y el brazo entero se leia como "el modelo fallo"
+    # cuando lo que fallaba era el identificador. Verificado el 23-09-2026 contra
+    # `GET /openai/v1/models` con la clave real; el catalogo actual de chat es
+    # openai/gpt-oss-120b, openai/gpt-oss-20b, qwen/qwen3.8-27b y allam-2-7b.
+    #
+    # Se elige el mas grande de propuesto general: el harness compara un retador
+    # contra una plantilla, y darle al retador su mejor version es lo que hace
+    # honesta la comparacion.
+    # Familias que devuelven tokens de razonamiento. No es una lista de modelos
+    # sino un prefijo: `openai/gpt-oss-*` son todos de razonamiento.
+    FAMILIAS_QUE_RAZONAN = ("openai/gpt-oss",)
+
+    def __init__(self, model: str = "openai/gpt-oss-120b") -> None:
         self.model = model
         self.key = os.environ.get("GROQ_API_KEY", "")
+        self.razona = model.startswith(self.FAMILIAS_QUE_RAZONAN)
 
     def available(self) -> bool:
         return bool(self.key)
@@ -164,6 +231,20 @@ class GroqProvider(Provider):
                 "temperature": temperature,
                 "seed": seed,
                 "max_tokens": 500,
+                # MODELOS DE RAZONAMIENTO: los tokens de pensamiento salen del MISMO
+                # presupuesto que la respuesta. Con `max_tokens: 500` y esfuerzo por
+                # defecto, gpt-oss-120b gastaba 1.887 tokens razonando, terminaba con
+                # finish_reason="length" y devolvia `content` VACIO.
+                #
+                # El harness lo registraba como "salida vacia" y el brazo salia con
+                # fidelidad 0.33. Habria sido la tercera vez que este proyecto publica
+                # una medicion propia como propiedad del sistema -- el benchmark de
+                # 29.3x y la consistencia de 0.83 fueron las dos primeras.
+                #
+                # `reasoning_effort: low` deja el presupuesto para la RESPUESTA, que es
+                # lo que se esta comparando. Los 500 tokens siguen siendo iguales para
+                # todos los brazos: se iguala la salida, no el pensamiento.
+                **({"reasoning_effort": "low"} if self.razona else {}),
             },
             timeout=TIMEOUT,
         )
@@ -174,7 +255,15 @@ class GroqProvider(Provider):
 class GeminiProvider(Provider):
     name = "gemini"
 
-    def __init__(self, model: str = "gemini-2.0-flash") -> None:
+    # ALIAS, NO VERSION FIJA. `gemini-2.0-flash` estaba fijado aqui y devolvia 404;
+    # `gemini-2.5-flash` responde "This model is no longer available". Verificado el
+    # 23-09-2026 contra la API con la clave real.
+    #
+    # Y hay un detalle que vale la pena: `GET /v1beta/models` LISTA modelos que
+    # luego no se pueden llamar. El catalogo no es la verdad; la llamada si. Por eso
+    # se usa el alias `-latest`, que Google reapunta, en vez de una version que
+    # caduca sin avisar y convierte "el modelo fallo" en el diagnostico equivocado.
+    def __init__(self, model: str = "gemini-flash-latest") -> None:
         self.model = model
         self.key = os.environ.get("GEMINI_API_KEY", "")
 

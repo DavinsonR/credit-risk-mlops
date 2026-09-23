@@ -37,8 +37,12 @@ alguien. Cada fila enlaza al artefacto que lo prueba.
 | 14 | **Nadie leía `.env`.** `.env.example` decía "copiar a .env", el harness decía "claves en .env", y los proveedores hacían `os.environ.get(...)`, que solo ve variables de entorno reales. Seguir la instrucción oficial del repo dejaba Groq y Gemini en "no disponibles" — sin error y sin pista | Encontrado al escribir [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
 | 15 | El `.pbip` declaraba un artefacto de informe que **no existía**: solo se había escrito el modelo semántico. Power BI Desktop no abre un proyecto cuyo informe falta, así que la primera línea de la guía era inejecutable. El test del scaffold no lo veía porque comprobaba una lista de archivos escrita a mano, no lo que el propio `.pbip` declara | Encontrado al escribir [docs/POWERBI.md](docs/POWERBI.md) · el test ahora sigue la cadena de artefactos |
 | 16 | `run ci-local` copiaba el árbol de trabajo sobre un clon limpio de HEAD pero **nunca borraba nada**, así que un archivo que el commit elimina seguía vivo en el clon. Una eliminación que rompiera CI era invisible para el control hecho justo para eso. Y mirar si el archivo de origen existe tampoco basta: `git ls-files` lista el índice, y un archivo ya eliminado con `git add -A` no está ahí | Encontrado al borrar el `report.json` clásico · ahora compara contra `HEAD` |
+| 17 | **Una clave real quedó escrita en tres artefactos que se commitean.** Gemini toma la clave en la query string, así que un 404 de `requests` arrastra la URL entera dentro del texto de la excepción — y ese texto se guardaba tal cual en `Generation.error`, que viaja a `llm_evals_detail.csv`, `llm_evals.json` y `llm_fallback_analysis.csv`. No llegó a git porque lo detecté antes del commit, y eso es suerte, no un control | Los errores se redactan en el borde · [22 tests](tests/test_redaccion_secretos.py), uno de los cuales recorre todos los exports |
+| 18 | **El redactor nació con el defecto 4 adentro.** Escribí `"\b"` en una cadena no-raw — otra vez el carácter **backspace**, no un límite de palabra — así que el patrón de claves sueltas no detectaba nada. El mismo error que la bitácora documenta desde la semana 8, repetido dentro del arreglo de seguridad, que es el peor sitio posible | Ahora reutiliza la constante `WORD_BOUNDARY` que existe en `evals.py` justo por esto · un test exige que el patrón compilado no empiece por `\x08` |
+| 19 | Los dos modelos hospedados estaban **fijados y habían caducado**: `llama-3.3-70b-versatile` y `gemini-2.0-flash`, los dos 404. El brazo se leía como "el modelo falló" cuando lo que falló era el identificador. Y `GET /v1beta/models` **lista modelos que no se pueden llamar**: `gemini-2.5-flash` aparece en el catálogo y responde *"no longer available"* | El catálogo no es la verdad, la llamada sí · ahora usa el alias `-latest`, que el proveedor reapunta |
+| 20 | Con `max_tokens: 500`, `gpt-oss-120b` gastaba **1.887 tokens razonando**, terminaba en `length` y devolvía `content` vacío. El harness lo registraba como "salida vacía" y el brazo salía con **fidelidad 0.33** — mi propia configuración a punto de publicarse como propiedad del modelo, que es exactamente lo que este proyecto ya retractó dos veces | Esfuerzo de razonamiento acotado para que el presupuesto vaya a la respuesta · los 500 tokens siguen siendo iguales para todos los brazos |
 
-Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Nueve de
+Registro completo en [NOTES.md](NOTES.md) y [docs/AUDIT.md](docs/AUDIT.md). Once de
 estos **fallaban en silencio o reportaban éxito** — que es el modo de fallo que el
 proyecto entero persigue, encontrado en su propio tooling.
 
@@ -242,7 +246,7 @@ por cuánto cambia el resultado, no por cuándo apareció —
 
 De los once puntos originales quedan **tres, y ninguno es código**: dos claves gratuitas
 de API, abrir en Power BI Desktop un informe que ya está escrito y validado contra los
-esquemas de Microsoft, y veintiún párrafos deliberadamente vacíos en la bitácora que
+esquemas de Microsoft, y veinticuatro párrafos deliberadamente vacíos en la bitácora que
 solo su autor puede llenar — y que escritos por otro no servirían para lo que existen.
 
 ## Licencia

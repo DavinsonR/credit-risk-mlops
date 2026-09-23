@@ -105,7 +105,7 @@ con él corrijo el generador.
 ### 3. Los `_(escribir: ...)_` de NOTES.md
 **Quién:** solo Davirson · **Esfuerzo:** dos horas
 
-Veintiún huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
+Veinticuatro huecos deliberados en la bitácora, cada uno en el punto donde el proyecto aprendió
 algo. **Están vacíos a propósito**: son lo que hay que poder defender en una entrevista, y
 escritos por otro no sirven para eso.
 

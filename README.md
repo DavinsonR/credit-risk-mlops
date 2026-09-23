@@ -33,8 +33,12 @@ works. Each row links to the artifact that proves it.
 | 14 | **Nothing read `.env`.** `.env.example` said "copy to .env", the harness said "keys in .env", and the providers called `os.environ.get(...)`, which only sees real environment variables. Following the repo's own instruction left Groq and Gemini "unavailable" — no error, no hint | Found while writing [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md) · [`crmlops.env`](src/crmlops/env.py) · 8 tests |
 | 15 | The `.pbip` declared a report artifact that **did not exist** — only the semantic model had been written. Power BI Desktop cannot open a project whose report is missing, so the first line of the guide was unrunnable. The scaffold test missed it because it checked a hand-written file list instead of what the `.pbip` itself declares | Found while writing [docs/POWERBI.md](docs/POWERBI.md) · the test now follows the artifact chain |
 | 16 | `run ci-local` copied the working tree over a clean clone of HEAD but **never deleted anything**, so a file the commit removes stayed alive in the clone. A deletion that breaks CI was invisible to the control built to catch exactly that. Checking whether the source file exists is not enough either: `git ls-files` lists the index, and a file already removed with `git add -A` is not in it | Found by deleting the legacy `report.json` · it now diffs against `HEAD` |
+| 17 | **A live API key was written into three committed artifacts.** Gemini takes the key in the query string, so a 404 from `requests` carries the whole URL inside the exception text — and that text was stored verbatim in `Generation.error`, which ships to `llm_evals_detail.csv`, `llm_evals.json` and `llm_fallback_analysis.csv`. It never reached git because I caught it before the commit, and that is luck, not a control | Errors are now redacted at the boundary · [22 tests](tests/test_redaccion_secretos.py), one of which scans every committed export |
+| 18 | **The redactor was born with defect 4 inside it.** I wrote `"\b"` in a non-raw string — the **backspace** character again, not a word boundary — so the bare-key pattern matched nothing. The same bug the ledger has documented since week 8, repeated inside the security fix, which is the worst possible place for it | Now reuses the `WORD_BOUNDARY` constant that exists in `evals.py` for exactly this reason · a test asserts the compiled pattern does not start with `\x08` |
+| 19 | Both hosted model IDs were **pinned and had expired**: `llama-3.3-70b-versatile` and `gemini-2.0-flash` both 404. The arm read as "the model failed" when what failed was the identifier. And `GET /v1beta/models` **lists models that cannot be called** — `gemini-2.5-flash` appears in the catalogue and answers *"no longer available"* | The catalogue is not the truth, the call is · now uses the `-latest` alias, which the provider repoints |
+| 20 | With `max_tokens: 500`, `gpt-oss-120b` spent **1,887 tokens reasoning**, finished on `length`, and returned empty `content`. The harness logged "empty output" and the arm came out at **fidelity 0.33** — my own configuration about to be published as a property of the model, which is exactly what this project retracted twice before | Reasoning effort capped so the budget goes to the answer · the 500 tokens stay identical across arms |
 
-Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Nine of these
+Full log in [NOTES.md](NOTES.md) and [docs/AUDIT.md](docs/AUDIT.md). Eleven of these
 **failed silently or reported success** — which is the failure mode the whole project
 is built to hunt, found in its own tooling.
 
@@ -258,7 +262,8 @@ with the click-by-click version in **[docs/CHECKLIST.md](docs/CHECKLIST.md)**.
 
 Three of the original eleven items remain, and **none of them is code**: two free API
 keys, opening in Power BI Desktop a report that is already written and validated against
-Microsoft's schemas, and twenty-one deliberately empty paragraphs in the engineering log
+Microsoft's schemas, and twenty-four
+deliberately empty paragraphs in the engineering log
 that only their author can fill — and that, written by anyone else, would not serve the
 purpose they exist for.
 

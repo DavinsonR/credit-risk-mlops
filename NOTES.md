@@ -1453,6 +1453,76 @@ Y el primer arreglo tampoco servía: mirar si el archivo de origen existe no bas
 `git ls-files` lista el índice y un archivo ya eliminado con `git add -A` no está en él.
 Hay que comparar contra `HEAD`.
 
+### Las claves llegaron, y con ellas cuatro defectos
+
+Davirson creó las dos cuentas y pegó las claves. Los cinco brazos aparecieron en la
+cabecera del harness —la carga de `.env` funciona— y los dos hospedados devolvieron
+**404**. Ninguno era un problema de autenticación.
+
+**Los identificadores de modelo habían caducado.** `llama-3.3-70b-versatile` y
+`gemini-2.0-flash` estaban fijados en el código y los dos proveedores los retiraron. El
+brazo se leía como *"el modelo falló"* cuando lo que falló era una cadena de texto que
+escribí hace dos semanas.
+
+Y algo que no esperaba: `GET /v1beta/models` **lista modelos que no se pueden llamar**.
+`gemini-2.5-flash` aparece en el catálogo y al invocarlo responde *"no longer
+available"*. El catálogo no es la verdad; la llamada sí. Por eso ahora uso el alias
+`-latest`, que el proveedor reapunta, en vez de una versión que caduca sin avisar.
+
+_(escribir: por qué fijar una versión parece lo prudente y aquí fue lo contrario)_
+
+### Una clave real quedó escrita en tres artefactos que se commitean
+
+Este es el grave. La API de Gemini toma la clave **en la query string**, así que un 404
+de `requests` arrastra la URL completa —clave incluida— dentro del texto de la
+excepción. Ese texto se guardaba tal cual en `Generation.error` y de ahí viajaba a
+`llm_evals_detail.csv`, `llm_evals.json` y `llm_fallback_analysis.csv`. Los tres se
+commitean.
+
+Se imprimió en consola, quedó en el historial de la conversación y quedó escrito en
+disco. **No llegó a git porque lo vi antes del commit.** Eso no es un control: es
+suerte, y la suerte no es reproducible.
+
+Ahora los errores pasan por un redactor **en el borde** —donde el error se convierte en
+dato— y no en cada sitio que imprime: un solo punto que olvidar es un solo punto que
+arreglar.
+
+_(escribir: por qué el sitio donde un error se convierte en dato es el sitio donde hay
+que mirar)_
+
+### Y el redactor nació con el defecto 4 adentro
+
+Escribí `"\b"` en una cadena no-raw. Eso es el carácter **backspace**, no un límite de
+palabra, así que el patrón de claves sueltas no detectaba nada. El regex compilaba, el
+test de comportamiento habría pasado sobre texto limpio, y el control no hacía nada.
+
+Es el mismo error que la bitácora documenta desde la semana 8 —el verificador de
+cumplimiento con `"\b"`— repetido **dentro del arreglo de seguridad**. Peor: `evals.py`
+ya tiene una constante `WORD_BOUNDARY` que existe exactamente por eso, con un comentario
+que lo explica, y no la usé.
+
+Lo encontré porque imprimí el patrón compilado y vi `\x08` al principio. Ahora hay un
+test que lo exige, y no es sobre el comportamiento sino sobre el patrón: **un regex roto
+y un texto sin secretos producen la misma salida visible.**
+
+_(escribir: por qué conocer un defecto no impide repetirlo, y qué sí lo impide)_
+
+### Y el cuarto: mi presupuesto de tokens, publicado como propiedad del modelo
+
+Con los modelos corregidos, Groq devolvía `content` vacío en cuatro de seis casos y el
+brazo salía con **fidelidad 0.33**. Antes de escribir eso en ningún lado lo reproduje:
+con `max_tokens: 500`, `gpt-oss-120b` gastaba **1.887 tokens razonando**, terminaba con
+`finish_reason="length"` y no le quedaba presupuesto para la respuesta.
+
+No era el modelo. Era mi configuración. Habría sido la tercera vez que este proyecto
+publica una medición propia como propiedad del sistema, después del benchmark de 29.3x y
+de la consistencia de 0.83.
+
+El arreglo acota el esfuerzo de razonamiento para que el presupuesto vaya a la
+respuesta, y mantiene los 500 tokens iguales para todos los brazos: **se iguala la
+salida, no el pensamiento.**
+
 ### Pendiente al cierre de la semana 11
 - Abrir el informe en Power BI Desktop y verificarlo — [docs/POWERBI.md](docs/POWERBI.md).
-- Los brazos de Groq y Gemini (faltan las claves) — [docs/LLM_PROVIDERS.md](docs/LLM_PROVIDERS.md).
+- Volver a correr el harness cuando el tier gratuito de Gemini no esté saturado: en esta
+  corrida devolvió 429 en las 24 llamadas y su brazo no produjo ni una salida.

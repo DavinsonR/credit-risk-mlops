@@ -41,8 +41,10 @@ puede hacer nadie más que tú, y es la que más vale en una entrevista.
 3. **Create API key** → *Create API key in new project*.
 4. Cópiala. Esta sí puedes volver a verla en la misma pantalla.
 
-> **Es AI Studio, no Vertex AI.** Vertex exige facturación; AI Studio no. Si la clave
-> empieza distinto o te pide habilitar facturación, estás en el sitio equivocado.
+> **Es AI Studio, no Vertex AI.** Vertex exige facturación; AI Studio no. El prefijo de
+> la clave no es un buen indicador —Google cambió el formato y ahora emite claves que
+> empiezan por `AQ.` además de las `AIza…` de antes—; lo que delata a Vertex es que te
+> pida habilitar facturación.
 
 ## 1.3 · Pegarlas
 
@@ -55,7 +57,7 @@ El archivo **ya está creado** en la raíz del repositorio:
 FRED_API_KEY=
 CENSUS_API_KEY=
 GROQ_API_KEY=gsk_lo_que_copiaste_de_groq
-GEMINI_API_KEY=AIza_lo_que_copiaste_de_google
+GEMINI_API_KEY=lo_que_copiaste_de_google
 ```
 
 Sin comillas, sin espacios alrededor del `=`, y **guarda**.
@@ -73,7 +75,7 @@ proveedor, porque el commit queda en el historial.
 Mira la primera línea de la salida. Tiene que decir **cinco brazos**:
 
 ```
-Brazos: template/deterministic, ollama/llama3.2:3b, ollama/qwen2.5:7b, groq/llama-3.3-70b-versatile, gemini/gemini-2.0-flash
+Brazos: template/deterministic, ollama/llama3.2:3b, ollama/qwen2.5:7b, groq/openai/gpt-oss-120b, gemini/gemini-flash-latest
 ```
 
 Si falta alguno, el mensaje te dice exactamente qué pasó:
@@ -208,7 +210,7 @@ enseña su propio modelo bloqueado por el gate de equidad. Esa no la tiene nadie
 
 ---
 
-# 3 · Los veintiún `_(escribir: ...)_` de NOTES.md
+# 3 · Los veinticuatro `_(escribir: ...)_` de NOTES.md
 
 **Una a dos horas, y es lo único de esta lista que nadie más puede hacer.**
 
