@@ -19,7 +19,7 @@ hacer cuando algo falle.
 | **El informe: 4 páginas, 20 visuales** | **Escrito en PBIR y validado contra los esquemas de Microsoft** |
 | Que cada campo del informe exista en el modelo | **Verificado por test** |
 | Que ningún umbral ni nombre de modelo esté escrito a mano | **Verificado por test** |
-| **Que Power BI Desktop lo abra** | **No verificado. Es lo que vas a hacer.** |
+| **Que Power BI Desktop lo abra** | **Primer intento: no abrió** (pedía un `model.bim`, [defecto 22](DEFECTS.es.md)). Corregido; **falta volver a abrirlo** |
 
 El informe ya no hay que construirlo clic a clic: está escrito como **PBIR** —el formato
 de metadatos mejorado, un archivo por página y uno por visual, con esquemas públicos— y
@@ -32,8 +32,9 @@ Lo que te queda es abrirlo, mirar que se vea bien y ajustar formato.
 > **Cumplir el esquema no es abrir en Desktop, y eso hay que decirlo.** Un archivo puede
 > validar y aun así no cargar: por un tipo de visual mal elegido, por un rol que ese
 > visual no acepta, o porque PBIR es vista previa y exige una versión de Desktop
-> reciente. La sección 2 dice qué hacer en cada caso. **Nada de esto se ha abierto en
-> Power BI Desktop**, y esa frase sigue siendo cierta hasta que la borres tú.
+> reciente. La sección 2 dice qué hacer en cada caso. **El primer intento de abrirlo en
+> Desktop falló** por el `.pbism` (defecto 22); ya está corregido, y **ningún intento
+> ha cargado el proyecto todavía**. Esa frase sigue siendo cierta hasta que la borres tú.
 
 > **Un defecto que salió al escribir esta guía.** El `.pbip` declaraba el artefacto
 > `credit-risk-mlops.Report` y **esa carpeta no existía** — solo se había escrito el
@@ -110,7 +111,13 @@ Desktop carga el modelo semántico desde TMDL y el informe desde PBIR: cuatro p�
 
 ## 2 · Si no abre
 
-Tres fallos posibles, en orden de probabilidad:
+Cuatro fallos posibles. El primero ya ocurrió una vez y está corregido; los otros
+van en orden de probabilidad:
+
+**0) Desktop pide un `model.bim`.** Pasa si `definition.pbism` declara la versión
+`1.0`: esa versión exige el modelo en TMSL (`model.bim`), y aquí está en TMDL
+(`definition/`), que requiere la `4.0` o superior. Fue el [defecto 22](DEFECTS.es.md)
+y ya está corregido; `tests/test_pbip_bindings.py` impide que vuelva.
 
 **a) "La característica de vista previa no está habilitada".** Vuelve al paso 0. Es lo
 más común y el mensaje es claro.

@@ -34,7 +34,8 @@ proyecto venía citando:
   página lee el mismo bundle que el repositorio verifica.
 - **El informe de Power BI, escrito en PBIR** y validado contra los esquemas de
   Microsoft: cuatro páginas, veinte visuales, cada campo comprobado contra el TMDL.
-  Falta abrirlo en Desktop, que es el punto 1.
+  El primer intento de abrirlo en Desktop falló por el `.pbism` (defecto 22), ya
+  corregido; falta volver a abrirlo, que es el punto 1.
 
 Y dejaron seis defectos en la bitácora: la muestra de análisis la definía el sistema de
 archivos, el manifiesto de procedencia se sobrescribía en vez de fusionarse, la demo del
@@ -72,8 +73,10 @@ metadatos mejorado, un archivo por página y uno por visual— generados por
 `run pbir`, que valida cada archivo contra los esquemas publicados de Microsoft y
 comprueba que cada campo existe en el TMDL leyéndolo del TMDL.
 
-**Lo que falta es abrirlo.** Cumplir un esquema no es cargar en Desktop, y nadie lo ha
-abierto. Puede fallar por un tipo de visual, por un rol que ese visual no acepta, o
+**Lo que falta es abrirlo.** Cumplir un esquema no es cargar en Desktop. El primer
+intento lo demostró: Desktop pidió un `model.bim` porque el `.pbism` declaraba la
+versión 1.0 junto a un modelo TMDL ([defecto 22](DEFECTS.es.md)). Está corregido, pero
+ningún intento ha cargado el proyecto todavía. Puede fallar por un tipo de visual, por un rol que ese visual no acepta, o
 porque PBIR es vista previa y exige una versión reciente.
 
 **Procedimiento: [docs/POWERBI.md](POWERBI.md)** — las dos banderas de vista previa que

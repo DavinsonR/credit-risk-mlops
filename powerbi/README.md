@@ -10,17 +10,16 @@ modelo semántico está en **TMDL** y el informe se arma en Power BI Desktop.
 | Modelo semántico en TMDL: 9 tablas, ~20 medidas DAX, parámetro de ruta | **Escrito y verificado por test** |
 | Enlace de cada tabla a su export, columna por columna | **Verificado**: `tests/test_pbip_bindings.py` compara cada `sourceColumn` contra el encabezado real del CSV |
 | Layout del informe: 4 páginas, 20 visuales | **Escrito en PBIR** y validado contra los esquemas publicados (`run pbir`) |
-| Que Power BI Desktop lo abra | **No verificado.** Requiere Desktop |
+| Que Power BI Desktop lo abra | **Primer intento fallido** (el `.pbism` declaraba 1.0 con el modelo en TMDL; [defecto 22](../docs/DEFECTS.es.md)). Corregido; **falta volver a abrirlo** |
 
-**Declaración honesta:** ni el modelo ni el informe **se han abierto en Power BI
-Desktop.** Se
-escribió a mano porque TMDL es texto y porque el enlace a los datos sí es verificable
+**Declaración honesta:** el primer intento de abrirlo en Power BI Desktop falló, y
+**ningún intento ha cargado el proyecto todavía.** Se escribió a mano porque TMDL es texto y porque el enlace a los datos sí es verificable
 sin Power BI — y eso es lo que los tests comprueban. Pero que el TMDL sea válido para
 los tests de este repo no garantiza que Desktop lo cargue sin ajustes.
 
 Decir "tablero de Power BI listo" sin haberlo abierto sería exactamente el tipo de
 afirmación que este proyecto documenta como defecto —ver el registro en
-[NOTES.md](../NOTES.md)—. Así que: el modelo está, el informe está escrito y validado
+[docs/DEFECTS.es.md](../docs/DEFECTS.es.md)—. Así que: el modelo está, el informe está escrito y validado
 contra su esquema, y **abrirlo sigue siendo el paso que falta**.
 
 ## Primer uso
