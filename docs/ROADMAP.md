@@ -24,8 +24,8 @@ proyecto venía citando:
   despreciable en magnitud.
 - **La instrumentación del híbrido.** Cero cambios de camino: la hipótesis del ADR
   0009 era mía y era falsa.
-- **La demo WASM, publicada y bilingüe**, en
-  [proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html).
+- **La demo WASM, publicada y bilingüe**, hoy como sección de la página del proyecto:
+  [davirson.com/es/projects/credit-risk](https://davirson.com/es/projects/credit-risk#demo).
   Estaba construida y nunca se había pulsado: el valor por defecto de la garantía no
   era múltiplo de su propio `step`, así que el formulario nacía inválido y el botón
   no hacía nada.

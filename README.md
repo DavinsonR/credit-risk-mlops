@@ -28,7 +28,7 @@ GitHub Actions · `uv`
 | Governance | **10 promotion gates** in CI; metrics are **recomputed** from stored predictions, never trusted |
 | Documentation | **14 ADRs**, a model card, and a validation report structured on SR 26-2 and EU AI Act Annex IV |
 | Serving | One ONNX artifact, **three runtimes** (FastAPI, serverless, in-browser WASM), parity-tested |
-| Try it | [Score a loan in the browser](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=en), no server, nothing leaves the page |
+| Try it | [Score a loan in the browser](https://davirson.com/en/projects/credit-risk#demo): four fields, no server, nothing leaves the page |
 
 ## What it demonstrates
 
@@ -258,7 +258,9 @@ On Linux/macOS every task is a `make` target.
 
 **Or just score a loan:** the production ONNX artifact runs in the browser, with no
 server and nothing leaving the page —
-[proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=en).
+[davirson.com/en/projects/credit-risk](https://davirson.com/en/projects/credit-risk#demo).
+Four fields are enough and the score updates on every change; the other nine start at
+typical values, and the full calculation shows the exact vector the model receives.
 Set business age to `Change of Ownership` to see the monitoring finding live: the
 category is not in the contract, so it scores as unknown and the model answers with
 the same confidence.

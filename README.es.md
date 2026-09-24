@@ -31,7 +31,7 @@ GitHub Actions · `uv`
 | Gobierno | **10 gates de promoción** en CI; las métricas se **recomputan** desde las predicciones guardadas, nunca se creen |
 | Documentación | **14 ADRs**, model card y reporte de validación estructurado sobre SR 26-2 y el Anexo IV del Reglamento de IA de la UE |
 | Serving | Un artefacto ONNX, **tres runtimes** (FastAPI, serverless, WASM en el navegador), con paridad probada |
-| Pruébalo | [Puntúa un préstamo en el navegador](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=es), sin servidor y sin que nada salga de la página |
+| Pruébalo | [Puntúa un préstamo en el navegador](https://davirson.com/es/projects/credit-risk#demo): cuatro campos, sin servidor y sin que nada salga de la página |
 
 ## Qué demuestra
 
@@ -240,7 +240,9 @@ En Linux/macOS cada tarea es un target de `make`.
 
 **O simplemente puntúa un préstamo:** el artefacto ONNX de producción corre en el
 navegador, sin servidor y sin que nada salga de la página —
-[proyecto-davirson-git.vercel.app/credit-risk-demo](https://proyecto-davirson-git.vercel.app/credit-risk-demo/index.html?lang=es).
+[davirson.com/es/projects/credit-risk](https://davirson.com/es/projects/credit-risk#demo).
+Cuatro campos bastan y el resultado se recalcula en cada cambio; los otros nueve arrancan
+con valores típicos, y el cálculo completo enseña el vector exacto que recibe el modelo.
 Pon la antigüedad en `Change of Ownership` para ver en vivo el hallazgo del monitoreo:
 la categoría no está en el contrato, se codifica como desconocida y el modelo responde
 con el mismo aplomo.
